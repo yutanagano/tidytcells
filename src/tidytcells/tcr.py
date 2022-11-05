@@ -144,16 +144,16 @@ class DecomposedTcr:
 # --- HELPER FUNCTIONS ---
 
 
-def _standardise_homosapiens(gene_str: str) -> str:
+def _standardise_homosapiens(gene_name: str) -> str:
     # Take note of initial input for reference
-    original_input = gene_str
+    original_input = gene_name
 
     # Clean whitespace, remove known pollutors
-    gene_str = ''.join(gene_str.split())
-    gene_str = gene_str.replace('&nbsp;','')
+    gene_name = ''.join(gene_name.split())
+    gene_name = gene_name.replace('&nbsp;','')
 
     # Parse attempt 1
-    if m := PARSE_RE_HOMOSAPIENS_1.match(gene_str):
+    if m := PARSE_RE_HOMOSAPIENS_1.match(gene_name):
         gene_prefix = m.group(1)
         base = m.group(2)
         num1 = m.group(3)
@@ -180,7 +180,7 @@ def _standardise_homosapiens(gene_str: str) -> str:
                 pass
 
     # Parse attempt 2
-    elif m := PARSE_RE_HOMOSAPIENS_2.match(gene_str):
+    elif m := PARSE_RE_HOMOSAPIENS_2.match(gene_name):
         gene_prefix = None
         base = 'AV'
         num1 = m.group(1)
@@ -191,7 +191,7 @@ def _standardise_homosapiens(gene_str: str) -> str:
 
     # Could not parse
     else:
-        _warn_failure(original_input, gene_str, 'Homo sapiens')
+        _warn_failure(original_input, gene_name, 'Homo sapiens')
         return None
 
     # Build DecomposedTcr object
@@ -233,19 +233,19 @@ SUPPORTED_SPECIES = {
 }
 
 
-def standardise(gene_str: str, species: str) -> str:
+def standardise(gene_name: str, species: str) -> str:
     # If gene_str is not a string, skip and return None
-    if type(gene_str) != str:
-        _warn_failure(gene_str, gene_str, species)
+    if type(gene_name) != str:
+        _warn_failure(gene_name, gene_name, species)
         return None
 
     # If the specified species is supported, attempt standardisation
     if species in SUPPORTED_SPECIES:
-        return SUPPORTED_SPECIES[species](gene_str=gene_str)
+        return SUPPORTED_SPECIES[species](gene_name=gene_name)
     
     # Otherwise, don't touch it
     warn(
         f'Unsupported species: "{species}". '
         'Skipping TCR gene standardisation procedure...'
     )
-    return gene_str
+    return gene_name

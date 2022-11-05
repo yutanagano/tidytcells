@@ -161,7 +161,7 @@ class TestStandardise:
     )
     def test_already_correctly_formatted(self, gene, species):
         result = tcr.standardise(
-            gene_str=gene,
+            gene_name=gene,
             species=species
         )
 
@@ -181,7 +181,7 @@ class TestStandardise:
     def test_bad_tcr(self, gene, species):
         with pytest.warns(UserWarning, match='Unrecognised'):
             result = tcr.standardise(
-                gene_str=gene,
+                gene_name=gene,
                 species=species
             )
 
@@ -199,7 +199,7 @@ class TestStandardise:
     def test_warning_unsupported_species(self, species):
         with pytest.warns(UserWarning, match='Unsupported'):
             result = tcr.standardise(
-                gene_str='TRAV1-1*01',
+                gene_name='TRAV1-1*01',
                 species=species
             )
 
@@ -219,7 +219,7 @@ class TestStandardise:
     )
     def test_remove_pollutants(self, gene, species, expected):
         result = tcr.standardise(
-            gene_str=gene,
+            gene_name=gene,
             species=species
         )
 
@@ -237,7 +237,7 @@ class TestStandardise:
     )
     def test_resolve_alternate_tcr_names(self, gene, species, expected):
         result = tcr.standardise(
-            gene_str=gene,
+            gene_name=gene,
             species=species
         )
 
@@ -255,7 +255,7 @@ class TestStandardise:
     )
     def test_various_typos(self, gene, species, expected):
         result = tcr.standardise(
-            gene_str=gene,
+            gene_name=gene,
             species=species
         )
 
@@ -272,7 +272,7 @@ class TestStandardise:
     def test_fails_if_detected_av_dv_designation_mismatch(self, gene, species):
         with pytest.warns(UserWarning, match='Unrecognised'):
             result = tcr.standardise(
-                gene_str=gene,
+                gene_name=gene,
                 species=species
             )
 
@@ -288,7 +288,7 @@ class TestStandardise:
     )
     def test_removes_unnecessary_specifiers(self, gene, species, expected):
         result = tcr.standardise(
-            gene_str=gene,
+            gene_name=gene,
             species=species
         )
 

@@ -153,19 +153,19 @@ class DecomposedHla:
 # --- HELPER FUNCTIONS ---
 
 
-def _standardise_homosapiens(gene_str: str) -> str:
+def _standardise_homosapiens(gene_name: str) -> str:
     # Take note of initial input for reference
-    original_input = gene_str
+    original_input = gene_name
 
     # Clean whitespace
-    gene_str = ''.join(gene_str.split())
+    gene_name = ''.join(gene_name.split())
 
     # Parse attempt 1
-    if gene_str == 'B2M':
+    if gene_name == 'B2M':
         return ('B2M', None)
 
     # Parse attempt 1
-    elif m := PARSE_RE_HOMOSAPIENS.match(gene_str):
+    elif m := PARSE_RE_HOMOSAPIENS.match(gene_name):
         # Extract gene name e.g. DRA1
         gene = m.group(2)
         # Extract the digits that specify which allele it is e.g. 01:01:01:01
@@ -175,7 +175,7 @@ def _standardise_homosapiens(gene_str: str) -> str:
 
     # Could not parse
     else:
-        _warn_failure(original_input, gene_str, 'Homo sapiens')
+        _warn_failure(original_input, gene_name, 'Homo sapiens')
         return (None, None)
 
     # Build decomposed HLA object
@@ -214,57 +214,57 @@ SUPPORTED_SPECIES = {
 }
 
 
-def standardise(gene_str: str, species: str) -> tuple:
+def standardise(gene_name: str, species: str) -> tuple:
     # If gene_str is not a string, skip and return None.
-    if type(gene_str) != str:
-        _warn_failure(gene_str, gene_str, species)
+    if type(gene_name) != str:
+        _warn_failure(gene_name, gene_name, species)
         return (None, None)
 
     # If the specified species is supported, attempt standardisation
     if species in SUPPORTED_SPECIES:
-        return SUPPORTED_SPECIES[species](gene_str=gene_str)
+        return SUPPORTED_SPECIES[species](gene_name=gene_name)
     
     # Otherwise, don't touch it
     warn(
         f'Unsupported species: "{species}". '
         'Skipping MHC gene standardisation procedure...'
     )
-    return (gene_str, None)
+    return (gene_name, None)
 
 
-def get_chain(mhc_gene_name: str) -> str:
+def get_chain(gene_name: str) -> str:
     '''
     Given an MHC gene name, classify it as MHC A or MHC B. NOTE: Currently only
     considers human MHCs, and ignores mouse.
     '''
 
-    if type(mhc_gene_name) == str:
-        if re.match('HLA-([ABCEFG]|D[PQR]A)', mhc_gene_name):
+    if type(gene_name) == str:
+        if re.match('HLA-([ABCEFG]|D[PQR]A)', gene_name):
             return 'alpha'
         
-        if re.match('HLA-D[PQR]B|B2M', mhc_gene_name):
+        if re.match('HLA-D[PQR]B|B2M', gene_name):
             return 'beta'
 
     warn(
-        f'MHC gene unrecognised: "{mhc_gene_name}" '
-        f'(type: {type(mhc_gene_name)}), cannot determine if alpha or beta.'
+        f'MHC gene unrecognised: "{gene_name}" '
+        f'(type: {type(gene_name)}), cannot determine if alpha or beta.'
     )
 
 
-def classify(mhc_gene_name: str) -> int:
+def classify(gene_name: str) -> int:
     '''
     Given an MHC gene name, classify it as MHC class 1 or 2. NOTE: Currently
     only considers HLA.
     '''
 
-    if type(mhc_gene_name) == str:
-        if re.match('HLA-[ABCEFG]|B2M', mhc_gene_name):
+    if type(gene_name) == str:
+        if re.match('HLA-[ABCEFG]|B2M', gene_name):
             return 1
         
-        if re.match('HLA-D[PQR][AB]', mhc_gene_name):
+        if re.match('HLA-D[PQR][AB]', gene_name):
             return 2
 
     warn(
-        f'MHC gene unrecognised: "{mhc_gene_name}" '
-        f'(type: {type(mhc_gene_name)}), cannot determine if class 1 or 2.'
+        f'MHC gene unrecognised: "{gene_name}" '
+        f'(type: {type(gene_name)}), cannot determine if class 1 or 2.'
     )

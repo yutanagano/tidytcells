@@ -123,7 +123,7 @@ class TestStandardise:
     )
     def test_already_correctly_formatted(self, gene, species):
         prot, allele = mhc.standardise(
-            gene_str=gene,
+            gene_name=gene,
             species=species
         )
 
@@ -139,7 +139,7 @@ class TestStandardise:
     )
     def test_split_allele_fields(self, gene, species, ex_p, ex_a):
         prot, allele = mhc.standardise(
-            gene_str=gene,
+            gene_name=gene,
             species=species
         )
 
@@ -161,7 +161,7 @@ class TestStandardise:
     def test_bad_mhc(self, gene, species):
         with pytest.warns(UserWarning, match='Unrecognised'):
             prot, allele = mhc.standardise(
-                gene_str=gene,
+                gene_name=gene,
                 species=species
             )
         
@@ -178,7 +178,7 @@ class TestStandardise:
     def test_bad_allele_designation(self, gene, species):
         with pytest.warns(UserWarning, match='Unrecognised'):
             prot, allele = mhc.standardise(
-                gene_str=gene,
+                gene_name=gene,
                 species=species
             )
         
@@ -197,7 +197,7 @@ class TestStandardise:
     def test_unsupported_species(self, species):
         with pytest.warns(UserWarning, match='Unsupported'):
             prot, allele = mhc.standardise(
-                gene_str='HLA-A*01:01:01:01',
+                gene_name='HLA-A*01:01:01:01',
                 species=species
             )
 
@@ -216,7 +216,7 @@ class TestStandardise:
     )
     def test_convert_from_shorthand(self, gene, species, ex_p):
         prot, allele = mhc.standardise(
-            gene_str=gene,
+            gene_name=gene,
             species=species
         )
 
@@ -236,7 +236,7 @@ class TestStandardise:
     )
     def test_fix_deprecated_names(self, gene, species, ex_p):
         prot, allele = mhc.standardise(
-            gene_str=gene,
+            gene_name=gene,
             species=species
         )
 
@@ -253,7 +253,7 @@ class TestStandardise:
     )
     def test_desperate_gene_name_resolution(self, gene, species, ex_p):
         prot, allele = mhc.standardise(
-            gene_str=gene,
+            gene_name=gene,
             species=species
         )
 
@@ -274,7 +274,7 @@ class TestStandardise:
     )
     def test_remove_expression_qualifier(self, gene, species, ex_p, ex_a):
         prot, allele = mhc.standardise(
-            gene_str=gene,
+            gene_name=gene,
             species=species
         )
 
@@ -290,7 +290,7 @@ class TestStandardise:
     )
     def test_add_missing_colon(self, gene, species, ex_p):
         prot, allele = mhc.standardise(
-            gene_str=gene,
+            gene_name=gene,
             species=species
         )
 
@@ -309,7 +309,7 @@ class TestStandardise:
     )
     def test_add_leading_zero(self, gene, species, ex_p, ex_a):
         prot, allele = mhc.standardise(
-            gene_str=gene,
+            gene_name=gene,
             species=species
         )
 
@@ -337,7 +337,7 @@ class TestGetChain:
         )
     )
     def test_get_chain(self, gene_name, expected):
-        result = mhc.get_chain(mhc_gene_name=gene_name)
+        result = mhc.get_chain(gene_name=gene_name)
 
         assert result == expected
 
@@ -347,7 +347,7 @@ class TestGetChain:
     )
     def test_unrecognised_gene_names(self, gene_name):
         with pytest.warns(UserWarning):
-            mhc.get_chain(mhc_gene_name=gene_name)
+            mhc.get_chain(gene_name=gene_name)
 
 
 class TestClassify:
