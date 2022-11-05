@@ -10,7 +10,7 @@ readme = (here/'README.md').read_text(encoding='utf-8')
 
 setup(
     name='tidytcells',
-    version='0.0.2',
+    version='0.0.3',
     description='Standardise TCR/MHC gene names to IMGT nomenclature.',
     long_description=readme,
     long_description_content_type='text/markdown',
@@ -27,5 +27,6 @@ setup(
     keywords='immunology, bioinformatics, TCR, MHC, HLA, IMGT',
     package_dir={'': 'src'},
     packages=find_packages('src'),
+    package_data={'tidytcells': ['resources/*']},
     python_requires='>=3.10'
 )
