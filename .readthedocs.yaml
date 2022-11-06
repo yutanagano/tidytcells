@@ -7,7 +7,6 @@ build:
 
 python:
   install:
+    - requirements: docs/doctheme.txt
     - method: pip
       path: .
-    - method: pip
-      path: pydata-sphinx-theme
