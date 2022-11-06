@@ -1,5 +1,10 @@
 # tidytcells
 
+> NOTE: This package is currently in the alpha stage of development.
+
+> NOTE: This package currently only supports parsing of human TCR and MHC gene
+> data. Support for more species is planned for the future.
+
 `tidytcells` is a lightweight Python package written for bioinformaticians who
 work with T cell receptor (TCR) data. The main purpose of the package is to
 solve the problem of parsing and collating together non-standardised TCR

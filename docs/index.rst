@@ -8,6 +8,10 @@ Welcome to tidytcells's documentation!
 
 .. note::
 
+   This package is currently in the alpha stage of development.
+
+.. note::
+
    This package currently only supports parsing of human TCR and MHC gene data.
    Support for more species is planned for the future.
 
