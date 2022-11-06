@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 
 HERE = Path(__file__).parent.resolve()
-README = (HERE/'README.md').read_text(encoding='utf-8')
+README = (HERE/'README.rst').read_text(encoding='utf-8')
 VERSION = (HERE/'VERSION.txt').read_text(encoding='utf-8')
 
 
@@ -12,7 +12,7 @@ setup(
     version=VERSION,
     description='Standardise TCR/MHC gene symbols.',
     long_description=README,
-    long_description_content_type='text/markdown',
+    long_description_content_type='text/x-rst',
     author='Yuta Nagano',
     author_email='yutanagano51@proton.me',
     classifiers=[
