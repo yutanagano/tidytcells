@@ -13,7 +13,7 @@ class TestDecomposedHla:
         )
     )
     def test_compile(self, decomp, expected):
-        decomp_hla = mhc.DecomposedHla(*decomp)
+        decomp_hla = mhc._DecomposedHla(*decomp)
 
         assert decomp_hla.compile() == expected
 
@@ -27,7 +27,7 @@ class TestDecomposedHla:
         )
     )
     def test_resolves_gene_name(self, gene_name, expected):
-        decomp_hla = mhc.DecomposedHla(
+        decomp_hla = mhc._DecomposedHla(
             gene=gene_name,
             spec_fields=None,
             g_group=False,
@@ -40,7 +40,7 @@ class TestDecomposedHla:
     
 
     def test_resolves_likely_missing_field_separators(self):
-        decomp_hla = mhc.DecomposedHla(
+        decomp_hla = mhc._DecomposedHla(
             gene='A',
             spec_fields=['0101', '01'],
             g_group=False,
@@ -53,7 +53,7 @@ class TestDecomposedHla:
     
 
     def test_resolves_leading_zeros(self):
-        decomp_hla = mhc.DecomposedHla(
+        decomp_hla = mhc._DecomposedHla(
             gene='A',
             spec_fields=['1', '1'],
             g_group=False,
@@ -74,7 +74,7 @@ class TestDecomposedHla:
         )
     )
     def test_valid(self, decomp):
-        decomp_mhc = mhc.DecomposedHla(*decomp)
+        decomp_mhc = mhc._DecomposedHla(*decomp)
 
         assert decomp_mhc.valid
 
@@ -90,7 +90,7 @@ class TestDecomposedHla:
         )
     )
     def test_invalid(self, decomp):
-        decomp_mhc = mhc.DecomposedHla(*decomp)
+        decomp_mhc = mhc._DecomposedHla(*decomp)
 
         assert not decomp_mhc.valid
 
@@ -104,7 +104,7 @@ class TestDecomposedHla:
         )
     )
     def test_returns_resolve_success(self, decomp, expected):
-        decomp_hla = mhc.DecomposedHla(*decomp)
+        decomp_hla = mhc._DecomposedHla(*decomp)
 
         assert decomp_hla.resolve() == expected
 

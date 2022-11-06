@@ -1,4 +1,6 @@
-'Utility functions related to MHCs and MHC genes.'
+'''
+Utility functions related to MHCs and MHC genes.
+'''
 
 
 import json
@@ -23,7 +25,7 @@ PARSE_RE_HOMOSAPIENS = re.compile(
 # --- HELPER CLASSES ---
 
 
-class DecomposedHla:
+class _DecomposedHla:
     def __init__(
         self,
         gene: Union[str, None],
@@ -179,7 +181,7 @@ def _standardise_homosapiens(gene_name: str) -> str:
         return (None, None)
 
     # Build decomposed HLA object
-    decomp_hla = DecomposedHla(
+    decomp_hla = _DecomposedHla(
         gene=gene,
         spec_fields=spec_fields,
         g_group=g_group,
@@ -215,6 +217,27 @@ SUPPORTED_SPECIES = {
 
 
 def standardise(gene_name: str, species: str) -> tuple:
+    '''
+    Attempt to standardise an MHC gene name to be IMGT-compliant.
+
+    :param gene_name: Potentially non-standardised MHC gene name.
+    :type gene_name: str
+    :param species: Species to which the MHC gene belongs (see
+        :ref:`supported_species`).
+    :type species: str
+    :return: If the specified ``species`` is supported, and ``gene_name`` could
+        be standardised, then return a tuple containing the standardised gene
+        name decomposed into two parts: 1) the name of the gene specific to the
+        level of the protein, and 2) (if any) further valid specifier fields
+        (e.g. ``('HLA-A*01:01', ':01:01')``, see :ref:`example_usage`). If
+        ``species`` is unsupported, then the function does not attempt to
+        standardise, and returns a tuple with the unaltered ``gene_name`` for
+        the first element, and ``None`` for the second element. Else return the
+        tuple ``(None, None)``.
+    :rtype: tuple[str or None] or None
+
+    '''
+
     # If gene_str is not a string, skip and return None.
     if type(gene_name) != str:
         _warn_failure(gene_name, gene_name, species)
@@ -234,8 +257,16 @@ def standardise(gene_name: str, species: str) -> tuple:
 
 def get_chain(gene_name: str) -> str:
     '''
-    Given an MHC gene name, classify it as MHC A or MHC B. NOTE: Currently only
-    considers human MHCs, and ignores mouse.
+    Given a standardised MHC gene name, detect whether it codes for an alpha
+    or a beta chain molecule.
+    
+    :param gene_name: Standardised MHC gene name (non-standardised values will
+        be unrecognised)
+    :type gene_name: str
+    :return: ``'alpha'`` or ``'beta'`` if ``gene_name`` is recognised, else
+        ``None``.
+    :rtype: str or None
+
     '''
 
     if type(gene_name) == str:
@@ -253,8 +284,15 @@ def get_chain(gene_name: str) -> str:
 
 def classify(gene_name: str) -> int:
     '''
-    Given an MHC gene name, classify it as MHC class 1 or 2. NOTE: Currently
-    only considers HLA.
+    Given a standardised MHC gene name, detect whether it comprises a class I
+    or II MHC receptor complex.
+    
+    :param gene_name: Standardised MHC gene name (non-standardised values will
+        be unrecognised)
+    :type gene_name: str
+    :return: ``1`` or ``2`` if ``gene_name`` is recognised, else ``None``.
+    :rtype: int or None
+
     '''
 
     if type(gene_name) == str:

@@ -4,7 +4,7 @@ from tidytcells import tcr
 
 class TestDecomposedTcr:
     def test_compile(self):
-        decomp_tcr = tcr.DecomposedTcr(
+        decomp_tcr = tcr._DecomposedTcr(
             base = 'AV',
             num1 = '1',
             num2 = '1',
@@ -18,7 +18,7 @@ class TestDecomposedTcr:
 
 
     def test_compile_without_allele(self):
-        decomp_tcr = tcr.DecomposedTcr(
+        decomp_tcr = tcr._DecomposedTcr(
             base = 'AV',
             num1 = '1',
             num2 = '1',
@@ -32,7 +32,7 @@ class TestDecomposedTcr:
 
 
     def test_resolves_leading_zeros(self):
-        decomp_tcr = tcr.DecomposedTcr(
+        decomp_tcr = tcr._DecomposedTcr(
             base = 'AV',
             num1 = '000002',
             num2 = None,
@@ -49,7 +49,7 @@ class TestDecomposedTcr:
 
 
     def test_resolves_d_designation(self):
-        decomp_tcr = tcr.DecomposedTcr(
+        decomp_tcr = tcr._DecomposedTcr(
             base = 'AV',
             num1 = '38',
             num2 = '2',
@@ -75,7 +75,7 @@ class TestDecomposedTcr:
         )
     )
     def test_resolves_allele_number(self, initial, expected):
-        decomp_tcr = tcr.DecomposedTcr(
+        decomp_tcr = tcr._DecomposedTcr(
             base = 'AV',
             num1 = '1',
             num2 = '1',
@@ -98,7 +98,7 @@ class TestDecomposedTcr:
         )
     )
     def test_resolves_num2_if_appropriate(self, decomp, expected):
-        decomp_tcr = tcr.DecomposedTcr(*decomp)
+        decomp_tcr = tcr._DecomposedTcr(*decomp)
 
         decomp_tcr.resolve()
 
@@ -114,7 +114,7 @@ class TestDecomposedTcr:
         )
     )
     def test_valid(self, decomp):
-        decomp_tcr = tcr.DecomposedTcr(*decomp)
+        decomp_tcr = tcr._DecomposedTcr(*decomp)
 
         assert decomp_tcr.valid
 
@@ -128,7 +128,7 @@ class TestDecomposedTcr:
         )
     )
     def test_invalid(self, decomp):
-        decomp_tcr = tcr.DecomposedTcr(*decomp)
+        decomp_tcr = tcr._DecomposedTcr(*decomp)
 
         assert not decomp_tcr.valid
     
@@ -141,7 +141,7 @@ class TestDecomposedTcr:
         )
     )
     def test_returns_resolve_success(self, decomp, expected):
-        decomp_tcr = tcr.DecomposedTcr(*decomp)
+        decomp_tcr = tcr._DecomposedTcr(*decomp)
 
         assert decomp_tcr.resolve() == expected
 

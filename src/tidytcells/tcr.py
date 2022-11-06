@@ -1,4 +1,6 @@
-'Utility functions related to TCRs and TCR genes.'
+'''
+Utility functions related to TCRs and TCR genes.
+'''
 
 
 import json
@@ -34,7 +36,7 @@ PARSE_RE_HOMOSAPIENS_2 = re.compile(
 # --- HELPER CLASSES ---
 
 
-class DecomposedTcr:
+class _DecomposedTcr:
     def __init__(
         self,
         base: Union[str, None],
@@ -195,7 +197,7 @@ def _standardise_homosapiens(gene_name: str) -> str:
         return None
 
     # Build DecomposedTcr object
-    decomp_tcr = DecomposedTcr(
+    decomp_tcr = _DecomposedTcr(
         base=base,
         num1=num1,
         num2=num2,
@@ -234,6 +236,22 @@ SUPPORTED_SPECIES = {
 
 
 def standardise(gene_name: str, species: str) -> str:
+    '''
+    Attempt to standardise a TCR gene name to be IMGT-compliant.
+
+    :param gene_name: Potentially non-standardised TCR gene name.
+    :type gene_name: str
+    :param species: Species to which the TCR gene belongs (see
+        :ref:`supported_species`).
+    :type species: str
+    :return: If the specified ``species`` is supported, and ``gene_name`` could
+        be standardised, then return the standardised gene name. If ``species``
+        is unsupported, then the function does not attempt to standardise , and
+        returns the unaltered ``gene_name`` string. Else return ``None``.
+    :rtype: str or None
+    
+    '''
+
     # If gene_str is not a string, skip and return None
     if type(gene_name) != str:
         _warn_failure(gene_name, gene_name, species)
