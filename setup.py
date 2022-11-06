@@ -2,17 +2,16 @@ from pathlib import Path
 from setuptools import setup, find_packages
 
 
-here = Path(__file__).parent.resolve()
-
-
-readme = (here/'README.md').read_text(encoding='utf-8')
+HERE = Path(__file__).parent.resolve()
+README = (HERE/'README.md').read_text(encoding='utf-8')
+VERSION = (HERE/'VERSION.txt').read_text(encoding='utf-8')
 
 
 setup(
     name='tidytcells',
-    version='0.0.3',
-    description='Standardise TCR/MHC gene names to IMGT nomenclature.',
-    long_description=readme,
+    version=VERSION,
+    description='Standardise TCR/MHC gene symbols.',
+    long_description=README,
     long_description_content_type='text/markdown',
     author='Yuta Nagano',
     author_email='yutanagano51@proton.me',
