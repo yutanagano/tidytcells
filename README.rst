@@ -25,4 +25,5 @@ nomenclature.
 Useful links
 ------------
 
-- `PyPI page <https://pypi.org/project/tidytcells/>`_
+- `Documentation <https://tidytcells.readthedocs.io>`_
+- `PyPI page <https://pypi.org/project/tidytcells>`_
