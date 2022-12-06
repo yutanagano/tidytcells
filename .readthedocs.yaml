@@ -7,6 +7,5 @@ build:
 
 python:
   install:
-    - requirements: docs/doctheme.txt
     - method: pip
       path: .
