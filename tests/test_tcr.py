@@ -293,3 +293,9 @@ class TestStandardise:
         )
 
         assert result == expected
+
+
+    def test_default_homosapiens(self):
+        result = tcr.standardise('TRAV3*01')
+
+        assert result == 'TRAV3*01'

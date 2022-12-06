@@ -317,6 +317,13 @@ class TestStandardise:
         assert allele == ex_a
 
 
+    def test_default_homosapiens(self):
+        prot, allele = mhc.standardise('HLA-B*07')
+
+        assert prot == 'HLA-B*07'
+        assert allele == None
+
+
 class TestGetChain:
     @pytest.mark.parametrize(
         ('gene_name', 'expected'),

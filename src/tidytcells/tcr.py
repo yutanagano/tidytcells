@@ -235,14 +235,14 @@ SUPPORTED_SPECIES = {
 }
 
 
-def standardise(gene_name: str, species: str) -> str:
+def standardise(gene_name: str, species: str = 'HomoSapiens') -> str:
     '''
     Attempt to standardise a TCR gene name to be IMGT-compliant.
 
     :param gene_name: Potentially non-standardised TCR gene name.
     :type gene_name: str
     :param species: Species to which the TCR gene belongs (see
-        :ref:`supported_species`).
+        :ref:`supported_species`). Defaults to `"HomoSapiens"`.
     :type species: str
     :return: If the specified ``species`` is supported, and ``gene_name`` could
         be standardised, then return the standardised gene name. If ``species``

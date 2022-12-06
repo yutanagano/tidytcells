@@ -216,14 +216,14 @@ SUPPORTED_SPECIES = {
 }
 
 
-def standardise(gene_name: str, species: str) -> tuple:
+def standardise(gene_name: str, species: str = 'HomoSapiens') -> tuple:
     '''
     Attempt to standardise an MHC gene name to be IMGT-compliant.
 
     :param gene_name: Potentially non-standardised MHC gene name.
     :type gene_name: str
     :param species: Species to which the MHC gene belongs (see
-        :ref:`supported_species`).
+        :ref:`supported_species`). Defaults to `"HomoSapiens"`.
     :type species: str
     :return: If the specified ``species`` is supported, and ``gene_name`` could
         be standardised, then return a tuple containing the standardised gene
