@@ -235,7 +235,7 @@ SUPPORTED_SPECIES = {
 }
 
 
-def standardise(gene_name: str, species: str) -> str:
+def standardise(gene_name: str, species: str = 'HomoSapiens') -> str:
     '''
     Attempt to standardise a TCR gene name to be IMGT-compliant.
 

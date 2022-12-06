@@ -216,7 +216,7 @@ SUPPORTED_SPECIES = {
 }
 
 
-def standardise(gene_name: str, species: str) -> tuple:
+def standardise(gene_name: str, species: str = 'HomoSapiens') -> tuple:
     '''
     Attempt to standardise an MHC gene name to be IMGT-compliant.
 
