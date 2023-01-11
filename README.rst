@@ -8,8 +8,8 @@ tidytcells
 .. note::
 
     Support for species other than Homo sapiens is currently limited (see
-    :ref:`supported_species`). Support for more species is planned for the
-    future.
+    `the docs <https://tidytcells.readthedocs.io>`_). Support for more species
+    is planned for the future.
 
 ``tidytcells`` is a lightweight Python package written for bioinformaticians
 who work with T cell receptor (TCR) data. The main purpose of the package is to
