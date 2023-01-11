@@ -18,9 +18,7 @@ because the formats/nomenclature of how each dataset encodes TCR and MHC gene
 names are slightly different, or even inconsistent within themselves.
 ``tidytcells`` attempts to ameliorate this issue by providing simple functions
 that can standardise TCR and MHC gene symbols to their officially accepted
-versions, as defined by `IMGT <https://www.imgt.org/>`_,
-`HGNC <https://www.genenames.org/>`_, or other authorities on gene
-nomenclature.
+versions, as defined by `IMGT <https://www.imgt.org/>`_.
 
 Installation
 ------------

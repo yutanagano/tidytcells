@@ -1,0 +1,52 @@
+{
+    "TRAV4-4": {
+        "dv_1": "10",
+        "dv_1_d": false,
+        "dv_2": null
+    },
+    "TRAV6-7": {
+        "dv_1": "9",
+        "dv_1_d": false,
+        "dv_2": null
+    },
+    "TRAV13-4": {
+        "dv_1": "7",
+        "dv_1_d": false,
+        "dv_2": null
+    },
+    "TRAV14D-3": {
+        "dv_1": "8",
+        "dv_1_d": false,
+        "dv_2": null
+    },
+    "TRAV15D-1": {
+        "dv_1": "6",
+        "dv_1_d": true,
+        "dv_2": "1"
+    },
+    "TRAV15D-2": {
+        "dv_1": "6",
+        "dv_1_d": true,
+        "dv_2": "2"
+    },
+    "TRAV15-1": {
+        "dv_1": "6",
+        "dv_1_d": false,
+        "dv_2": "1"
+    },
+    "TRAV15-2": {
+        "dv_1": "6",
+        "dv_1_d": false,
+        "dv_2": "2"
+    },
+    "TRAV16D": {
+        "dv_1": "11",
+        "dv_1_d": false,
+        "dv_2": null
+    },
+    "TRAV21": {
+        "dv_1": "12",
+        "dv_1_d": false,
+        "dv_2": null
+    }
+}

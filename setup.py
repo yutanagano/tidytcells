@@ -27,5 +27,12 @@ setup(
     package_dir={'': 'src'},
     packages=find_packages('src'),
     package_data={'tidytcells': ['resources/*']},
-    python_requires='>=3.10'
+    python_requires='>=3.10',
+    extras_require={
+        'dev': [
+            'pandas>=1.5.2',
+            'pytest>=7.2.0',
+            'pytest-cov>=4.0.0'
+        ]
+    }
 )
