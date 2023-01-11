@@ -702,7 +702,7 @@
         "P":false
     },
     "TCRBV20S2":{
-        "approved_symol":"TRBV20OR9-2",
+        "approved_symol":"TRBV20\/OR9-2",
         "base":"BV",
         "num1":"20",
         "num2":null,
@@ -837,7 +837,7 @@
         "P":false
     },
     "TCRBV29S2":{
-        "approved_symol":"TRBV29OR9-2",
+        "approved_symol":"TRBV29\/OR9-2",
         "base":"BV",
         "num1":"29",
         "num2":null,
@@ -846,7 +846,7 @@
         "P":false
     },
     "TCRBV2O":{
-        "approved_symol":"TRBV20OR9-2",
+        "approved_symol":"TRBV20\/OR9-2",
         "base":"BV",
         "num1":"20",
         "num2":null,
@@ -855,7 +855,7 @@
         "P":false
     },
     "TCRBV2S2O":{
-        "approved_symol":"TRBV20OR9-2",
+        "approved_symol":"TRBV20\/OR9-2",
         "base":"BV",
         "num1":"20",
         "num2":null,
@@ -873,7 +873,7 @@
         "P":false
     },
     "TCRBV4O":{
-        "approved_symol":"TRBV29OR9-2",
+        "approved_symol":"TRBV29\/OR9-2",
         "base":"BV",
         "num1":"29",
         "num2":null,
@@ -909,7 +909,7 @@
         "P":false
     },
     "TCRBV4S2O":{
-        "approved_symol":"TRBV29OR9-2",
+        "approved_symol":"TRBV29\/OR9-2",
         "base":"BV",
         "num1":"29",
         "num2":null,
@@ -1601,15 +1601,6 @@
         "OR9-2":false,
         "P":false
     },
-    "TRBV20\/OR9-2":{
-        "approved_symol":"TRBV20OR9-2",
-        "base":"BV",
-        "num1":"20",
-        "num2":null,
-        "d_designation":null,
-        "OR9-2":true,
-        "P":false
-    },
     "TRBV201":{
         "approved_symol":"TRBV20-1",
         "base":"BV",
@@ -1644,15 +1635,6 @@
         "num2":"1",
         "d_designation":null,
         "OR9-2":false,
-        "P":false
-    },
-    "TRBV29\/OR9-2":{
-        "approved_symol":"TRBV29OR9-2",
-        "base":"BV",
-        "num1":"29",
-        "num2":null,
-        "d_designation":null,
-        "OR9-2":true,
         "P":false
     },
     "TRBV291":{
