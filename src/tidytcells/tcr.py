@@ -36,7 +36,7 @@ PARSE_RE_HOMOSAPIENS_2 = re.compile(
 # --- HELPER CLASSES ---
 
 
-class _DecomposedTcr:
+class _DecomposedHomoSapiensTcr:
     def __init__(
         self,
         base: Union[str, None],
@@ -82,10 +82,10 @@ class _DecomposedTcr:
             compiled = compiled + 'P'
 
         if self.d_designation:
-            compiled = compiled + 'DV' + self.d_designation
+            compiled = compiled + '/DV' + self.d_designation
         
         if self.or92:
-            compiled = compiled + 'OR9-2'
+            compiled = compiled + '/OR9-2'
         
         if allele and self.allele_num:
             compiled = compiled + '*' + self.allele_num
@@ -197,7 +197,7 @@ def _standardise_homosapiens(gene_name: str) -> str:
         return None
 
     # Build DecomposedTcr object
-    decomp_tcr = _DecomposedTcr(
+    decomp_tcr = _DecomposedHomoSapiensTcr(
         base=base,
         num1=num1,
         num2=num2,
