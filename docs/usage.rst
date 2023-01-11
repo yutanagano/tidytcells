@@ -61,13 +61,14 @@ character capitalised), with no space between the two parts (e.g.
 Below is a list of currently supported species:
 
 :py:func:`tidytcells.mhc.classify`
-    - HomoSapiens
+    - ``HomoSapiens``
 
 :py:func:`tidytcells.mhc.get_chain`
-    - HomoSapiens
+    - ``HomoSapiens``
 
 :py:func:`tidytcells.mhc.standardise`
-    - HomoSapiens
+    - ``HomoSapiens``
 
 :py:func:`tidytcells.tcr.standardise`
-    - HomoSapiens
+    - ``HomoSapiens``
+    - ``MusMusculus``
