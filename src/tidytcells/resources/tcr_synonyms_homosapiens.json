@@ -54,7 +54,7 @@
         "P":false
     },
     "TCRAV14S1":{
-        "approved_symol":"TRAV38-2DV8",
+        "approved_symol":"TRAV38-2\/DV8",
         "base":"AV",
         "num1":"38",
         "num2":"2",
@@ -252,7 +252,7 @@
         "P":false
     },
     "TCRAV6S1-hDV104S1":{
-        "approved_symol":"TRAV14DV4",
+        "approved_symol":"TRAV14\/DV4",
         "base":"AV",
         "num1":"14",
         "num2":null,
@@ -1367,57 +1367,12 @@
         "OR9-2":false,
         "P":false
     },
-    "TRAV14\/DV4":{
-        "approved_symol":"TRAV14DV4",
-        "base":"AV",
-        "num1":"14",
-        "num2":null,
-        "d_designation":"4",
-        "OR9-2":false,
-        "P":false
-    },
-    "TRAV23\/DV6":{
-        "approved_symol":"TRAV23DV6",
-        "base":"AV",
-        "num1":"23",
-        "num2":null,
-        "d_designation":"6",
-        "OR9-2":false,
-        "P":false
-    },
     "TRAV262":{
         "approved_symol":"TRAV26-2",
         "base":"AV",
         "num1":"26",
         "num2":"2",
         "d_designation":null,
-        "OR9-2":false,
-        "P":false
-    },
-    "TRAV29\/DV5":{
-        "approved_symol":"TRAV29DV5",
-        "base":"AV",
-        "num1":"29",
-        "num2":null,
-        "d_designation":"5",
-        "OR9-2":false,
-        "P":false
-    },
-    "TRAV36\/DV7":{
-        "approved_symol":"TRAV36DV7",
-        "base":"AV",
-        "num1":"36",
-        "num2":null,
-        "d_designation":"7",
-        "OR9-2":false,
-        "P":false
-    },
-    "TRAV38-2\/DV8":{
-        "approved_symol":"TRAV38-2DV8",
-        "base":"AV",
-        "num1":"38",
-        "num2":"2",
-        "d_designation":"8",
         "OR9-2":false,
         "P":false
     },
@@ -1431,7 +1386,7 @@
         "P":false
     },
     "TRAV382DV8":{
-        "approved_symol":"TRAV38-2DV8",
+        "approved_symol":"TRAV38-2\/DV8",
         "base":"AV",
         "num1":"38",
         "num2":"2",
@@ -1962,7 +1917,7 @@
         "P":false
     },
     "hADV14S1":{
-        "approved_symol":"TRAV14DV4",
+        "approved_symol":"TRAV14\/DV4",
         "base":"AV",
         "num1":"14",
         "num2":null,
@@ -1971,7 +1926,7 @@
         "P":false
     },
     "hADV38S2":{
-        "approved_symol":"TRAV38-2DV8",
+        "approved_symol":"TRAV38-2\/DV8",
         "base":"AV",
         "num1":"38",
         "num2":"2",
