@@ -30,6 +30,7 @@ setup(
     python_requires='>=3.10',
     extras_require={
         'dev': [
+            'pandas>=1.5.2',
             'pytest>=7.2.0',
             'pytest-cov>=4.0.0'
         ]
