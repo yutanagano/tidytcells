@@ -3,7 +3,7 @@ Utility functions related to TCRs and TCR genes.
 '''
 
 
-from abc import ABC, abstractmethod
+from .decomposed_gene import _DecomposedGene
 import json
 from pkg_resources import resource_stream
 import re
@@ -55,7 +55,7 @@ PARSE_RE_MUSMUSCULUS_2 = re.compile(
 # --- HELPER CLASSES ---
 
 
-class _DecomposedTcrABC(ABC):
+class _DecomposedTCR(_DecomposedGene):
     @property
     def valid(self) -> bool:
         gene_str = self.compile(allele=False)
@@ -70,24 +70,6 @@ class _DecomposedTcrABC(ABC):
         
         # If no allele specified, return true as the gene exists
         return True
-
-
-    @abstractmethod
-    def compile(self, allele: bool = True) -> str:
-        '''
-        Compile a complete string representation of the TCR gene based on the
-        decomposed properties
-        '''
-
-
-    @abstractmethod
-    def resolve(self) -> bool:
-        '''
-        Inspect the TCR's decomposed properties and check whether they
-        correspond to a real TCR chain gene. If not, and if possible, fix the
-        properties so that they do in fact represent a real gene. Return
-        True if the resolution was successful, and False otherwise.
-        '''
 
 
     def _resolve_allele_num(self) -> None:
@@ -106,7 +88,7 @@ class _DecomposedTcrABC(ABC):
             self.allele_num = '0' + self.allele_num
 
 
-class _DecomposedHomoSapiensTcr(_DecomposedTcrABC):
+class _DecomposedHomoSapiensTCR(_DecomposedTCR):
     allele_dict = _TCR_ALLELES_HOMOSAPIENS
 
     def __init__(
@@ -183,7 +165,7 @@ class _DecomposedHomoSapiensTcr(_DecomposedTcrABC):
         return False
 
 
-class _DecomposedMusMusculusTcr(_DecomposedTcrABC):
+class _DecomposedMusMusculusTCR(_DecomposedTCR):
     allele_dict = _TCR_ALLELES_MUSMUSCULUS
 
     def __init__(
@@ -322,7 +304,7 @@ def _standardise_homosapiens(gene_name: str) -> str:
         return None
 
     # Build DecomposedTcr object
-    decomp_tcr = _DecomposedHomoSapiensTcr(
+    decomp_tcr = _DecomposedHomoSapiensTCR(
         base=base,
         num1=num1,
         num2=num2,
@@ -376,7 +358,7 @@ def _standardise_musmusculus(gene_name: str) -> str:
         return None
 
     # Build DecomposedTcr object
-    decomp_tcr = _DecomposedMusMusculusTcr(
+    decomp_tcr = _DecomposedMusMusculusTCR(
         base=base,
         num1=num1,
         num1_d=num1_d,

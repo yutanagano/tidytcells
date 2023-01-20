@@ -3,10 +3,12 @@ Utility functions related to MHCs and MHC genes.
 '''
 
 
+from .decomposed_gene import _DecomposedGene
+from itertools import product
 import json
 from pkg_resources import resource_stream
 import re
-from typing import Tuple, Union
+from typing import Tuple, Optional
 from warnings import warn
 
 
@@ -21,15 +23,21 @@ PARSE_RE_HOMOSAPIENS = re.compile(
     r'^(HLA-)?([A-Za-z/]+\d??)(\*?([\d:]+(G)?(P)?)[LSCAQN]?)?$'
 )
 
+with resource_stream(__name__, 'resources/mhc_alleles_musmusculus.json') as s:
+    _MHC_ALLELES_MUSMUSCULUS = json.load(s)
+with resource_stream(__name__, 'resources/mhc_synonyms_musmusculus.json') as s:
+    _MHC_SYNONYMS_MUSMUSCULUS = json.load(s)
+PARSE_RE_MUSMUSCULUS = re.compile(r'^(M?H[12])?([A-Z0-9\.\/\']+)$')
+
 
 # --- HELPER CLASSES ---
 
 
-class _DecomposedHla:
+class _DecomposedHLA(_DecomposedGene):
     def __init__(
         self,
-        gene: Union[str, None],
-        spec_fields: Union[list, None],
+        gene: Optional[str],
+        spec_fields: Optional[list],
         g_group: bool,
         p_group: bool
     ) -> None:
@@ -99,7 +107,7 @@ class _DecomposedHla:
         return (prot_str, mut_str)
 
 
-    def resolve(self) -> None:
+    def resolve(self) -> bool:
         if self.gene == 'Cw':
             self.gene = 'C'
 
@@ -152,10 +160,69 @@ class _DecomposedHla:
             ]
 
 
+class _DecomposedMusMusculusMHC(_DecomposedGene):
+    def __init__(
+        self,
+        base: Optional[str],
+        name: Optional[str]
+    ) -> None:
+        self.base = 'null' if base is None else base
+        self.name = name
+
+
+    @property
+    def valid(self) -> bool:
+        # Does the compiled gene name exist in the reference?
+        if self.base in _MHC_ALLELES_MUSMUSCULUS:
+            return self.name in _MHC_ALLELES_MUSMUSCULUS[self.base]
+        
+        return False
+    
+
+    def compile(self) -> Tuple[str, str]:
+        prot_str = f'{self.base}-{self.name}'
+
+        return (prot_str, None)
+
+
+    def resolve(self) -> bool:
+        if self.valid:
+            return True
+        
+        # Fix deprecated names
+        try:
+            self.base, self.name =\
+                _MHC_SYNONYMS_MUSMUSCULUS[self.base][self.name]
+
+            # Deprecated name resolved
+            return True
+        except(KeyError):
+            # Try sane modifications
+            bases = ['H2', 'MH2', 'MH1']
+            names = [self.name]
+
+            if re.match(r'[A-Z]{2}', self.name):
+                names.append(self.name[0])
+
+            names += [name+'1' for name in names]
+
+            for base, name in product(bases, names):
+                self.base = base
+                self.name = name
+
+                if self.valid:
+                    return True
+
+        # Give up
+        return False
+
+
 # --- HELPER FUNCTIONS ---
 
 
-def _standardise_homosapiens(gene_name: str) -> str:
+def _standardise_homosapiens(gene_name: str) -> tuple[str]:
+    species = 'Homo sapiens'
+
     # Take note of initial input for reference
     original_input = gene_name
 
@@ -166,8 +233,8 @@ def _standardise_homosapiens(gene_name: str) -> str:
     if gene_name == 'B2M':
         return ('B2M', None)
 
-    # Parse attempt 1
-    elif m := PARSE_RE_HOMOSAPIENS.match(gene_name):
+    # Parse attempt 2
+    elif m := PARSE_RE_HOMOSAPIENS.match(gene_name): # ^(HLA-)?([A-Za-z/]+\d??)(\*?([\d:]+(G)?(P)?)[LSCAQN]?)?$
         # Extract gene name e.g. DRA1
         gene = m.group(2)
         # Extract the digits that specify which allele it is e.g. 01:01:01:01
@@ -177,11 +244,11 @@ def _standardise_homosapiens(gene_name: str) -> str:
 
     # Could not parse
     else:
-        _warn_failure(original_input, gene_name, 'Homo sapiens')
+        _warn_failure(original_input, gene_name, species)
         return (None, None)
 
     # Build decomposed HLA object
-    decomp_hla = _DecomposedHla(
+    decomp_hla = _DecomposedHLA(
         gene=gene,
         spec_fields=spec_fields,
         g_group=g_group,
@@ -190,10 +257,50 @@ def _standardise_homosapiens(gene_name: str) -> str:
 
     # Try resolving, and return None on failure
     if not decomp_hla.resolve():
-        _warn_failure(original_input, decomp_hla.compile(), 'Homo sapiens')
+        _warn_failure(original_input, decomp_hla.compile(), species)
         return (None, None)
     
     return decomp_hla.compile()
+
+
+def _standardise_musmusculus(gene_name: str) -> tuple[str]:
+    species = 'Mus musculus'
+
+    # Take note of initial input for reference
+    original_input = gene_name
+
+    # Clean whitespace
+    gene_name = ''.join(gene_name.upper().split())
+    gene_name = gene_name.replace('-', '')
+    gene_name = gene_name.replace('ALPHA', 'A')
+    gene_name = gene_name.replace('BETA', 'B')
+
+    # Parse attempt 1
+    if gene_name == 'B2M':
+        return ('B2M', None)
+
+    # Parse attempt 2
+    elif m := PARSE_RE_MUSMUSCULUS.match(gene_name): # ^(M?H[12])?([A-Z0-9\.\/\']+)$
+        base = m.group(1)
+        gene = m.group(2)
+
+    # Could not parse
+    else:
+        _warn_failure(original_input, gene_name, species)
+        return (None, None)
+
+    # Build decomposed HLA object
+    decomp_mhc = _DecomposedMusMusculusMHC(
+        base=base,
+        name=gene
+    )
+
+    # Try resolving, and return None on failure
+    if not decomp_mhc.resolve():
+        _warn_failure(original_input, decomp_mhc.compile(), species)
+        return (None, None)
+    
+    return decomp_mhc.compile()
 
 
 def _warn_failure(
@@ -212,7 +319,8 @@ def _warn_failure(
 
 
 SUPPORTED_SPECIES = {
-    'HomoSapiens': _standardise_homosapiens
+    'HomoSapiens': _standardise_homosapiens,
+    'MusMusculus': _standardise_musmusculus
 }
 
 

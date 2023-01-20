@@ -4,7 +4,7 @@ from tidytcells import tcr
 
 class TestDecomposedHomoSapiensTcr:
     def test_compile(self):
-        decomp_tcr = tcr._DecomposedHomoSapiensTcr(
+        decomp_tcr = tcr._DecomposedHomoSapiensTCR(
             base = 'AV',
             num1 = '1',
             num2 = '1',
@@ -18,7 +18,7 @@ class TestDecomposedHomoSapiensTcr:
 
 
     def test_compile_with_dv(self):
-        decomp_tcr = tcr._DecomposedHomoSapiensTcr(
+        decomp_tcr = tcr._DecomposedHomoSapiensTCR(
             base='BV',
             num1='20',
             num2=None,
@@ -32,7 +32,7 @@ class TestDecomposedHomoSapiensTcr:
     
 
     def test_compile_with_or(self):
-        decomp_tcr = tcr._DecomposedHomoSapiensTcr(
+        decomp_tcr = tcr._DecomposedHomoSapiensTCR(
             base='AV',
             num1='14',
             num2=None,
@@ -46,7 +46,7 @@ class TestDecomposedHomoSapiensTcr:
 
 
     def test_compile_without_allele(self):
-        decomp_tcr = tcr._DecomposedHomoSapiensTcr(
+        decomp_tcr = tcr._DecomposedHomoSapiensTCR(
             base = 'AV',
             num1 = '1',
             num2 = '1',
@@ -60,7 +60,7 @@ class TestDecomposedHomoSapiensTcr:
 
 
     def test_resolves_leading_zeros(self):
-        decomp_tcr = tcr._DecomposedHomoSapiensTcr(
+        decomp_tcr = tcr._DecomposedHomoSapiensTCR(
             base = 'AV',
             num1 = '000002',
             num2 = None,
@@ -77,7 +77,7 @@ class TestDecomposedHomoSapiensTcr:
 
 
     def test_resolves_d_designation(self):
-        decomp_tcr = tcr._DecomposedHomoSapiensTcr(
+        decomp_tcr = tcr._DecomposedHomoSapiensTCR(
             base = 'AV',
             num1 = '38',
             num2 = '2',
@@ -103,7 +103,7 @@ class TestDecomposedHomoSapiensTcr:
         )
     )
     def test_resolves_allele_number(self, initial, expected):
-        decomp_tcr = tcr._DecomposedHomoSapiensTcr(
+        decomp_tcr = tcr._DecomposedHomoSapiensTCR(
             base = 'AV',
             num1 = '1',
             num2 = '1',
@@ -126,7 +126,7 @@ class TestDecomposedHomoSapiensTcr:
         )
     )
     def test_resolves_num2_if_appropriate(self, decomp, expected):
-        decomp_tcr = tcr._DecomposedHomoSapiensTcr(*decomp)
+        decomp_tcr = tcr._DecomposedHomoSapiensTCR(*decomp)
 
         decomp_tcr.resolve()
 
@@ -142,7 +142,7 @@ class TestDecomposedHomoSapiensTcr:
         )
     )
     def test_valid(self, decomp):
-        decomp_tcr = tcr._DecomposedHomoSapiensTcr(*decomp)
+        decomp_tcr = tcr._DecomposedHomoSapiensTCR(*decomp)
 
         assert decomp_tcr.valid
 
@@ -156,7 +156,7 @@ class TestDecomposedHomoSapiensTcr:
         )
     )
     def test_invalid(self, decomp):
-        decomp_tcr = tcr._DecomposedHomoSapiensTcr(*decomp)
+        decomp_tcr = tcr._DecomposedHomoSapiensTCR(*decomp)
 
         assert not decomp_tcr.valid
     
@@ -169,7 +169,7 @@ class TestDecomposedHomoSapiensTcr:
         )
     )
     def test_returns_resolve_success(self, decomp, expected):
-        decomp_tcr = tcr._DecomposedHomoSapiensTcr(*decomp)
+        decomp_tcr = tcr._DecomposedHomoSapiensTCR(*decomp)
 
         assert decomp_tcr.resolve() == expected
 
