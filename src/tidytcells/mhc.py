@@ -27,9 +27,7 @@ with resource_stream(__name__, 'resources/mhc_alleles_musmusculus.json') as s:
     _MHC_ALLELES_MUSMUSCULUS = json.load(s)
 with resource_stream(__name__, 'resources/mhc_synonyms_musmusculus.json') as s:
     _MHC_SYNONYMS_MUSMUSCULUS = json.load(s)
-PARSE_RE_MUSMUSCULUS_1 = re.compile(r'^(M?H[12])-(.+)$')
-PARSE_RE_MUSMUSCULUS_2 = re.compile(r'^(M?H)-([12])(.+)$')
-RESOLVE_RE_MUSMUSCULUS_GENE_1 = re.compile(r'^[A-Z][a-z]$')
+PARSE_RE_MUSMUSCULUS = re.compile(r'^(M?H[12])?([A-Z0-9\.\/\']+)$')
 
 
 # --- HELPER CLASSES ---
@@ -166,48 +164,56 @@ class _DecomposedMusMusculusMHC(_DecomposedGene):
     def __init__(
         self,
         base: Optional[str],
-        gene: Optional[str]
+        name: Optional[str]
     ) -> None:
-        self.base = base
-        self.gene = gene
+        self.base = 'null' if base is None else base
+        self.name = name
 
 
     @property
     def valid(self) -> bool:
         # Does the compiled gene name exist in the reference?
-        return self.compile()[0] in _MHC_ALLELES_MUSMUSCULUS
+        if self.base in _MHC_ALLELES_MUSMUSCULUS:
+            return self.name in _MHC_ALLELES_MUSMUSCULUS[self.base]
+        
+        return False
     
 
     def compile(self) -> Tuple[str, str]:
-        prot_str = self.base + '-' + self.gene
+        prot_str = f'{self.base}-{self.name}'
 
         return (prot_str, None)
 
 
     def resolve(self) -> bool:
-        self.gene = self.gene.upper()
-
         if self.valid:
             return True
-
-        # Try some sane modifications
-        possible_bases = [self.base, 'MH1', 'MH2']
-        possible_genes = [self.gene]
-
-        possible_bases = set(possible_bases)
-
-        if len(self.gene) == 2:
-            possible_genes.append(self.gene[0])
-        possible_genes += [gene+'1' for gene in possible_genes]
-        possible_genes = set(possible_genes)
         
-        for base, gene in product(possible_bases, possible_genes):
-            self.base = base
-            self.gene = gene
-            
-            if self.valid:
-                return True
+        # Fix deprecated names
+        try:
+            self.base, self.name =\
+                _MHC_SYNONYMS_MUSMUSCULUS[self.base][self.name]
 
+            # Deprecated name resolved
+            return True
+        except(KeyError):
+            # Try sane modifications
+            bases = ['H2', 'MH2', 'MH1']
+            names = [self.name]
+
+            if re.match(r'[A-Z]{2}', self.name):
+                names.append(self.name[0])
+
+            names += [name+'1' for name in names]
+
+            for base, name in product(bases, names):
+                self.base = base
+                self.name = name
+
+                if self.valid:
+                    return True
+
+        # Give up
         return False
 
 
@@ -264,26 +270,19 @@ def _standardise_musmusculus(gene_name: str) -> tuple[str]:
     original_input = gene_name
 
     # Clean whitespace
-    gene_name = ''.join(gene_name.split())
+    gene_name = ''.join(gene_name.upper().split())
+    gene_name = gene_name.replace('-', '')
+    gene_name = gene_name.replace('ALPHA', 'A')
+    gene_name = gene_name.replace('BETA', 'B')
 
     # Parse attempt 1
     if gene_name == 'B2M':
         return ('B2M', None)
 
-    # Parse attempt 2 (catch deprecated names)
-    elif gene_name in _MHC_SYNONYMS_MUSMUSCULUS:
-        gene_name = _MHC_SYNONYMS_MUSMUSCULUS[gene_name]
-        return (gene_name, None)
-
-    # Parse attempt 3
-    elif m := PARSE_RE_MUSMUSCULUS_1.match(gene_name): # ^(M?H[12])-(.+)$
+    # Parse attempt 2
+    elif m := PARSE_RE_MUSMUSCULUS.match(gene_name): # ^(M?H[12])?([A-Z0-9\.\/\']+)$
         base = m.group(1)
         gene = m.group(2)
-
-    # Parse attempt 4
-    elif m := PARSE_RE_MUSMUSCULUS_2.match(gene_name): # ^(M?H)-([12])-(.+)$
-        base = m.group(1) + m.group(2)
-        gene = m.group(3)
 
     # Could not parse
     else:
@@ -293,7 +292,7 @@ def _standardise_musmusculus(gene_name: str) -> tuple[str]:
     # Build decomposed HLA object
     decomp_mhc = _DecomposedMusMusculusMHC(
         base=base,
-        gene=gene
+        name=gene
     )
 
     # Try resolving, and return None on failure
