@@ -22,8 +22,12 @@ with resource_stream(
     __name__,
     'resources/homosapiens_tcr_synonyms.json') as s:
     HOMOSAPIENS_TCR_SYNONYMS = json.load(s)
+with resource_stream(
+    __name__,
+    'resources/musmusculus_tcr.json') as s:
+    MUSMUSCULUS_TCR = json.load(s)
 
-PARSE_RE_HOMOSAPIENS_1 = re.compile(r'^([A-Z0-9\-\.\(\)\/]+)(\*([0-9]+))?$')
+PARSE_RE = re.compile(r'^([A-Z0-9\-\.\(\)\/]+)(\*([0-9]+))?$')
 
 
 # --- HELPER CLASSES ---
@@ -77,43 +81,6 @@ class DecomposedTCR(_DecomposedGene):
 # --- HELPER FUNCTIONS ---
 
 
-def standardise_homosapiens(gene_name: str) -> str:
-    # Take note of initial input for reference
-    original_input = gene_name
-
-    # Clean whitespace, remove known pollutors
-    gene_name = ''.join(gene_name.split())
-    gene_name = gene_name.replace('&nbsp;','')
-
-    # Capitalise
-    gene_name = gene_name.upper()
-
-    # Parse attempt
-    if m := PARSE_RE_HOMOSAPIENS_1.match(gene_name): # ^([A-Z0-9\-\.\(\)\/]+)(\*([0-9]+))?$
-        gene = m.group(1)
-        allele_designation = None if m.group(3) is None else int(m.group(3))
-
-    # Could not parse
-    else:
-        warn_failure(original_input, gene_name, 'Homo sapiens')
-        return None
-
-    # Build DecomposedTcr object
-    decomp_tcr = DecomposedTCR(
-        gene=gene,
-        allele_designation=allele_designation,
-        ref_dict=HOMOSAPIENS_TCR,
-        syn_dict=HOMOSAPIENS_TCR_SYNONYMS
-    )
-
-    # Try resolving, and return None on failure
-    if not decomp_tcr.resolve():
-        warn_failure(original_input, decomp_tcr.compile(), 'Homo sapiens')
-        return None
-    
-    return decomp_tcr.compile()
-
-
 def warn_failure(
     original_input: str,
     attempted_fix: str,
@@ -130,7 +97,8 @@ def warn_failure(
 
 
 SUPPORTED_SPECIES = {
-    'HomoSapiens': standardise_homosapiens
+    'HomoSapiens': [HOMOSAPIENS_TCR, HOMOSAPIENS_TCR_SYNONYMS],
+    'MusMusculus': [MUSMUSCULUS_TCR, None]
 }
 
 
@@ -148,20 +116,53 @@ def standardise(gene_name: str, species: str = 'HomoSapiens') -> str:
         is unsupported, then the function does not attempt to standardise , and
         returns the unaltered ``gene_name`` string. Else return ``None``.
     :rtype: str or None
-    
     '''
 
     # If gene_str is not a string, skip and return None
     if type(gene_name) != str:
         raise TypeError('gene_name must be a str.')
 
-    # If the specified species is supported, attempt standardisation
-    if species in SUPPORTED_SPECIES:
-        return SUPPORTED_SPECIES[species](gene_name=gene_name)
-    
-    # Otherwise, don't touch it
-    warn(
-        f'Unsupported species: "{species}". '
-        'Skipping TCR gene standardisation procedure...'
+    # If the specified species is not supported, no-op (with warning)
+    if not species in SUPPORTED_SPECIES:
+        warn(
+            f'Unsupported species: "{species}". '
+            'Skipping TCR gene standardisation procedure...'
+        )
+        return gene_name
+
+    ref_dict, syn_dict = SUPPORTED_SPECIES[species]
+
+    # Take note of initial input for reference
+    original_input = gene_name
+
+    # Clean whitespace, remove known pollutors
+    gene_name = ''.join(gene_name.split())
+    gene_name = gene_name.replace('&nbsp;','')
+
+    # Capitalise
+    gene_name = gene_name.upper()
+
+    # Parse attempt
+    if m := PARSE_RE.match(gene_name): # ^([A-Z0-9\-\.\(\)\/]+)(\*([0-9]+))?$
+        gene = m.group(1)
+        allele_designation = None if m.group(3) is None else int(m.group(3))
+
+    # Could not parse
+    else:
+        warn_failure(original_input, gene_name, species)
+        return None
+
+    # Build DecomposedTcr object
+    decomp_tcr = DecomposedTCR(
+        gene=gene,
+        allele_designation=allele_designation,
+        ref_dict=ref_dict,
+        syn_dict=syn_dict
     )
-    return gene_name
+
+    # Try resolving, and return None on failure
+    if not decomp_tcr.resolve():
+        warn_failure(original_input, decomp_tcr.compile(), species)
+        return None
+    
+    return decomp_tcr.compile()
