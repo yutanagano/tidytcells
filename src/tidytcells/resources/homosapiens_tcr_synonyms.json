@@ -34,7 +34,7 @@
     "TCRAV40S1": "TRAV40",
     "TCRAV41S1": "TRAV41",
     "TCRAV5S1": "TRAV6",
-    "TCRAV6S1-hDV104S1": "TRAV14/DV4",
+    "TCRAV6S1-HDV104S1": "TRAV14/DV4",
     "TCRAV7S1": "TRAV1-1",
     "TCRAV9S1": "TRAV16",
     "TCRBC1": "TRBC1",
@@ -244,9 +244,9 @@
     "V3P": "TRGV10",
     "V4P": "TRGV11",
     "VIS2": "TRGV2",
-    "hADV14S1": "TRAV14/DV4",
-    "hADV38S2": "TRAV38-2/DV8",
-    "hDV101S1": "TRDV1",
-    "hDV102S1": "TRDV2",
-    "hDV103S1": "TRDV3"
+    "HADV14S1": "TRAV14/DV4",
+    "HADV38S2": "TRAV38-2/DV8",
+    "HDV101S1": "TRDV1",
+    "HDV102S1": "TRDV2",
+    "HDV103S1": "TRDV3"
 }
