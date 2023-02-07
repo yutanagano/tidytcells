@@ -97,8 +97,8 @@ def warn_failure(
 
 
 SUPPORTED_SPECIES = {
-    'HomoSapiens': [HOMOSAPIENS_TCR, HOMOSAPIENS_TCR_SYNONYMS],
-    'MusMusculus': [MUSMUSCULUS_TCR, None]
+    'HomoSapiens': (HOMOSAPIENS_TCR, HOMOSAPIENS_TCR_SYNONYMS),
+    'MusMusculus': (MUSMUSCULUS_TCR, None)
 }
 
 
@@ -152,7 +152,7 @@ def standardise(gene_name: str, species: str = 'HomoSapiens') -> str:
         warn_failure(original_input, gene_name, species)
         return None
 
-    # Build DecomposedTcr object
+    # Build DecomposedTCR object
     decomp_tcr = DecomposedTCR(
         gene=gene,
         allele_designation=allele_designation,

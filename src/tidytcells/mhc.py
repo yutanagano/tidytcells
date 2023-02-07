@@ -15,70 +15,71 @@ from warnings import warn
 # --- STATIC RESOURCES ---
 
 
-with resource_stream(__name__, 'resources/mhc_alleles_homosapiens.json') as s:
-    _MHC_ALLELES_HOMOSAPIENS = json.load(s)
-with resource_stream(__name__, 'resources/mhc_synonyms_homosapiens.json') as s:
-    _MHC_SYNONYMS_HOMOSAPIENS = json.load(s)
-PARSE_RE_HOMOSAPIENS = re.compile(
-    r'^(HLA-)?([A-Za-z/]+\d??)(\*?([\d:]+(G)?(P)?)[LSCAQN]?)?$'
-)
+with resource_stream(__name__, 'resources/homosapiens_mhc.json') as s:
+    HOMOSAPIENS_MHC = json.load(s)
+with resource_stream(__name__, 'resources/homosapiens_mhc_synonyms.json') as s:
+    HOMOSAPIENS_MHC_SYNONYMS = json.load(s)
 
-with resource_stream(__name__, 'resources/mhc_alleles_musmusculus.json') as s:
-    _MHC_ALLELES_MUSMUSCULUS = json.load(s)
-with resource_stream(__name__, 'resources/mhc_synonyms_musmusculus.json') as s:
-    _MHC_SYNONYMS_MUSMUSCULUS = json.load(s)
-PARSE_RE_MUSMUSCULUS = re.compile(r'^(M?H[12])?([A-Z0-9\.\/\']+)$')
+PARSE_RE = re.compile(r'^([A-Z0-9\-]+)(\*([\d:]+G?P?)[LSCAQN]?)?$')
 
 
 # --- HELPER CLASSES ---
 
 
-class _DecomposedHLA(_DecomposedGene):
+class DecomposedMHC(_DecomposedGene):
     def __init__(
         self,
-        gene: Optional[str],
-        spec_fields: Optional[list],
-        g_group: bool,
-        p_group: bool
+        gene: str,
+        allele_designation: Optional[list[str]],
+        ref_dict: dict,
+        syn_dict: dict
     ) -> None:
         self.gene = gene
-        self.spec_fields = [] if spec_fields is None else spec_fields
-        self.g_group = g_group
-        self.p_group = p_group
+        self.allele_designation =\
+            [] if allele_designation is None\
+            else allele_designation
+        if not allele_designation is None:
+            self.is_g = allele_designation[-1].endswith('G')
+            self.is_p = allele_designation[-1].endswith('P')
+        else:
+            self.is_g = self.is_p = False
+
+        self.ref_dict = ref_dict
+        self.syn_dict = syn_dict
 
 
     @property
     def valid(self) -> bool:
         # Is the gene valid?
-        if not self.gene in _MHC_ALLELES_HOMOSAPIENS:
+        if not self.gene in self.ref_dict:
             return False
 
-        # If the gene exists and there are further specifier fields, walk down
+        # If the gene exists and there are allele designators, walk down
         # allele tree up to the level of the protein (or the level of the G or
-        # P group when appropriate) to see if the specifier field values are
+        # P group when appropriate) to see if the designator field values are
         # valid
-        spec_fields = self.spec_fields.copy()
-        if not (self.g_group or self.p_group):
-            spec_fields = spec_fields[:2]
-        current_root = _MHC_ALLELES_HOMOSAPIENS[self.gene]
+        allele_designation = self.allele_designation.copy()
+        if not (self.is_g or self.is_p):
+            allele_designation = allele_designation[:2]
+        current_root = self.ref_dict[self.gene]
 
-        while len(spec_fields) > 0:
+        while len(allele_designation) > 0:
             try:
-                current_root = current_root[spec_fields.pop(0)]
+                current_root = current_root[allele_designation.pop(0)]
             except(KeyError):
-                # We exit the tree at some point, so specifier fields are
+                # We exit the tree at some point, so designator fields are
                 # invalid
                 return False
 
-        # If there are specifier fields past the protein level, just make sure
-        # they look like legitimate specifier field values
-        if not (self.g_group or self.p_group) and len(self.spec_fields) > 2:
-            further_specifiers = self.spec_fields[2:]
+        # If there are designator fields past the protein level, just make sure
+        # they look like legitimate designator field values
+        if not (self.is_g or self.is_p) and len(self.allele_designation) > 2:
+            further_designators = self.allele_designation[2:]
 
-            if len(further_specifiers) > 2:
+            if len(further_designators) > 2:
                 return False
 
-            for field in further_specifiers:
+            for field in further_designators:
                 if not field.isdigit():
                     return False
                 
@@ -89,221 +90,25 @@ class _DecomposedHLA(_DecomposedGene):
         return True
     
 
-    def compile(self) -> Tuple[str, str]:
-        prot_str = 'HLA-' + self.gene
-        
-        if self.g_group or self.p_group:
-            prot_str = prot_str + '*' + ':'.join(self.spec_fields)
-            return (prot_str, None)
+    def compile(self, allele: bool = True) -> str:
+        if allele and self.allele_designation:
+            return f'{self.gene}*{":".join(self.allele_designation)}'
 
-        if len(self.spec_fields) > 0:
-            prot_str = prot_str + '*' + ':'.join(self.spec_fields[:2])
-        
-        if len(self.spec_fields) > 2:
-            mut_str = ':' + ':'.join(self.spec_fields[2:])
-        else:
-            mut_str = None
-
-        return (prot_str, mut_str)
-
-
-    def resolve(self) -> bool:
-        if self.gene == 'Cw':
-            self.gene = 'C'
-
-        # If gene name looks deprecated, replace with modern counterpart
-        if self.gene in _MHC_SYNONYMS_HOMOSAPIENS:
-            self.gene = _MHC_SYNONYMS_HOMOSAPIENS[self.gene]
-
-        # Clean spec fields
-        self._resolve_spec_fields()
-
-        # If now a valid HLA, return True
-        if self.valid:
-            return True
-
-        # If still invalid, try adding or removing a 1 at the end of the gene
-        # name to see if this makes it valid
-        if self.gene.endswith('1'):
-            self.gene = self.gene.rstrip('1')
-
-            if self.valid:
-                return True
-
-            self.gene = self.gene + '1'
-        else:
-            self.gene = self.gene + '1'
-
-            if self.valid:
-                return True
-            
-            self.gene = self.gene.rstrip('1')
-
-        return False
-
-
-    def _resolve_spec_fields(self) -> None:
-        # Clean up spec fields if any
-        if len(self.spec_fields) > 0:
-            # Colon is most likely missing between first two fields e.g.
-            # HLA-A*0101 <-> HLA-A*01:01 so we should separate the four-digit
-            # field in half
-            if len(self.spec_fields[0]) == 4:
-                field_0_original = self.spec_fields.pop(0)
-                field_0 = field_0_original[:2]
-                field_1 = field_0_original[2:]
-                self.spec_fields = [field_0, field_1] + self.spec_fields
-            
-            # Add leading zeros to elements if necessary
-            self.spec_fields = [
-                '0'+f if len(f) == 1 else f for f in self.spec_fields
-            ]
-
-
-class _DecomposedMusMusculusMHC(_DecomposedGene):
-    def __init__(
-        self,
-        base: Optional[str],
-        name: Optional[str]
-    ) -> None:
-        self.base = 'null' if base is None else base
-        self.name = name
-
-
-    @property
-    def valid(self) -> bool:
-        # Does the compiled gene name exist in the reference?
-        if self.base in _MHC_ALLELES_MUSMUSCULUS:
-            return self.name in _MHC_ALLELES_MUSMUSCULUS[self.base]
-        
-        return False
+        return self.gene
     
 
-    def compile(self) -> Tuple[str, str]:
-        prot_str = f'{self.base}-{self.name}'
-
-        return (prot_str, None)
-
-
     def resolve(self) -> bool:
-        if self.valid:
-            return True
+        # If a synonym, correct to currently approved name
+        if self.syn_dict and self.gene in self.syn_dict:
+            self.gene = self.syn_dict[self.gene]
         
-        # Fix deprecated names
-        try:
-            self.base, self.name =\
-                _MHC_SYNONYMS_MUSMUSCULUS[self.base][self.name]
-
-            # Deprecated name resolved
-            return True
-        except(KeyError):
-            # Try sane modifications
-            bases = ['H2', 'MH2', 'MH1']
-            names = [self.name]
-
-            if re.match(r'[A-Z]{2}', self.name):
-                names.append(self.name[0])
-
-            names += [name+'1' for name in names]
-
-            for base, name in product(bases, names):
-                self.base = base
-                self.name = name
-
-                if self.valid:
-                    return True
-
-        # Give up
-        return False
+        return self.valid
 
 
 # --- HELPER FUNCTIONS ---
 
 
-def _standardise_homosapiens(gene_name: str) -> tuple[str]:
-    species = 'Homo sapiens'
-
-    # Take note of initial input for reference
-    original_input = gene_name
-
-    # Clean whitespace
-    gene_name = ''.join(gene_name.split())
-
-    # Parse attempt 1
-    if gene_name == 'B2M':
-        return ('B2M', None)
-
-    # Parse attempt 2
-    elif m := PARSE_RE_HOMOSAPIENS.match(gene_name): # ^(HLA-)?([A-Za-z/]+\d??)(\*?([\d:]+(G)?(P)?)[LSCAQN]?)?$
-        # Extract gene name e.g. DRA1
-        gene = m.group(2)
-        # Extract the digits that specify which allele it is e.g. 01:01:01:01
-        spec_fields = None if m.group(4) is None else m.group(4).split(':')
-        g_group = True if m.group(5) else False
-        p_group = True if m.group(6) else False
-
-    # Could not parse
-    else:
-        _warn_failure(original_input, gene_name, species)
-        return (None, None)
-
-    # Build decomposed HLA object
-    decomp_hla = _DecomposedHLA(
-        gene=gene,
-        spec_fields=spec_fields,
-        g_group=g_group,
-        p_group=p_group
-    )
-
-    # Try resolving, and return None on failure
-    if not decomp_hla.resolve():
-        _warn_failure(original_input, decomp_hla.compile(), species)
-        return (None, None)
-    
-    return decomp_hla.compile()
-
-
-def _standardise_musmusculus(gene_name: str) -> tuple[str]:
-    species = 'Mus musculus'
-
-    # Take note of initial input for reference
-    original_input = gene_name
-
-    # Clean whitespace
-    gene_name = ''.join(gene_name.upper().split())
-    gene_name = gene_name.replace('-', '')
-    gene_name = gene_name.replace('ALPHA', 'A')
-    gene_name = gene_name.replace('BETA', 'B')
-
-    # Parse attempt 1
-    if gene_name == 'B2M':
-        return ('B2M', None)
-
-    # Parse attempt 2
-    elif m := PARSE_RE_MUSMUSCULUS.match(gene_name): # ^(M?H[12])?([A-Z0-9\.\/\']+)$
-        base = m.group(1)
-        gene = m.group(2)
-
-    # Could not parse
-    else:
-        _warn_failure(original_input, gene_name, species)
-        return (None, None)
-
-    # Build decomposed HLA object
-    decomp_mhc = _DecomposedMusMusculusMHC(
-        base=base,
-        name=gene
-    )
-
-    # Try resolving, and return None on failure
-    if not decomp_mhc.resolve():
-        _warn_failure(original_input, decomp_mhc.compile(), species)
-        return (None, None)
-    
-    return decomp_mhc.compile()
-
-
-def _warn_failure(
+def warn_failure(
     original_input: str,
     attempted_fix: str,
     species: str
@@ -319,8 +124,7 @@ def _warn_failure(
 
 
 SUPPORTED_SPECIES = {
-    'HomoSapiens': _standardise_homosapiens,
-    'MusMusculus': _standardise_musmusculus
+    'HomoSapiens': (HOMOSAPIENS_MHC, HOMOSAPIENS_MHC_SYNONYMS)
 }
 
 
@@ -348,69 +152,54 @@ def standardise(gene_name: str, species: str = 'HomoSapiens') -> tuple:
 
     # If gene_str is not a string, skip and return None.
     if type(gene_name) != str:
-        _warn_failure(gene_name, gene_name, species)
-        return (None, None)
+        raise TypeError('gene_name must be a str.')
 
-    # If the specified species is supported, attempt standardisation
-    if species in SUPPORTED_SPECIES:
-        return SUPPORTED_SPECIES[species](gene_name=gene_name)
+    # If the specified species is not supported, no-op (with warning)
+    if not species in SUPPORTED_SPECIES:
+        # Otherwise, don't touch it
+        warn(
+            f'Unsupported species: "{species}". '
+            'Skipping MHC gene standardisation procedure...'
+        )
+        return gene_name
     
-    # Otherwise, don't touch it
-    warn(
-        f'Unsupported species: "{species}". '
-        'Skipping MHC gene standardisation procedure...'
+    ref_dict, syn_dict = SUPPORTED_SPECIES[species]
+
+    # Take note of initial input for reference
+    original_input = gene_name
+
+    # Clean whitespace, remove known pollutors
+    gene_name = ''.join(gene_name.split())
+    gene_name = gene_name.replace('&nbsp;','')
+
+    # Capitalise
+    gene_name = gene_name.upper()
+
+    # Return B2M as is
+    if gene_name == 'B2M':
+        return 'B2M'
+
+    # Parse attempt
+    if m := PARSE_RE.match(gene_name): # ^^([A-Z0-9\-]+)(\*([\d:]+G?P?)[LSCAQN]?)?$
+        gene = m.group(1)
+        allele_designation = None if m.group(3) is None else m.group(3).split(':')
+
+    # Could not parse
+    else:
+        warn_failure(original_input, gene_name, species)
+        return None
+
+    # Build DecomposedMHC object
+    decomp_mhc = DecomposedMHC(
+        gene=gene,
+        allele_designation=allele_designation,
+        ref_dict=ref_dict,
+        syn_dict=syn_dict
     )
-    return (gene_name, None)
 
-
-def get_chain(gene_name: str) -> str:
-    '''
-    Given a standardised MHC gene name, detect whether it codes for an alpha
-    or a beta chain molecule.
+    # Try resolving, and return None on failure
+    if not decomp_mhc.resolve():
+        warn_failure(original_input, decomp_mhc.compile(), species)
+        return None
     
-    :param gene_name: Standardised MHC gene name (non-standardised values will
-        be unrecognised)
-    :type gene_name: str
-    :return: ``'alpha'`` or ``'beta'`` if ``gene_name`` is recognised, else
-        ``None``.
-    :rtype: str or None
-
-    '''
-
-    if type(gene_name) == str:
-        if re.match('HLA-([ABCEFG]|D[PQR]A)', gene_name):
-            return 'alpha'
-        
-        if re.match('HLA-D[PQR]B|B2M', gene_name):
-            return 'beta'
-
-    warn(
-        f'MHC gene unrecognised: "{gene_name}" '
-        f'(type: {type(gene_name)}), cannot determine if alpha or beta.'
-    )
-
-
-def classify(gene_name: str) -> int:
-    '''
-    Given a standardised MHC gene name, detect whether it comprises a class I
-    or II MHC receptor complex.
-    
-    :param gene_name: Standardised MHC gene name (non-standardised values will
-        be unrecognised)
-    :type gene_name: str
-    :return: ``1`` or ``2`` if ``gene_name`` is recognised, else ``None``.
-    :rtype: int or None
-
-    '''
-
-    if type(gene_name) == str:
-        if re.match('HLA-[ABCEFG]|B2M', gene_name):
-            return 1
-        
-        if re.match('HLA-D[PQR][AB]', gene_name):
-            return 2
-
-    warn(
-        f'MHC gene unrecognised: "{gene_name}" '
-        f'(type: {type(gene_name)}), cannot determine if class 1 or 2.'
-    )
+    return decomp_mhc.compile()

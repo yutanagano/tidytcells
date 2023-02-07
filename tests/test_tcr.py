@@ -11,7 +11,7 @@ class TestStandardise:
             ''
         )
     )
-    def test_warning_unsupported_species(self, species):
+    def test_unsupported_species(self, species):
         with pytest.warns(UserWarning, match='Unsupported'):
             result = tcr.standardise(
                 gene_name='foobarbaz',
