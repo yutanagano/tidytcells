@@ -1,0 +1,22 @@
+{
+    "AS":"HLA-B",
+    "D6S204":"HLA-C",
+    "D6S221E":"HLA-DMB",
+    "D6S222E":"HLA-DMA",
+    "HLA-D0-alpha":"HLA-DOA",
+    "HLA-DNA":"HLA-DOA",
+    "HLA-DP1A":"HLA-DPA1",
+    "HLA-DP1B":"HLA-DPB1",
+    "HLA-DQA":"HLA-DQA1",
+    "HLA-DQB":"HLA-DQB1",
+    "HLA-DR1B":"HLA-DRB1",
+    "HLA-DR3B":"HLA-DRB3",
+    "HLA-DR4B":"HLA-DRB4",
+    "HLA-DRA1":"HLA-DRA",
+    "HLA-DZA":"HLA-DOA",
+    "HLA-JY3":"HLA-C",
+    "IDDM1":"HLA-DQB1",
+    "PSORS1":"HLA-C",
+    "RING6":"HLA-DMA",
+    "RING7":"HLA-DMB"
+}
