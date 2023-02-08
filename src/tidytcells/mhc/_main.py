@@ -3,9 +3,7 @@ Utility functions related to MHCs and MHC genes.
 '''
 
 
-from .decomposed_gene import _DecomposedGene
-import json
-from pkg_resources import resource_stream
+from .._decomposed_gene import _DecomposedGene
 import re
 from typing import Optional
 from warnings import warn
@@ -14,10 +12,10 @@ from warnings import warn
 # --- STATIC RESOURCES ---
 
 
-with resource_stream(__name__, 'resources/homosapiens_mhc.json') as s:
-    HOMOSAPIENS_MHC = json.load(s)
-with resource_stream(__name__, 'resources/homosapiens_mhc_synonyms.json') as s:
-    HOMOSAPIENS_MHC_SYNONYMS = json.load(s)
+from .. import (
+    HOMOSAPIENS_MHC,
+    HOMOSAPIENS_MHC_SYNONYMS
+)
 
 PARSE_RE = re.compile(r'^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?')
 
