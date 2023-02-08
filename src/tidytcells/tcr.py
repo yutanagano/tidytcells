@@ -120,7 +120,7 @@ def standardise(gene_name: str, species: str = 'HomoSapiens') -> str:
 
     # If gene_str is not a string, skip and return None
     if type(gene_name) != str:
-        raise TypeError('gene_name must be a str.')
+        raise TypeError(f'gene_name must be a str, got {type(gene_name)}.')
 
     # If the specified species is not supported, no-op (with warning)
     if not species in SUPPORTED_SPECIES:

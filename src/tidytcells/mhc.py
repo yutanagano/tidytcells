@@ -4,11 +4,10 @@ Utility functions related to MHCs and MHC genes.
 
 
 from .decomposed_gene import _DecomposedGene
-from itertools import product
 import json
 from pkg_resources import resource_stream
 import re
-from typing import Tuple, Optional
+from typing import Optional
 from warnings import warn
 
 
@@ -20,7 +19,7 @@ with resource_stream(__name__, 'resources/homosapiens_mhc.json') as s:
 with resource_stream(__name__, 'resources/homosapiens_mhc_synonyms.json') as s:
     HOMOSAPIENS_MHC_SYNONYMS = json.load(s)
 
-PARSE_RE = re.compile(r'^([A-Z0-9\-]+)(\*([\d:]+G?P?)[LSCAQN]?)?$')
+PARSE_RE = re.compile(r'^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?$')
 
 
 # --- HELPER CLASSES ---
@@ -152,7 +151,7 @@ def standardise(gene_name: str, species: str = 'HomoSapiens') -> tuple:
 
     # If gene_str is not a string, skip and return None.
     if type(gene_name) != str:
-        raise TypeError('gene_name must be a str.')
+        raise TypeError(f'gene_name must be a str, got {type(gene_name)}.')
 
     # If the specified species is not supported, no-op (with warning)
     if not species in SUPPORTED_SPECIES:
