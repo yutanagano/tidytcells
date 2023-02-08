@@ -21,6 +21,11 @@ with resource_stream(__name__, 'resources/homosapiens_mhc_synonyms.json') as s:
 
 PARSE_RE = re.compile(r'^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?')
 
+CHAIN_ALPHA_RE = re.compile(r'HLA-([ABCEFG]|D[PQR]A)')
+CHAIN_BETA_RE = re.compile(r'HLA-D[PQR]B|B2M')
+CLASS_1_RE = re.compile(r'HLA-[ABCEFG]|B2M')
+CLASS_2_RE = re.compile(r'HLA-D[PQR][AB]')
+
 
 # --- HELPER CLASSES ---
 
@@ -151,7 +156,10 @@ def standardise(gene_name: str, species: str = 'HomoSapiens') -> tuple:
 
     # If gene_str is not a string, skip and return None.
     if type(gene_name) != str:
-        raise TypeError(f'gene_name must be a str, got {type(gene_name)}.')
+        raise TypeError(
+            f'gene_name must be type str, got '
+            f'{gene_name} ({type(gene_name)}).'
+        )
 
     # If the specified species is not supported, no-op (with warning)
     if not species in SUPPORTED_SPECIES:
@@ -181,7 +189,8 @@ def standardise(gene_name: str, species: str = 'HomoSapiens') -> tuple:
     # Parse attempt
     if m := PARSE_RE.match(gene_name): # ^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?$
         gene = m.group(1)
-        allele_designation = None if m.group(3) is None else m.group(3).split(':')
+        allele_designation =\
+            None if m.group(3) is None else m.group(3).split(':')
 
     # Could not parse
     else:
@@ -202,3 +211,71 @@ def standardise(gene_name: str, species: str = 'HomoSapiens') -> tuple:
         return None
     
     return decomp_mhc.compile()
+
+
+def get_chain(gene_name: str) -> str:
+    '''
+    Given a standardised MHC gene name, detect whether it codes for an alpha
+    or a beta chain molecule.
+    
+    :param gene_name: Standardised MHC gene name
+    :type gene_name: str
+    :return: ``'alpha'`` or ``'beta'`` if ``gene_name`` is recognised and its
+        chain is known, else ``None``.
+    :rtype: str or None
+    '''
+
+    if type(gene_name) == str:
+        # If we don't recognise the gene, return None with warning
+        gene_name = gene_name.split('*')[0]
+
+        if not gene_name in (*HOMOSAPIENS_MHC, 'B2M'):
+            warn(f'Unrecognised gene {gene_name}. Is this standardised?')
+            return None
+
+        if CHAIN_ALPHA_RE.match(gene_name):
+            return 'alpha'
+        
+        if CHAIN_BETA_RE.match(gene_name):
+            return 'beta'
+
+        warn(f'Chain for {gene_name} unknown.')
+        return None
+
+    raise TypeError(
+        f'gene_name must be type str, got {gene_name} ({type(gene_name)}).'
+    )
+
+
+def get_class(gene_name: str) -> int:
+    '''
+    Given a standardised MHC gene name, detect whether it comprises a class I
+    or II MHC receptor complex.
+    
+    :param gene_name: Standardised MHC gene name
+    :type gene_name: str
+    :return: ``1`` or ``2`` if ``gene_name`` is recognised and its class is
+        known, else ``None``.
+    :rtype: int or None
+    '''
+
+    if type(gene_name) == str:
+        # If we don't recognise the gene, return None with warning
+        gene_name = gene_name.split('*')[0]
+
+        if not gene_name in (*HOMOSAPIENS_MHC, 'B2M'):
+            warn(f'Unrecognised gene {gene_name}. Is this standardised?')
+            return None
+
+        if CLASS_1_RE.match(gene_name):
+            return 1
+        
+        if CLASS_2_RE.match(gene_name):
+            return 2
+
+        warn(f'Class for {gene_name} unknown.')
+        return None
+
+    raise TypeError(
+        f'gene_name must be type str, got {gene_name} ({type(gene_name)}).'
+    )

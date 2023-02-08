@@ -132,3 +132,89 @@ class TestStandardiseHomoSapiens:
         )
 
         assert result == 'HLA-A*01:01:01:01'
+
+
+class TestGetChain:
+    @pytest.mark.parametrize(
+        ('gene', 'expected'),
+        (
+            ('HLA-A', 'alpha'),
+            ('HLA-B', 'alpha'),
+            ('HLA-C', 'alpha'),
+            ('HLA-DPA1', 'alpha'),
+            ('HLA-DQA2', 'alpha'),
+            ('HLA-DRA', 'alpha'),
+            ('HLA-E', 'alpha'),
+            ('HLA-F', 'alpha'),
+            ('HLA-G', 'alpha'),
+            ('HLA-DPB2', 'beta'),
+            ('HLA-DQB1', 'beta'),
+            ('HLA-DRB3', 'beta'),
+            ('B2M', 'beta')
+        )
+    )
+    def test_get_chain(self, gene, expected):
+        result = mhc.get_chain(gene_name=gene)
+
+        assert result == expected
+
+    
+    @pytest.mark.parametrize(
+        'gene', ('foo', 'HLA', '0')
+    )
+    def test_unrecognised_gene_names(self, gene):
+        with pytest.warns(UserWarning):
+            result = mhc.get_chain(gene_name=gene)
+
+        assert result == None
+
+    
+    @pytest.mark.parametrize(
+        'gene', (1234, None)
+    )
+    def test_bad_type(self, gene):
+        with pytest.raises(TypeError):
+            mhc.get_chain(gene)
+
+
+class TestGetClass:
+    @pytest.mark.parametrize(
+        ('gene', 'expected'),
+        (
+            ('HLA-A', 1),
+            ('HLA-B', 1),
+            ('HLA-C', 1),
+            ('HLA-DPA1', 2),
+            ('HLA-DQA2', 2),
+            ('HLA-DRA', 2),
+            ('HLA-DPB2', 2),
+            ('HLA-DQB1', 2),
+            ('HLA-DRB3', 2),
+            ('HLA-E', 1),
+            ('HLA-F', 1),
+            ('HLA-G', 1),
+            ('B2M', 1)
+        )
+    )
+    def test_get_class(self, gene, expected):
+        result = mhc.get_class(gene)
+
+        assert result == expected
+    
+
+    @pytest.mark.parametrize(
+        'gene', ('foo', 'HLA', '0')
+    )
+    def test_unrecognised_gene_names(self, gene):
+        with pytest.warns(UserWarning):
+            result = mhc.get_chain(gene_name=gene)
+
+        assert result == None
+
+    
+    @pytest.mark.parametrize(
+        'gene', (1234, None)
+    )
+    def test_bad_type(self, gene):
+        with pytest.raises(TypeError):
+            mhc.get_chain(gene)
