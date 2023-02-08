@@ -19,7 +19,7 @@ with resource_stream(__name__, 'resources/homosapiens_mhc.json') as s:
 with resource_stream(__name__, 'resources/homosapiens_mhc_synonyms.json') as s:
     HOMOSAPIENS_MHC_SYNONYMS = json.load(s)
 
-PARSE_RE = re.compile(r'^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?$')
+PARSE_RE = re.compile(r'^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?')
 
 
 # --- HELPER CLASSES ---
@@ -179,7 +179,7 @@ def standardise(gene_name: str, species: str = 'HomoSapiens') -> tuple:
         return 'B2M'
 
     # Parse attempt
-    if m := PARSE_RE.match(gene_name): # ^^([A-Z0-9\-]+)(\*([\d:]+G?P?)[LSCAQN]?)?$
+    if m := PARSE_RE.match(gene_name): # ^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?$
         gene = m.group(1)
         allele_designation = None if m.group(3) is None else m.group(3).split(':')
 

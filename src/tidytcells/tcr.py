@@ -27,7 +27,7 @@ with resource_stream(
     'resources/musmusculus_tcr.json') as s:
     MUSMUSCULUS_TCR = json.load(s)
 
-PARSE_RE = re.compile(r'^([A-Z0-9\-\.\(\)\/]+)(\*([0-9]+))?$')
+PARSE_RE = re.compile(r'^([A-Z0-9\-\.\(\)\/]+)(\*([0-9]+))?')
 
 
 # --- HELPER CLASSES ---
