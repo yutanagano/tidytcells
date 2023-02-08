@@ -13,9 +13,8 @@ Via `PyPI <https://pypi.org/project/tidytcells/>`_ (recommended)
 From `source <https://github.com/yutanagano/tidytcells>`_
 ---------------------------------------------------------
 
-The source code for the package is available
-`on Github <https://github.com/yutanagano/tidytcells>`_. To install from
-source, clone the git repository, and run:
+The source code for the package is available `on Github <https://github.com/yutanagano/tidytcells>`_.
+To install from source, clone the git repository, and run:
 
 .. code-block:: bash
 
