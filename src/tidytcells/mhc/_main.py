@@ -134,22 +134,21 @@ def standardise(gene_name: str, species: str = 'HomoSapiens') -> tuple:
     '''
     Attempt to standardise an MHC gene name to be IMGT-compliant.
 
-    :param gene_name: Potentially non-standardised MHC gene name.
-    :type gene_name: str
-    :param species: Species to which the MHC gene belongs (see
-        :ref:`supported_species`). Defaults to `"HomoSapiens"`.
-    :type species: str
-    :return: If the specified ``species`` is supported, and ``gene_name`` could
-        be standardised, then return a tuple containing the standardised gene
-        name decomposed into two parts: 1) the name of the gene specific to the
-        level of the protein, and 2) (if any) further valid specifier fields
-        (e.g. ``('HLA-A*01:01', ':01:01')``, see :ref:`example_usage`). If
-        ``species`` is unsupported, then the function does not attempt to
-        standardise, and returns a tuple with the unaltered ``gene_name`` for
-        the first element, and ``None`` for the second element. Else return the
-        tuple ``(None, None)``.
-    :rtype: tuple[str or None] or None
-
+    :param gene_name:
+        Potentially non-standardised MHC gene name.
+    :type gene_name:
+        str
+    :param species:
+        Species to which the MHC gene belongs (see :ref:`supported_species`).
+        Defaults to `"HomoSapiens"`.
+    :type species:
+        str
+    :return:
+        If the specified ``species`` is supported, and ``gene_name`` could be standardised, then return the standardised gene name.
+        If ``species`` is unsupported, then the function does not attempt to standardise, and returns the unaltered ``gene_name`` string.
+        Else returns ``None``.
+    :rtype:
+        str or None
     '''
 
     # If gene_str is not a string, skip and return None.
@@ -216,11 +215,14 @@ def get_chain(gene_name: str) -> str:
     Given a standardised MHC gene name, detect whether it codes for an alpha
     or a beta chain molecule.
     
-    :param gene_name: Standardised MHC gene name
-    :type gene_name: str
-    :return: ``'alpha'`` or ``'beta'`` if ``gene_name`` is recognised and its
-        chain is known, else ``None``.
-    :rtype: str or None
+    :param gene_name:
+        Standardised MHC gene name
+    :type gene_name:
+        str
+    :return:
+        ``'alpha'`` or ``'beta'`` if ``gene_name`` is recognised and its chain is known, else ``None``.
+    :rtype:
+        str or None
     '''
 
     if type(gene_name) == str:
@@ -250,11 +252,14 @@ def get_class(gene_name: str) -> int:
     Given a standardised MHC gene name, detect whether it comprises a class I
     or II MHC receptor complex.
     
-    :param gene_name: Standardised MHC gene name
-    :type gene_name: str
-    :return: ``1`` or ``2`` if ``gene_name`` is recognised and its class is
-        known, else ``None``.
-    :rtype: int or None
+    :param gene_name:
+        Standardised MHC gene name
+    :type gene_name:
+        str
+    :return:
+        ``1`` or ``2`` if ``gene_name`` is recognised and its class is known, else ``None``.
+    :rtype:
+        int or None
     '''
 
     if type(gene_name) == str:

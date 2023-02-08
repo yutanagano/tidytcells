@@ -96,16 +96,21 @@ def standardise(gene_name: str, species: str = 'HomoSapiens') -> str:
     '''
     Attempt to standardise a TCR gene name to be IMGT-compliant.
 
-    :param gene_name: Potentially non-standardised TCR gene name.
-    :type gene_name: str
-    :param species: Species to which the TCR gene belongs (see
-        :ref:`supported_species`). Defaults to `"HomoSapiens"`.
-    :type species: str
-    :return: If the specified ``species`` is supported, and ``gene_name`` could
-        be standardised, then return the standardised gene name. If ``species``
-        is unsupported, then the function does not attempt to standardise , and
-        returns the unaltered ``gene_name`` string. Else return ``None``.
-    :rtype: str or None
+    :param gene_name:
+        Potentially non-standardised TCR gene name.
+    :type gene_name:
+        str
+    :param species:
+        Species to which the TCR gene belongs (see :ref:`supported_species`).
+        Defaults to `"HomoSapiens"`.
+    :type species:
+        str
+    :return:
+        If the specified ``species`` is supported, and ``gene_name`` could be standardised, then return the standardised gene name.
+        If ``species`` is unsupported, then the function does not attempt to standardise , and returns the unaltered ``gene_name`` string.
+        Else returns ``None``.
+    :rtype:
+        str or None
     '''
 
     # If gene_str is not a string, skip and return None
