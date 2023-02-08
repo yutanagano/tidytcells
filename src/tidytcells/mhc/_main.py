@@ -33,6 +33,7 @@ class DecomposedMHC(_DecomposedGene):
         self,
         gene: str,
         allele_designation: Optional[list[str]],
+        precision: str,
         ref_dict: dict,
         syn_dict: dict
     ) -> None:
@@ -45,6 +46,7 @@ class DecomposedMHC(_DecomposedGene):
             self.is_p = allele_designation[-1].endswith('P')
         else:
             self.is_g = self.is_p = False
+        self.precision = precision
 
         self.ref_dict = ref_dict
         self.syn_dict = syn_dict
@@ -92,9 +94,21 @@ class DecomposedMHC(_DecomposedGene):
         return True
     
 
-    def compile(self, allele: bool = True) -> str:
-        if allele and self.allele_designation:
-            return f'{self.gene}*{":".join(self.allele_designation)}'
+    def compile(self) -> str:
+        if self.allele_designation:
+            if self.precision == 'allele':
+                return f'{self.gene}*{":".join(self.allele_designation)}'
+            
+            if self.precision == 'protein':
+                prot_designation = self.allele_designation[:2]
+                further_designation =\
+                    None if len(self.allele_designation) <= 2\
+                    else ':'+':'.join(self.allele_designation[2:])
+                
+                return (
+                    f'{self.gene}*{":".join(prot_designation)}',
+                    further_designation
+                )
 
         return self.gene
     
@@ -116,9 +130,9 @@ def warn_failure(
     species: str
 ) -> None:
     warn(
-        f'Unrecognised MHC gene name: "{original_input}" '
-        f'for species {species}. Attempted fix "{attempted_fix}" did not meet '
-        'the standardised format requirements. Ignoring this gene name...'
+        f'Failed to standardise: "{original_input}" for species {species}. '
+        f'Attempted fix "{attempted_fix}" did not meet the standardised '
+        'format requirements. Ignoring this gene name...'
     )
 
 
@@ -130,25 +144,36 @@ SUPPORTED_SPECIES = {
 }
 
 
-def standardise(gene_name: str, species: str = 'HomoSapiens') -> tuple:
+def standardise(
+    gene_name: str,
+    species: str = 'HomoSapiens',
+    precision: str = 'allele'
+) -> tuple:
     '''
     Attempt to standardise an MHC gene name to be IMGT-compliant.
 
     :param gene_name:
         Potentially non-standardised MHC gene name.
     :type gene_name:
-        str
+        ``str``
     :param species:
         Species to which the MHC gene belongs (see :ref:`supported_species`).
         Defaults to `"HomoSapiens"`.
     :type species:
-        str
+        ``str``
+    :param precision:
+        The maximum level of precision to standardise to.
+        ``'allele'`` standardises to the maximum precision possible.
+        ``'protein'`` keeps allele designators up to the level of the protein (first two).
+        In this setting, the function returns a tuple instead of a string, where the first element is a string representing the MHC up to the level of the protein,and any further allele designators are separated into a separate string, which is the second element of the tuple (if there are no further designators available, then the second element of the tuple is set to ``None``).
+        ``'gene'`` standardises only to the level of the gene.
+        Defaults to ``'allele'``.
     :return:
         If the specified ``species`` is supported, and ``gene_name`` could be standardised, then return the standardised gene name.
         If ``species`` is unsupported, then the function does not attempt to standardise, and returns the unaltered ``gene_name`` string.
         Else returns ``None``.
     :rtype:
-        str or None
+        ``str``, ``tuple[str]`` (see parameter ``precision``) or ``None``
     '''
 
     # If gene_str is not a string, skip and return None.
@@ -156,6 +181,12 @@ def standardise(gene_name: str, species: str = 'HomoSapiens') -> tuple:
         raise TypeError(
             f'gene_name must be type str, got '
             f'{gene_name} ({type(gene_name)}).'
+        )
+    
+    # If precision is not either 'allele' or 'gene' raise error
+    if not precision in ('allele', 'protein', 'gene'):
+        raise ValueError(
+            f'precision must be "allele", "protein" or "gene", got {precision}.'
         )
 
     # If the specified species is not supported, no-op (with warning)
@@ -198,6 +229,7 @@ def standardise(gene_name: str, species: str = 'HomoSapiens') -> tuple:
     decomp_mhc = DecomposedMHC(
         gene=gene,
         allele_designation=allele_designation,
+        precision=precision,
         ref_dict=ref_dict,
         syn_dict=syn_dict
     )
@@ -218,11 +250,11 @@ def get_chain(gene_name: str) -> str:
     :param gene_name:
         Standardised MHC gene name
     :type gene_name:
-        str
+        ``str``
     :return:
         ``'alpha'`` or ``'beta'`` if ``gene_name`` is recognised and its chain is known, else ``None``.
     :rtype:
-        str or None
+        ``str`` or ``None``
     '''
 
     if type(gene_name) == str:
@@ -255,11 +287,11 @@ def get_class(gene_name: str) -> int:
     :param gene_name:
         Standardised MHC gene name
     :type gene_name:
-        str
+        ``str``
     :return:
         ``1`` or ``2`` if ``gene_name`` is recognised and its class is known, else ``None``.
     :rtype:
-        int or None
+        ``int`` or ``None``
     '''
 
     if type(gene_name) == str:

@@ -39,6 +39,24 @@ class TestStandardise:
         assert result == 'HLA-B*07'
 
 
+    @pytest.mark.parametrize(
+        ('gene', 'expected', 'precision'),
+        (
+            ('HLA-DRB3*01:01:02:01', 'HLA-DRB3*01:01:02:01', 'allele'),
+            ('HLA-DRB3*01:01:02:01', ('HLA-DRB3*01:01', ':02:01'), 'protein'),
+            ('HLA-DRB3*01:01:02:01', 'HLA-DRB3', 'gene')
+        )
+    )
+    def test_precision(self, gene, expected, precision):
+        result = mhc.standardise(
+            gene_name=gene,
+            species='HomoSapiens',
+            precision=precision
+        )
+
+        assert result == expected
+
+
 
 class TestStandardiseHomoSapiens:
     @pytest.mark.parametrize(
@@ -71,7 +89,7 @@ class TestStandardiseHomoSapiens:
         )
     )
     def test_invalid_mhc(self, gene):
-        with pytest.warns(UserWarning, match='Unrecognised'):
+        with pytest.warns(UserWarning, match='Failed to standardise'):
             result = mhc.standardise(
                 gene_name=gene,
                 species='HomoSapiens'
@@ -87,7 +105,7 @@ class TestStandardiseHomoSapiens:
         )
     )
     def test_bad_allele_designation(self, gene):
-        with pytest.warns(UserWarning, match='Unrecognised'):
+        with pytest.warns(UserWarning, match='Failed to standardise'):
             result = mhc.standardise(
                 gene_name=gene,
                 species='HomoSapiens'

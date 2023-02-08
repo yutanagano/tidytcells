@@ -33,6 +33,12 @@ class TestStandardise:
             tcr.standardise(gene_name=gene)
 
 
+    def test_default_homosapiens(self):
+        result = tcr.standardise('TRBV20/OR9-2*01')
+
+        assert result == 'TRBV20/OR9-2*01'
+
+
     @pytest.mark.parametrize(
         ('gene', 'expected'),
         (
@@ -49,10 +55,40 @@ class TestStandardise:
         assert result == expected
 
 
-    def test_default_homosapiens(self):
-        result = tcr.standardise('TRBV20/OR9-2*01')
+    @pytest.mark.filterwarnings('ignore:Failed to standardise')
+    @pytest.mark.parametrize(
+        ('gene', 'expected', 'enforce_functional'),
+        (
+            ('TRAV35*01', 'TRAV35*01', True),
+            ('TRAV35*03', None, True),
+            ('TRAV35*03', 'TRAV35*03', False)
+        )
+    )
+    def test_enforce_functional(self, gene, expected, enforce_functional):
+        result = tcr.standardise(
+            gene_name=gene,
+            species='HomoSapiens',
+            enforce_functional=enforce_functional
+        )
 
-        assert result == 'TRBV20/OR9-2*01'
+        assert result == expected
+
+
+    @pytest.mark.parametrize(
+        ('gene', 'expected', 'precision'),
+        (
+            ('TRBV24/OR9-2*01', 'TRBV24/OR9-2*01', 'allele'),
+            ('TRAv16*01', 'TRAV16', 'gene')
+        )
+    )
+    def test_precision(self, gene, expected, precision):
+        result = tcr.standardise(
+            gene_name=gene,
+            species='HomoSapiens',
+            precision=precision
+        )
+
+        assert result == expected
 
 
 class TestStandardiseHomoSapiens:
@@ -85,7 +121,7 @@ class TestStandardiseHomoSapiens:
         )
     )
     def test_invalid_tcr(self, gene):
-        with pytest.warns(UserWarning, match='Unrecognised'):
+        with pytest.warns(UserWarning, match='Failed to standardise'):
             result = tcr.standardise(
                 gene_name=gene,
                 species='HomoSapiens'
@@ -142,7 +178,7 @@ class TestStandardiseMusMusculus:
         )
     )
     def test_inivalid_tcr(self, gene):
-        with pytest.warns(UserWarning, match='Unrecognised'):
+        with pytest.warns(UserWarning, match='Failed to standardise'):
             result = tcr.standardise(
                 gene_name=gene,
                 species='MusMusculus'
