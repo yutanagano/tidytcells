@@ -32,14 +32,20 @@ Example usage
 >>> # --- TCR parsing ---
 >>> tidytcells.tcr.standardise('TCRAV32S1', 'HomoSapiens')
 'TRAV25'
+>>> tidytcells.tcr.standardise('TRBV1*01', 'HomoSapiens', enforce_functional=True)
+None
+>>> tidytcells.tcr.standardise('TRAJ12*01', 'MusMusculus', precision='gene')
+'TRAJ12'
 >>> # --- MHC parsing ---
 >>> tidytcells.mhc.standardise('HLA-A', 'HomoSapiens')
 'HLA-A'
->>> tidytcells.mhc.standardise('HLA-DR1BL', 'HomoSapiens')
+>>> tidytcells.mhc.standardise('HLA-B*07:02:01:01', 'HomoSapiens', precision='protein')
+('HLA-B*07:02', ':01:01')
+>>> tidytcells.mhc.standardise('HLA-DR1BL')
 'HLA-DRB9'
->>> tidycells.mhc.get_chain('HLA-A')
+>>> tidytcells.mhc.get_chain('HLA-A')
 'alpha'
->>> tidycells.mhc.get_class('HLA-DRB1*01:01')
+>>> tidytcells.mhc.get_class('HLA-DRB1*01:01')
 2
 
 .. _supported_species:
