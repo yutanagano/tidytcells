@@ -173,7 +173,8 @@ def standardise(
     gene_name = gene_name.upper()
 
     # Parse attempt
-    if m := PARSE_RE.match(gene_name): # ^([A-Z0-9\-\.\(\)\/]+)(\*([0-9]+))?$
+    m = PARSE_RE.match(gene_name) # ^([A-Z0-9\-\.\(\)\/]+)(\*([0-9]+))?$
+    if m:
         gene = m.group(1)
         allele_designation = None if m.group(3) is None else int(m.group(3))
 

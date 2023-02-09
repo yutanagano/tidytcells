@@ -5,7 +5,7 @@ Utility functions related to MHCs and MHC genes.
 
 from .._decomposed_gene import _DecomposedGene
 import re
-from typing import Optional
+from typing import List, Optional
 from warnings import warn
 
 
@@ -32,7 +32,7 @@ class DecomposedMHC(_DecomposedGene):
     def __init__(
         self,
         gene: str,
-        allele_designation: Optional[list[str]],
+        allele_designation: Optional[List[str]],
         precision: str,
         ref_dict: dict,
         syn_dict: dict
@@ -215,7 +215,8 @@ def standardise(
         return 'B2M'
 
     # Parse attempt
-    if m := PARSE_RE.match(gene_name): # ^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?$
+    m = PARSE_RE.match(gene_name) # ^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?$
+    if m:
         gene = m.group(1)
         allele_designation =\
             None if m.group(3) is None else m.group(3).split(':')
