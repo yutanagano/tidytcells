@@ -158,7 +158,7 @@ def standardise(
         ``str``
     :param species:
         Species to which the MHC gene belongs (see :ref:`supported_species`).
-        Defaults to `"HomoSapiens"`.
+        Defaults to ``'HomoSapiens'``.
     :type species:
         ``str``
     :param precision:

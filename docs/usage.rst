@@ -35,10 +35,8 @@ Example usage
 >>> # --- MHC parsing ---
 >>> tidytcells.mhc.standardise('HLA-A', 'HomoSapiens')
 'HLA-A'
->>> tidytcells.mhc.standardise('B07', 'HomoSapiens')
-'HLA-B*07'
->>> tidytcells.mhc.standardise('DRA*01:01:01', 'HomoSapiens')
-'HLA-DRA*01:01:01'
+>>> tidytcells.mhc.standardise('HLA-DR1BL', 'HomoSapiens')
+'HLA-DRB9'
 >>> tidycells.mhc.get_chain('HLA-A')
 'alpha'
 >>> tidycells.mhc.get_class('HLA-DRB1*01:01')
