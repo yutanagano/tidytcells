@@ -10,7 +10,7 @@ VERSION = (HERE/'VERSION.txt').read_text(encoding='utf-8')
 setup(
     name='tidytcells',
     version=VERSION,
-    description='Standardise TCR/MHC gene symbols.',
+    description='Standardise TCR/MHC data.',
     long_description=README,
     long_description_content_type='text/x-rst',
     author='Yuta Nagano',
@@ -27,12 +27,12 @@ setup(
     package_dir={'': 'src'},
     packages=find_packages('src'),
     package_data={'tidytcells': ['resources/*']},
-    python_requires='>=3.10',
+    python_requires='>=3.6',
     extras_require={
         'dev': [
             'odfpy>=1.4.1',
-            'pandas>=1.5.2',
-            'pytest>=7.2.0',
+            'pandas>=1.1.5',
+            'pytest>=7.0.1',
             'pytest-cov>=4.0.0'
         ]
     }
