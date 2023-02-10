@@ -19,6 +19,8 @@ from .. import (
 
 PARSE_RE = re.compile(r'^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?')
 
+FIX_RE_1 = re.compile(r'^([A-Z\-\.\:\/]+)(\d+)$')
+
 CHAIN_ALPHA_RE = re.compile(r'HLA-([ABCEFG]|D[PQR]A)')
 CHAIN_BETA_RE = re.compile(r'HLA-D[PQR]B|B2M')
 CLASS_1_RE = re.compile(r'HLA-[ABCEFG]|B2M')
@@ -28,7 +30,7 @@ CLASS_2_RE = re.compile(r'HLA-D[PQR][AB]')
 # --- HELPER CLASSES ---
 
 
-class DecomposedMHC(_DecomposedGene):
+class DecomposedHLA(_DecomposedGene):
     def __init__(
         self,
         gene: str,
@@ -118,6 +120,17 @@ class DecomposedMHC(_DecomposedGene):
         if self.syn_dict and self.gene in self.syn_dict:
             self.gene = self.syn_dict[self.gene]
         
+        if not self.gene.startswith('HLA-'):
+            self.gene = 'HLA-' + self.gene
+        
+        if self.valid:
+            return True
+        
+        m = FIX_RE_1.match(self.gene)
+        if not self.allele_designation and m:
+            self.gene = m.group(1)
+            self.allele_designation = [f'{int(m.group(2)):02}']
+
         return self.valid
 
 
@@ -227,7 +240,7 @@ def standardise(
         return None
 
     # Build DecomposedMHC object
-    decomp_mhc = DecomposedMHC(
+    decomp_mhc = DecomposedHLA(
         gene=gene,
         allele_designation=allele_designation,
         precision=precision,
