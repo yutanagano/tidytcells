@@ -4,6 +4,8 @@ Utility functions related to TCRs and TCR genes.
 
 
 from .._decomposed_gene import _DecomposedGene
+import json
+from pkg_resources import resource_stream as rs
 import re
 from typing import Optional
 from warnings import warn
@@ -12,11 +14,14 @@ from warnings import warn
 # --- STATIC RESOURCES ---
 
 
-from .. import (
-    HOMOSAPIENS_TCR,
-    HOMOSAPIENS_TCR_SYNONYMS,
-    MUSMUSCULUS_TCR
-)
+with rs('tidytcells', 'resources/homosapiens_tcr.json') as s:
+    HOMOSAPIENS_TCR = json.load(s)
+with rs('tidytcells', 'resources/homosapiens_tcr_synonyms.json') as s:
+    HOMOSAPIENS_TCR_SYNONYMS = json.load(s)
+with rs('tidytcells', 'resources/musmusculus_tcr.json') as s:
+    MUSMUSCULUS_TCR = json.load(s)
+
+
 PARSE_RE = re.compile(r'^([A-Z0-9\-\.\(\)\/]+)(\*([0-9]+))?')
 
 
