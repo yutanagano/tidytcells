@@ -13,8 +13,8 @@
 
    .. autosummary::
    
-      classify
       get_chain
+      get_class
       standardise
    
    

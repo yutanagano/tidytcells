@@ -39,6 +39,8 @@ None
 >>> # --- MHC parsing ---
 >>> tidytcells.mhc.standardise('HLA-A', 'HomoSapiens')
 'HLA-A'
+>>> tidytcells.mhc.standardise('A1', 'HomoSapiens')
+'HLA-A*01'
 >>> tidytcells.mhc.standardise('HLA-B*07:02:01:01', 'HomoSapiens', precision='protein')
 ('HLA-B*07:02', ':01:01')
 >>> tidytcells.mhc.standardise('HLA-DR1BL')

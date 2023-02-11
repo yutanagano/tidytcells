@@ -152,6 +152,23 @@ class TestStandardiseHomoSapiens:
         assert result == 'HLA-A*01:01:01:01'
 
 
+    @pytest.mark.parametrize(
+        ('gene', 'expected'),
+        (
+            ('HLA-B8', 'HLA-B*08'),
+            ('A*01:01', 'HLA-A*01:01'),
+            ('A1', 'HLA-A*01')
+        )
+    )
+    def test_various_typos(self, gene, expected):
+        result = mhc.standardise(
+            gene_name=gene,
+            species='HomoSapiens'
+        )
+
+        assert result == expected
+
+
 class TestGetChain:
     @pytest.mark.parametrize(
         ('gene', 'expected'),
