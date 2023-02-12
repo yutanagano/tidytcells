@@ -77,6 +77,22 @@ class TestStandardise:
 
 
     @pytest.mark.parametrize(
+        ('gene', 'expected'),
+        (
+            ('TRAV14DV4', 'TRAV14/DV4'),
+            ('TRBV20OR9-2', 'TRBV20/OR9-2')
+        )
+    )
+    def test_various_typos(self, gene, expected):
+        result = tcr.standardise(
+            gene_name=gene,
+            species='HomoSapiens'
+        )
+
+        assert result == expected
+
+
+    @pytest.mark.parametrize(
         ('gene', 'expected', 'precision'),
         (
             ('TRBV24/OR9-2*01', 'TRBV24/OR9-2*01', 'allele'),
