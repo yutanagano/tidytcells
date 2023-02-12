@@ -23,6 +23,8 @@ with rs('tidytcells', 'resources/musmusculus_tcr.json') as s:
 
 
 PARSE_RE = re.compile(r'^([A-Z0-9\-\.\(\)\/]+)(\*([0-9]+))?')
+SUB_DV_RE = re.compile(r'(?<!TR)(?<!\/)DV')
+SUB_OR_RE = re.compile(r'(?<!\/)OR')
 
 
 # --- HELPER CLASSES ---
@@ -82,6 +84,10 @@ class DecomposedTCR(_DecomposedGene):
         # If a synonym, correct to currently approved name
         if self.syn_dict and self.gene in self.syn_dict:
             self.gene = self.syn_dict[self.gene]
+
+        # Put backslashes before DVs and OR9s
+        self.gene = SUB_DV_RE.sub('/DV', self.gene)
+        self.gene = SUB_OR_RE.sub('/OR', self.gene)
         
         return self.valid
 
