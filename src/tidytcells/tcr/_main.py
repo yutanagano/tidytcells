@@ -63,7 +63,11 @@ class DecomposedTCR(_DecomposedGene):
 
             return self.ref_dict[self.gene][self.allele_designation] == 'F'
         
-        # If no allele specified, return true as the gene exists
+        # If enforce_functional, ensure there is at least one functional allele
+        if self.enforce_functional:
+            return 'F' in self.ref_dict[self.gene].values()
+        
+        # Otherwise gene is valid so return true
         return True
     
 
