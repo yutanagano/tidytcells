@@ -25,6 +25,7 @@ with rs('tidytcells', 'resources/musmusculus_tcr.json') as s:
 PARSE_RE = re.compile(r'^([A-Z0-9\-\.\(\)\/]+)(\*([0-9]+))?')
 SUB_DV_RE = re.compile(r'(?<!TR)(?<!\/)DV')
 SUB_OR_RE = re.compile(r'(?<!\/)OR')
+SUB_ZERO_RE = re.compile(r'(?<!\d)0')
 
 
 # --- HELPER CLASSES ---
@@ -88,6 +89,12 @@ class DecomposedTCR(_DecomposedGene):
         # Put backslashes before DVs and OR9s
         self.gene = SUB_DV_RE.sub('/DV', self.gene)
         self.gene = SUB_OR_RE.sub('/OR', self.gene)
+
+        # Remove leading zeros
+        self.gene = SUB_ZERO_RE.sub('', self.gene)
+
+        # Replace TCR with TR
+        self.gene = self.gene.replace('TCR', 'TR')
         
         return self.valid
 

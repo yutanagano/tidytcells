@@ -80,7 +80,9 @@ class TestStandardise:
         ('gene', 'expected'),
         (
             ('TRAV14DV4', 'TRAV14/DV4'),
-            ('TRBV20OR9-2', 'TRBV20/OR9-2')
+            ('TRBV20OR9-2', 'TRBV20/OR9-2'),
+            ('TRBV01', 'TRBV1'),
+            ('TCRBV1', 'TRBV1')
         )
     )
     def test_various_typos(self, gene, expected):
