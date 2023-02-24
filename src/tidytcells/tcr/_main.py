@@ -7,6 +7,7 @@ from .._utils.gene_standardisers import (
     HomoSapiensTCRStandardiser,
     MusMusculusTCRStandardiser
 )
+from .._utils.standardise_template import standardise_template
 from .._utils.warnings import *
 
 
@@ -53,13 +54,6 @@ def standardise(
     :rtype:
         ``str`` or ``None``
     '''
-
-    # If gene_str is not a string, raise error
-    if type(gene) != str:
-        raise TypeError(
-            f'gene_name must be type str, got '
-            f'{gene} ({type(gene)}).'
-        )
     
     # If precision is not either 'allele' or 'gene' raise error
     if not precision in ('allele', 'gene'):
@@ -67,24 +61,11 @@ def standardise(
             f'precision must be either "allele" or "gene", got {precision}.'
         )
 
-    # If the specified species is not supported, no-op (with warning)
-    if not species in STANDARDISERS:
-        warn_unsupported_species(species, 'TCR')
-        return gene
-
-    # Take note of initial input for reference
-    original_input = gene
-
-    # Clean whitespace, remove known pollutors, uppercase
-    gene = ''.join(gene.split())
-    gene = gene.replace('&nbsp;','')
-    gene = gene.upper()
-
-    # Standardisation attempt
-    standardised = STANDARDISERS[species](gene)
-
-    if not standardised.valid(enforce_functional): # Standaridsation failure
-        warn_failure(original_input, standardised.compile(precision), species)
-        return None
-    
-    return standardised.compile(precision)
+    return standardise_template(
+        gene=gene,
+        gene_type='TCR',
+        species=species,
+        enforce_functional=enforce_functional,
+        precision=precision,
+        standardiser_dict=STANDARDISERS
+    )

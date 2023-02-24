@@ -67,7 +67,8 @@ class TestStandardise:
             ('TRAV35*03', None, True),
             ('TRAV35*03', 'TRAV35*03', False),
             ('TRAV35', 'TRAV35', True),
-            ('TRAV8-7', None, True)
+            ('TRAV8-7', None, True),
+            ('TRAV8-7', 'TRAV8-7', False)
         )
     )
     def test_enforce_functional(self, gene, expected, enforce_functional):

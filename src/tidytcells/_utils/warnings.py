@@ -20,9 +20,9 @@ def warn_failure(
 
 def warn_unsupported_species(
     species: str,
-    gene: str
+    gene_type: str
 ):
     warn(
         f'Unsupported species: "{species}". '
-        f'Skipping {gene} gene standardisation procedure...'
+        f'Skipping {gene_type} gene standardisation procedure...'
     )

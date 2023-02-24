@@ -4,6 +4,7 @@ Utility functions related to MHCs and MHC genes.
 
 
 from .._utils.gene_standardisers import HLAStandardiser
+from .._utils.standardise_template import standardise_template
 from .._utils.warnings import *
 import re
 from .._resources import HOMOSAPIENS_MHC
@@ -59,43 +60,21 @@ def standardise(
     :rtype:
         ``str``, ``tuple[str]`` (see parameter ``precision``) or ``None``
     '''
-
-    # If gene_str is not a string, skip and return None.
-    if type(gene) != str:
-        raise TypeError(
-            f'gene_name must be type str, got '
-            f'{gene} ({type(gene)}).'
-        )
     
     # If precision is not either 'allele' or 'gene' raise error
     if not precision in ('allele', 'protein', 'gene'):
         raise ValueError(
             f'precision must be "allele", "protein" or "gene", got {precision}.'
         )
-
-    # If the specified species is not supported, no-op (with warning)
-    if not species in STANDARDISERS:
-        # Otherwise, don't touch it
-        warn_unsupported_species(species, 'MHC')
-        return gene
-
-    # Take note of initial input for reference
-    original_input = gene
-
-    # Clean whitespace, remove known pollutors, uppercase
-    gene = ''.join(gene.split())
-    gene = gene.replace('&nbsp;','')
-    gene = gene.upper()
-
-    # Standardisation attempt
-    standardised = STANDARDISERS[species](gene)
-
-    # Try resolving, and return None on failure
-    if not standardised.valid():
-        warn_failure(original_input, standardised.compile(precision), species)
-        return None
     
-    return standardised.compile(precision)
+    return standardise_template(
+        gene=gene,
+        gene_type='MHC',
+        species=species,
+        enforce_functional=True,
+        precision=precision,
+        standardiser_dict=STANDARDISERS
+    )
 
 
 def get_chain(gene_name: str) -> str:

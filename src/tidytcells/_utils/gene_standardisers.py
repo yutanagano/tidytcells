@@ -35,17 +35,20 @@ class GeneStandardiser(ABC):
 
 
     @abstractmethod
-    def valid(self) -> bool:
+    def valid(self, enforce_functional: bool = False) -> bool:
         '''
         Returns True if the gene's name is a real, valid and existing one.
-        Else returns False.
+        Else returns False. If enforce_functional, additionally verify that
+        the gene in question is functional.
         '''
 
     
     @abstractmethod
-    def compile(self) -> str:
+    def compile(self, precision: str = 'allele') -> str:
         '''
-        Compile a complete string representation of the gene.
+        Compile a complete string representation of the gene. The argument
+        given to precision will determine the amount of specificity given
+        in the compiled string.
         '''
 
 
@@ -82,7 +85,7 @@ class TCRStandardiser(GeneStandardiser):
 
 
     def resolve_errors(self) -> None:
-        if self.valid(enforce_functional=False):
+        if self.valid():
             return # No resolution necessary
 
         # If a synonym, correct to currently approved name
@@ -96,7 +99,7 @@ class TCRStandardiser(GeneStandardiser):
         self.gene = self.gene.replace('TCR', 'TR')
 
 
-    def valid(self, enforce_functional: bool) -> bool:
+    def valid(self, enforce_functional: bool = False) -> bool:
         # Is the gene valid?
         if not self.gene in self.ref_dict:
             return False
@@ -118,7 +121,7 @@ class TCRStandardiser(GeneStandardiser):
         return True
     
 
-    def compile(self, precision: str) -> str:
+    def compile(self, precision: str = 'allele') -> str:
         if precision == 'allele' and self.allele_designation:
             return f'{self.gene}*{self.allele_designation}'
 
@@ -236,7 +239,7 @@ class HLAStandardiser(GeneStandardiser):
                 return
 
 
-    def valid(self) -> bool:
+    def valid(self, enforce_functional: bool = False) -> bool:
         # Is the gene B2M?
         if self.gene == 'B2M' and not self.allele_designation:
             return True
