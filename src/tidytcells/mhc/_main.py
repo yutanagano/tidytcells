@@ -33,6 +33,7 @@ def standardise(
 ) -> tuple:
     '''
     Attempt to standardise an MHC gene name to be IMGT-compliant.
+    
     An important note here is that this function will verify the validity of an MHC gene up to the level of the protein.
     Any further precise allele designations will not be verified, apart from the requirement that the format (colon-separated numbers) looks valid.
     The reasons for this is firstly because new alleles at that level are added to the IMGT list quite often and so accurate verification is difficult, secondly because people rarely need verification to such a precise level, and finally because such verification costs more computational effort with diminishing returns.
