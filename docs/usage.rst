@@ -56,6 +56,7 @@ Supported species and species strings
 -------------------------------------
 
 For all functions that expect a species to be specified via a string, the species should be referred to by its `binomial name <https://en.wikipedia.org/wiki/Binomial_nomenclature>`_, lowercased, with no space between the two parts (e.g. ``'homosapiens'``).
+That being said, for backwards-compatibility and user friendliness, any combination of camelcasing, uppercasing and the use of whitespace is technically allowed and recognised by the software.
 
 Below is a list of currently supported species:
 
