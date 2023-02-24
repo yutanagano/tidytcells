@@ -69,7 +69,7 @@ class TCRStandardiser(GeneStandardiser):
 
     def parse_gene_str(self, gene: str) -> None:
         parse_attempt = re.match(
-            r'^([A-Z0-9\-\.\(\)\/]+)(\*([0-9]+))?',
+            r'^([A-Z0-9\-\.\(\)\/]+)(\*(\d+))?',
             gene
         )
         
@@ -294,5 +294,50 @@ class HLAStandardiser(GeneStandardiser):
                     f'{self.gene}*{":".join(prot_designation)}',
                     further_designation
                 )
+
+        return self.gene
+
+
+class MusMusculusMHCStandardiser(GeneStandardiser):
+    def __init__(self, gene: str) -> None:
+        self.parse_gene(gene)
+        self.resolve_errors()
+    
+
+    def parse_gene(self, gene: str) -> None:
+        parse_attempt = re.match(
+            r'^([A-Z0-9\-\.\(\)\/]+)(\*(\d+))?',
+            gene
+        )
+
+        if parse_attempt:
+            self.gene = parse_attempt.group(1)
+            self.allele_designation =\
+                None if parse_attempt.group(3) is None\
+                else f'{int(parse_attempt.group(3)):02}'
+            return
+        
+        self.gene = gene
+        self.allele_designation = None
+    
+
+    def resolve_errors(self) -> None:
+        if self.valid():
+            return # No resolution needed
+
+        # If a synonym, correct to currently approved name
+        if self.gene.replace('-', '') in MUSMUSCULUS_MHC_SYNONYMS:
+            self.gene = MUSMUSCULUS_MHC_SYNONYMS[self.gene.replace('-', '')]
+            if self.valid():
+                return
+    
+
+    def valid(self, enforce_functional: bool = False) -> bool:
+        return self.gene in MUSMUSCULUS_MHC
+
+
+    def compile(self, precision: str = 'allele') -> str:
+        if precision == 'allele' and self.allele_designation:
+            return f'{self.gene}*{self.allele_designation}'
 
         return self.gene

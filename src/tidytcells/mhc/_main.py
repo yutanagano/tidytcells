@@ -3,7 +3,10 @@ Utility functions related to MHCs and MHC genes.
 '''
 
 
-from .._utils.gene_standardisers import HLAStandardiser
+from .._utils.gene_standardisers import (
+    HLAStandardiser,
+    MusMusculusMHCStandardiser
+)
 from .._utils.standardise_template import standardise_template
 from .._utils.warnings import *
 import re
@@ -22,7 +25,8 @@ CLASS_2_RE = re.compile(r'HLA-D[PQR][AB]')
 # --- MAIN FUNCTIONS ---
 
 STANDARDISERS = {
-    'homosapiens': HLAStandardiser
+    'homosapiens': HLAStandardiser,
+    'musmusculus': MusMusculusMHCStandardiser
 }
 
 

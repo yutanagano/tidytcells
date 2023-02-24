@@ -1,6 +1,9 @@
 import pytest
 from tidytcells import mhc
-from tidytcells._resources import HOMOSAPIENS_MHC
+from tidytcells._resources import (
+    HOMOSAPIENS_MHC,
+    MUSMUSCULUS_MHC
+)
 
 
 class TestStandardise:
@@ -160,6 +163,52 @@ class TestStandardiseHomoSapiens:
         )
 
         assert result == expected
+
+
+class TestStandardiseMusMusculus:
+    @pytest.mark.parametrize('gene', MUSMUSCULUS_MHC)
+    def test_already_correctly_formatted(self, gene):
+        result = mhc.standardise(
+            gene=gene,
+            species='musmusculus'
+        )
+
+        assert result == gene
+
+
+    @pytest.mark.parametrize(
+        'gene',
+        (
+            'foobar',
+            'yoinkdoink',
+            'MH1-ABC'
+        )
+    )
+    def test_invalid_mhc(self, gene):
+        with pytest.warns(UserWarning, match='Failed to standardise'):
+            result = mhc.standardise(
+                gene=gene,
+                species='homosapiens'
+            )
+        
+        assert result == None
+
+
+    @pytest.mark.parametrize(
+        ('gene', 'expected'),
+        (
+            ('H-2Eb1', 'MH2-EB1'),
+            ('H-2Aa', 'MH2-AA')
+        )
+    )
+    def test_fix_deprecated_names(self, gene, expected):
+        result = mhc.standardise(
+            gene=gene,
+            species='musmusculus'
+        )
+
+        assert result == expected
+
 
 
 class TestGetChain:
