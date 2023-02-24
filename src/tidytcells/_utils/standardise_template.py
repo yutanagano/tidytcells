@@ -9,7 +9,6 @@ def standardise_template(
     precision: str,
     standardiser_dict: dict
 ) -> str:
-
     # Type errors
     if type(gene) != str:
         raise TypeError(
@@ -31,7 +30,9 @@ def standardise_template(
             'precision must be type str, got '
             f'{precision} ({type(precision)}).'
         )
-
+    
+    # For backward compatibility, fix CamelCased species
+    species = ''.join(species.split()).lower()
 
     # If the specified species is not supported, no-op (with warning)
     if not species in standardiser_dict:
