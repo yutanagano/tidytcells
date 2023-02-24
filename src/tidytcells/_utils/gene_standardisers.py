@@ -82,6 +82,9 @@ class TCRStandardiser(GeneStandardiser):
 
 
     def resolve_errors(self) -> None:
+        if self.valid(enforce_functional=False):
+            return # No resolution necessary
+
         # If a synonym, correct to currently approved name
         if self.syn_dict and self.gene in self.syn_dict:
             self.gene = self.syn_dict[self.gene]
@@ -178,13 +181,14 @@ class HLAStandardiser(GeneStandardiser):
     
 
     def resolve_errors(self) -> None:
-        if self.gene == 'B2M':
-            return
+        if self.valid():
+            return # No resolution needed
 
         # If a synonym, correct to currently approved name
         if self.gene in HOMOSAPIENS_MHC_SYNONYMS:
             self.gene = HOMOSAPIENS_MHC_SYNONYMS[self.gene]
-            return # Done
+            if self.valid():
+                return # Done
         
         # Add HLA prefix if necessary
         if not self.gene.startswith('HLA-'):
@@ -202,7 +206,7 @@ class HLAStandardiser(GeneStandardiser):
 
     def valid(self) -> bool:
         # Is the gene B2M?
-        if self.gene == 'B2M':
+        if self.gene == 'B2M' and not self.allele_designation:
             return True
 
         # Is the gene valid?

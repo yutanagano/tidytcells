@@ -1,5 +1,6 @@
 import pytest
 from tidytcells import mhc
+from tidytcells._resources import HOMOSAPIENS_MHC
 
 
 class TestStandardise:
@@ -59,18 +60,7 @@ class TestStandardise:
 
 
 class TestStandardiseHomoSapiens:
-    @pytest.mark.parametrize(
-        'gene',
-        (
-            ('HLA-A'),
-            ('HLA-B*07'),
-            ('HLA-C*01:02'),
-            ('HLA-DRB3*01:01:02:01'),
-            ('HLA-A*01:01:01G'),
-            ('HLA-A*01:01P'),
-            ('B2M')
-        )
-    )
+    @pytest.mark.parametrize('gene', HOMOSAPIENS_MHC)
     def test_already_correctly_formatted(self, gene):
         result = mhc.standardise(
             gene=gene,

@@ -116,7 +116,7 @@ class TestStandardise:
 
 
 class TestStandardiseHomoSapiens:
-    @pytest.mark.parametrize('gene', HOMOSAPIENS_TCR.keys())
+    @pytest.mark.parametrize('gene', HOMOSAPIENS_TCR)
     def test_already_correctly_formatted(self, gene):
         result = tcr.standardise(
             gene=gene,
@@ -161,19 +161,7 @@ class TestStandardiseHomoSapiens:
 
 
 class TestStandardiseMusMusculus:
-    @pytest.mark.parametrize(
-        'gene',
-        (
-            'TRAV3-1*01',
-            'TRAJ15*01',
-            'TRBV5*02',
-            'TRBJ2-1*01',
-            'TRAJ15',
-            'TRAV21/DV12',
-            'TRAV3D-3',
-            'TRAV15D-1/DV6D-1'
-        )
-    )
+    @pytest.mark.parametrize('gene', MUSMUSCULUS_TCR)
     def test_already_correctly_formatted(self, gene):
         result = tcr.standardise(
             gene=gene,
