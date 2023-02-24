@@ -1,5 +1,9 @@
 import pytest
 from tidytcells import tcr
+from tidytcells._resources import (
+    HOMOSAPIENS_TCR,
+    MUSMUSCULUS_TCR
+)
 
 
 class TestStandardise:
@@ -14,7 +18,7 @@ class TestStandardise:
     def test_unsupported_species(self, species):
         with pytest.warns(UserWarning, match='Unsupported'):
             result = tcr.standardise(
-                gene_name='foobarbaz',
+                gene='foobarbaz',
                 species=species
             )
 
@@ -30,7 +34,7 @@ class TestStandardise:
     )
     def test_bad_type(self, gene):
         with pytest.raises(TypeError):
-            tcr.standardise(gene_name=gene)
+            tcr.standardise(gene=gene)
 
 
     def test_default_homosapiens(self):
@@ -48,8 +52,8 @@ class TestStandardise:
     )
     def test_remove_pollutants(self, gene, expected):
         result = tcr.standardise(
-            gene_name=gene,
-            species='HomoSapiens'
+            gene=gene,
+            species='homosapiens'
         )
 
         assert result == expected
@@ -68,8 +72,8 @@ class TestStandardise:
     )
     def test_enforce_functional(self, gene, expected, enforce_functional):
         result = tcr.standardise(
-            gene_name=gene,
-            species='HomoSapiens',
+            gene=gene,
+            species='homosapiens',
             enforce_functional=enforce_functional
         )
 
@@ -87,8 +91,8 @@ class TestStandardise:
     )
     def test_various_typos(self, gene, expected):
         result = tcr.standardise(
-            gene_name=gene,
-            species='HomoSapiens'
+            gene=gene,
+            species='homosapiens'
         )
 
         assert result == expected
@@ -103,8 +107,8 @@ class TestStandardise:
     )
     def test_precision(self, gene, expected, precision):
         result = tcr.standardise(
-            gene_name=gene,
-            species='HomoSapiens',
+            gene=gene,
+            species='homosapiens',
             precision=precision
         )
 
@@ -112,22 +116,11 @@ class TestStandardise:
 
 
 class TestStandardiseHomoSapiens:
-    @pytest.mark.parametrize(
-        'gene',
-        (
-            'TRAV3*01',
-            'TRAJ15*02',
-            'TRBV5-1*02',
-            'TRBJ2-1*01',
-            'TRAJ15',
-            'TRAV36/DV7',
-            'TRBV29/OR9-2'
-        )
-    )
+    @pytest.mark.parametrize('gene', HOMOSAPIENS_TCR.keys())
     def test_already_correctly_formatted(self, gene):
         result = tcr.standardise(
-            gene_name=gene,
-            species='HomoSapiens'
+            gene=gene,
+            species='homosapiens'
         )
 
         assert result == gene
@@ -143,8 +136,8 @@ class TestStandardiseHomoSapiens:
     def test_invalid_tcr(self, gene):
         with pytest.warns(UserWarning, match='Failed to standardise'):
             result = tcr.standardise(
-                gene_name=gene,
-                species='HomoSapiens'
+                gene=gene,
+                species='homosapiens'
             )
 
         assert result == None
@@ -160,8 +153,8 @@ class TestStandardiseHomoSapiens:
     )
     def test_resolve_alternate_tcr_names(self, gene, expected):
         result = tcr.standardise(
-            gene_name=gene,
-            species='HomoSapiens'
+            gene=gene,
+            species='homosapiens'
         )
 
         assert result == expected
@@ -183,8 +176,8 @@ class TestStandardiseMusMusculus:
     )
     def test_already_correctly_formatted(self, gene):
         result = tcr.standardise(
-            gene_name=gene,
-            species='MusMusculus'
+            gene=gene,
+            species='musmusculus'
         )
 
         assert result == gene
@@ -200,8 +193,8 @@ class TestStandardiseMusMusculus:
     def test_inivalid_tcr(self, gene):
         with pytest.warns(UserWarning, match='Failed to standardise'):
             result = tcr.standardise(
-                gene_name=gene,
-                species='MusMusculus'
+                gene=gene,
+                species='musmusculus'
             )
 
         assert result == None

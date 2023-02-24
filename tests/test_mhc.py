@@ -14,7 +14,7 @@ class TestStandardise:
     def test_unsupported_species(self, species):
         with pytest.warns(UserWarning, match='Unsupported'):
             result = mhc.standardise(
-                gene_name='HLA-A*01:01:01:01',
+                gene='HLA-A*01:01:01:01',
                 species=species
             )
 
@@ -30,7 +30,7 @@ class TestStandardise:
     )
     def test_bad_type(self, gene):
         with pytest.raises(TypeError):
-            mhc.standardise(gene_name=gene)
+            mhc.standardise(gene=gene)
 
 
     def test_default_homosapiens(self):
@@ -49,8 +49,8 @@ class TestStandardise:
     )
     def test_precision(self, gene, expected, precision):
         result = mhc.standardise(
-            gene_name=gene,
-            species='HomoSapiens',
+            gene=gene,
+            species='homosapiens',
             precision=precision
         )
 
@@ -73,8 +73,8 @@ class TestStandardiseHomoSapiens:
     )
     def test_already_correctly_formatted(self, gene):
         result = mhc.standardise(
-            gene_name=gene,
-            species='HomoSapiens'
+            gene=gene,
+            species='homosapiens'
         )
 
         assert result == gene
@@ -91,8 +91,8 @@ class TestStandardiseHomoSapiens:
     def test_invalid_mhc(self, gene):
         with pytest.warns(UserWarning, match='Failed to standardise'):
             result = mhc.standardise(
-                gene_name=gene,
-                species='HomoSapiens'
+                gene=gene,
+                species='homosapiens'
             )
         
         assert result == None
@@ -107,8 +107,8 @@ class TestStandardiseHomoSapiens:
     def test_bad_allele_designation(self, gene):
         with pytest.warns(UserWarning, match='Failed to standardise'):
             result = mhc.standardise(
-                gene_name=gene,
-                species='HomoSapiens'
+                gene=gene,
+                species='homosapiens'
             )
         
         assert result == None
@@ -125,8 +125,8 @@ class TestStandardiseHomoSapiens:
     )
     def test_fix_deprecated_names(self, gene, expected):
         result = mhc.standardise(
-            gene_name=gene,
-            species='HomoSapiens'
+            gene=gene,
+            species='homosapiens'
         )
 
         assert result == expected
@@ -145,8 +145,8 @@ class TestStandardiseHomoSapiens:
     )
     def test_remove_expression_qualifier(self, gene):
         result = mhc.standardise(
-            gene_name=gene,
-            species='HomoSapiens'
+            gene=gene,
+            species='homosapiens'
         )
 
         assert result == 'HLA-A*01:01:01:01'
@@ -162,8 +162,8 @@ class TestStandardiseHomoSapiens:
     )
     def test_various_typos(self, gene, expected):
         result = mhc.standardise(
-            gene_name=gene,
-            species='HomoSapiens'
+            gene=gene,
+            species='homosapiens'
         )
 
         assert result == expected
