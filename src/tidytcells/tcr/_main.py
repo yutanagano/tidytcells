@@ -48,8 +48,8 @@ def standardise(
     :type precision:
         ``str``
     :return:
-        If the specified ``species`` is supported, and ``gene_name`` could be standardised, then return the standardised gene name.
-        If ``species`` is unsupported, then the function does not attempt to standardise , and returns the unaltered ``gene_name`` string.
+        If the specified ``species`` is supported, and ``gene`` could be standardised, then return the standardised gene name.
+        If ``species`` is unsupported, then the function does not attempt to standardise , and returns the unaltered ``gene`` string.
         Else returns ``None``.
     :rtype:
         ``str`` or ``None``
