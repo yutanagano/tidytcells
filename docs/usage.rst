@@ -67,6 +67,7 @@ Below is a list of currently supported species:
 
 :py:func:`tidytcells.mhc.standardise`
     - ``homosapiens``
+    - ``musmusculus``
 
 :py:func:`tidytcells.tcr.standardise`
     - ``homosapiens``
