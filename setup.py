@@ -26,7 +26,7 @@ setup(
     keywords='immunology, bioinformatics, TCR, MHC, HLA, IMGT',
     package_dir={'': 'src'},
     packages=find_packages('src'),
-    package_data={'tidytcells': ['resources/*']},
+    package_data={'tidytcells': ['_resources/*']},
     python_requires='>=3.6',
     extras_require={
         'dev': [

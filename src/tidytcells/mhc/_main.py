@@ -3,25 +3,15 @@ Utility functions related to MHCs and MHC genes.
 '''
 
 
-from .._decomposed_gene import _DecomposedGene
-import json
-from pkg_resources import resource_stream as rs
+from .._utils.gene_standardisers import HLAStandardiser
+from .._utils.standardise_template import standardise_template
+from .._utils.warnings import *
 import re
-from typing import List, Optional
+from .._resources import HOMOSAPIENS_MHC
 from warnings import warn
 
 
 # --- STATIC RESOURCES ---
-
-
-with rs('tidytcells', 'resources/homosapiens_mhc.json') as s:
-    HOMOSAPIENS_MHC = json.load(s)
-with rs('tidytcells', 'resources/homosapiens_mhc_synonyms.json') as s:
-    HOMOSAPIENS_MHC_SYNONYMS = json.load(s)
-
-PARSE_RE = re.compile(r'^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?')
-
-FIX_RE_1 = re.compile(r'^([A-Z\-\.\:\/]+)(\d+)$')
 
 CHAIN_ALPHA_RE = re.compile(r'HLA-([ABCEFG]|D[PQR]A)')
 CHAIN_BETA_RE = re.compile(r'HLA-D[PQR]B|B2M')
@@ -29,151 +19,32 @@ CLASS_1_RE = re.compile(r'HLA-[ABCEFG]|B2M')
 CLASS_2_RE = re.compile(r'HLA-D[PQR][AB]')
 
 
-# --- HELPER CLASSES ---
-
-
-class DecomposedHLA(_DecomposedGene):
-    def __init__(
-        self,
-        gene: str,
-        allele_designation: Optional[List[str]],
-        precision: str,
-        ref_dict: dict,
-        syn_dict: dict
-    ) -> None:
-        self.gene = gene
-        self.allele_designation =\
-            [] if allele_designation is None\
-            else allele_designation
-        if not allele_designation is None:
-            self.is_g = allele_designation[-1].endswith('G')
-            self.is_p = allele_designation[-1].endswith('P')
-        else:
-            self.is_g = self.is_p = False
-        self.precision = precision
-
-        self.ref_dict = ref_dict
-        self.syn_dict = syn_dict
-
-
-    @property
-    def valid(self) -> bool:
-        # Is the gene valid?
-        if not self.gene in self.ref_dict:
-            return False
-
-        # If the gene exists and there are allele designators, walk down
-        # allele tree up to the level of the protein (or the level of the G or
-        # P group when appropriate) to see if the designator field values are
-        # valid
-        allele_designation = self.allele_designation.copy()
-        if not (self.is_g or self.is_p):
-            allele_designation = allele_designation[:2]
-        current_root = self.ref_dict[self.gene]
-
-        while len(allele_designation) > 0:
-            try:
-                current_root = current_root[allele_designation.pop(0)]
-            except(KeyError):
-                # We exit the tree at some point, so designator fields are
-                # invalid
-                return False
-
-        # If there are designator fields past the protein level, just make sure
-        # they look like legitimate designator field values
-        if not (self.is_g or self.is_p) and len(self.allele_designation) > 2:
-            further_designators = self.allele_designation[2:]
-
-            if len(further_designators) > 2:
-                return False
-
-            for field in further_designators:
-                if not field.isdigit():
-                    return False
-                
-                if len(field) < 2:
-                    return False
-        
-        # Valid gene with valid specifier fields, so valid!
-        return True
-    
-
-    def compile(self) -> str:
-        if self.allele_designation:
-            if self.precision == 'allele':
-                return f'{self.gene}*{":".join(self.allele_designation)}'
-            
-            if self.precision == 'protein':
-                prot_designation = self.allele_designation[:2]
-                further_designation =\
-                    None if len(self.allele_designation) <= 2\
-                    else ':'+':'.join(self.allele_designation[2:])
-                
-                return (
-                    f'{self.gene}*{":".join(prot_designation)}',
-                    further_designation
-                )
-
-        return self.gene
-    
-
-    def resolve(self) -> bool:
-        # If a synonym, correct to currently approved name
-        if self.syn_dict and self.gene in self.syn_dict:
-            self.gene = self.syn_dict[self.gene]
-        
-        if not self.gene.startswith('HLA-'):
-            self.gene = 'HLA-' + self.gene
-        
-        if self.valid:
-            return True
-        
-        m = FIX_RE_1.match(self.gene)
-        if not self.allele_designation and m:
-            self.gene = m.group(1)
-            self.allele_designation = [f'{int(m.group(2)):02}']
-
-        return self.valid
-
-
-# --- HELPER FUNCTIONS ---
-
-
-def warn_failure(
-    original_input: str,
-    attempted_fix: str,
-    species: str
-) -> None:
-    warn(
-        f'Failed to standardise: "{original_input}" for species {species}. '
-        f'Attempted fix "{attempted_fix}" did not meet the standardised '
-        'format requirements. Ignoring this gene name...'
-    )
-
-
 # --- MAIN FUNCTIONS ---
 
-
-SUPPORTED_SPECIES = {
-    'HomoSapiens': (HOMOSAPIENS_MHC, HOMOSAPIENS_MHC_SYNONYMS)
+STANDARDISERS = {
+    'homosapiens': HLAStandardiser
 }
 
 
 def standardise(
-    gene_name: str,
-    species: str = 'HomoSapiens',
+    gene: str,
+    species: str = 'homosapiens',
     precision: str = 'allele'
 ) -> tuple:
     '''
     Attempt to standardise an MHC gene name to be IMGT-compliant.
+    
+    An important note here is that this function will verify the validity of an MHC gene up to the level of the protein.
+    Any further precise allele designations will not be verified, apart from the requirement that the format (colon-separated numbers) looks valid.
+    The reasons for this is firstly because new alleles at that level are added to the IMGT list quite often and so accurate verification is difficult, secondly because people rarely need verification to such a precise level, and finally because such verification costs more computational effort with diminishing returns.
 
-    :param gene_name:
+    :param gene:
         Potentially non-standardised MHC gene name.
-    :type gene_name:
+    :type gene:
         ``str``
     :param species:
         Species to which the MHC gene belongs (see :ref:`supported_species`).
-        Defaults to ``'HomoSapiens'``.
+        Defaults to ``'homosapiens'``.
     :type species:
         ``str``
     :param precision:
@@ -190,72 +61,21 @@ def standardise(
     :rtype:
         ``str``, ``tuple[str]`` (see parameter ``precision``) or ``None``
     '''
-
-    # If gene_str is not a string, skip and return None.
-    if type(gene_name) != str:
-        raise TypeError(
-            f'gene_name must be type str, got '
-            f'{gene_name} ({type(gene_name)}).'
-        )
     
     # If precision is not either 'allele' or 'gene' raise error
     if not precision in ('allele', 'protein', 'gene'):
         raise ValueError(
             f'precision must be "allele", "protein" or "gene", got {precision}.'
         )
-
-    # If the specified species is not supported, no-op (with warning)
-    if not species in SUPPORTED_SPECIES:
-        # Otherwise, don't touch it
-        warn(
-            f'Unsupported species: "{species}". '
-            'Skipping MHC gene standardisation procedure...'
-        )
-        return gene_name
     
-    ref_dict, syn_dict = SUPPORTED_SPECIES[species]
-
-    # Take note of initial input for reference
-    original_input = gene_name
-
-    # Clean whitespace, remove known pollutors
-    gene_name = ''.join(gene_name.split())
-    gene_name = gene_name.replace('&nbsp;','')
-
-    # Capitalise
-    gene_name = gene_name.upper()
-
-    # Return B2M as is
-    if gene_name == 'B2M':
-        return 'B2M'
-
-    # Parse attempt
-    m = PARSE_RE.match(gene_name) # ^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?$
-    if m:
-        gene = m.group(1)
-        allele_designation =\
-            None if m.group(3) is None else m.group(3).split(':')
-
-    # Could not parse
-    else:
-        warn_failure(original_input, gene_name, species)
-        return None
-
-    # Build DecomposedMHC object
-    decomp_mhc = DecomposedHLA(
+    return standardise_template(
         gene=gene,
-        allele_designation=allele_designation,
+        gene_type='MHC',
+        species=species,
+        enforce_functional=True,
         precision=precision,
-        ref_dict=ref_dict,
-        syn_dict=syn_dict
+        standardiser_dict=STANDARDISERS
     )
-
-    # Try resolving, and return None on failure
-    if not decomp_mhc.resolve():
-        warn_failure(original_input, decomp_mhc.compile(), species)
-        return None
-    
-    return decomp_mhc.compile()
 
 
 def get_chain(gene_name: str) -> str:

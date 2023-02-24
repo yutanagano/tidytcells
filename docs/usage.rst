@@ -30,18 +30,18 @@ Example usage
 
 >>> import tidytcells
 >>> # --- TCR parsing ---
->>> tidytcells.tcr.standardise('TCRAV32S1', 'HomoSapiens')
+>>> tidytcells.tcr.standardise('TCRAV32S1', 'homosapiens')
 'TRAV25'
->>> tidytcells.tcr.standardise('TRBV1*01', 'HomoSapiens', enforce_functional=True)
+>>> tidytcells.tcr.standardise('TRBV1*01', 'homosapiens', enforce_functional=True)
 None
->>> tidytcells.tcr.standardise('TRAJ12*01', 'MusMusculus', precision='gene')
+>>> tidytcells.tcr.standardise('TRAJ12*01', 'musmusculus', precision='gene')
 'TRAJ12'
 >>> # --- MHC parsing ---
->>> tidytcells.mhc.standardise('HLA-A', 'HomoSapiens')
+>>> tidytcells.mhc.standardise('HLA-A', 'homosapiens')
 'HLA-A'
->>> tidytcells.mhc.standardise('A1', 'HomoSapiens')
+>>> tidytcells.mhc.standardise('A1', 'homosapiens')
 'HLA-A*01'
->>> tidytcells.mhc.standardise('HLA-B*07:02:01:01', 'HomoSapiens', precision='protein')
+>>> tidytcells.mhc.standardise('HLA-B*07:02:01:01', 'homosapiens', precision='protein')
 ('HLA-B*07:02', ':01:01')
 >>> tidytcells.mhc.standardise('HLA-DR1BL')
 'HLA-DRB9'
@@ -55,19 +55,19 @@ None
 Supported species and species strings
 -------------------------------------
 
-For all functions that expect a species to be specified via a string, the species should be referred to by its `binomial name <https://en.wikipedia.org/wiki/Binomial_nomenclature>`_, `CamelCased <https://en.wikipedia.org/wiki/Camel_case>`_ (with the first character capitalised), with no space between the two parts (e.g. ``'HomoSapiens'``).
+For all functions that expect a species to be specified via a string, the species should be referred to by its `binomial name <https://en.wikipedia.org/wiki/Binomial_nomenclature>`_, lowercased, with no space between the two parts (e.g. ``'homosapiens'``).
 
 Below is a list of currently supported species:
 
 :py:func:`tidytcells.mhc.classify`
-    - ``HomoSapiens``
+    - ``homosapiens``
 
 :py:func:`tidytcells.mhc.get_chain`
-    - ``HomoSapiens``
+    - ``homosapiens``
 
 :py:func:`tidytcells.mhc.standardise`
-    - ``HomoSapiens``
+    - ``homosapiens``
 
 :py:func:`tidytcells.tcr.standardise`
-    - ``HomoSapiens``
-    - ``MusMusculus``
+    - ``homosapiens``
+    - ``musmusculus``
