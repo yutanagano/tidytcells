@@ -4,9 +4,9 @@ Gene standardiser classes
 
 
 from abc import ABC, abstractmethod
+from itertools import product
 import re
 from .._resources import *
-from typing import List, Optional
 
 
 # --- STATIC RESOURCES ---
@@ -151,33 +151,44 @@ class HLAStandardiser(GeneStandardiser):
         if gene == 'B2M':
             self.gene = 'B2M'
             self.allele_designation = []
-            self.is_g = False
-            self.is_p = False
+            return
+        
+        # If period between digits, replace with colon
+        gene = re.sub(r'(?<=\d)\.(?=\d)', ':', gene)
+
+        parse_attempt_1 = re.match(
+            r'^((HLA-)?(D[PQ][AB]|DRB|TAP)\d)(\*?([\d:]+G?P?)[LSCAQN]?)?',
+            gene
+        )
+        if parse_attempt_1:
+            self.gene = parse_attempt_1.group(1)
+            self.allele_designation =\
+                [] if parse_attempt_1.group(5) is None\
+                else parse_attempt_1.group(5).split(':')
             return
 
-        parse_attempt = re.match(
+        parse_attempt_2 = re.match(
             r'^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?',
             gene
         )
-        
-        if parse_attempt:
-            self.gene = parse_attempt.group(1)
+        if parse_attempt_2:
+            self.gene = parse_attempt_2.group(1)
             self.allele_designation =\
-                [] if parse_attempt.group(3) is None\
-                else parse_attempt.group(3).split(':')
-            
-            if self.allele_designation:
-                self.is_g = self.allele_designation[-1].endswith('G')
-                self.is_p = self.allele_designation[-1].endswith('P')
-            else:
-                self.is_g = self.is_p = False
-            
+                [] if parse_attempt_2.group(3) is None\
+                else parse_attempt_2.group(3).split(':')
             return
         
         self.gene = gene
         self.allele_designation = None
-        self.is_g = False
-        self.is_p = False
+    
+
+    @property
+    def is_group(self) -> bool:
+        if not self.allele_designation:
+            return False
+        
+        return self.allele_designation[-1].endswith('G') or \
+            self.allele_designation[-1].endswith('P')
     
 
     def resolve_errors(self) -> None:
@@ -188,20 +199,41 @@ class HLAStandardiser(GeneStandardiser):
         if self.gene in HOMOSAPIENS_MHC_SYNONYMS:
             self.gene = HOMOSAPIENS_MHC_SYNONYMS[self.gene]
             if self.valid():
-                return # Done
+                return
         
-        # Add HLA prefix if necessary
+        # Handle common errors
         if not self.gene.startswith('HLA-'):
             self.gene = 'HLA-' + self.gene
-            if self.valid():
-                return # Done
+        self.gene = self.gene.replace('CW', 'C')
+        if self.valid():
+            return
         
         # Handle for forgotten asterisk
         if not self.allele_designation:
-            m = re.match(r'^(HLA-[A-Z]+)(\d+)$', self.gene)
+            m = re.match(r'^(HLA-[A-Z]+)([\d:]+G?P?)$', self.gene)
             if m:
                 self.gene = m.group(1)
-                self.allele_designation = [f'{int(m.group(2)):02}']
+                self.allele_designation = m.group(2).split(':')
+            if self.valid():
+                return
+        
+        # Handle forgotten colon between first/second allele designator
+        if self.allele_designation and len(self.allele_designation[0]) == 4:
+            self.allele_designation = [
+                self.allele_designation[0][:2],
+                self.allele_designation[0][2:]
+            ] + self.allele_designation[1:]
+            if self.valid():
+                return
+
+        # Try different amounts of leading zeros in first 2 allele designators
+        ads = [int(ad) for ad in self.allele_designation[:2]]
+        ads_reformatted = [[f'{ad:02}', f'{ad:03}'] for ad in ads]
+        for new_ads in product(*ads_reformatted):
+            self.allele_designation =\
+                list(new_ads) + self.allele_designation[2:]
+            if self.valid():
+                return
 
 
     def valid(self) -> bool:
@@ -215,7 +247,7 @@ class HLAStandardiser(GeneStandardiser):
 
         # Verify allele designators up to the level of the protein (or G/P)
         allele_designation = self.allele_designation.copy()
-        if not (self.is_g or self.is_p):
+        if not self.is_group:
             allele_designation = allele_designation[:2]
         current_root = HOMOSAPIENS_MHC[self.gene]
 
@@ -227,7 +259,7 @@ class HLAStandardiser(GeneStandardiser):
 
         # If there are designator fields past the protein level, just make sure
         # they look like legitimate designator field values
-        if not (self.is_g or self.is_p) and len(self.allele_designation) > 2:
+        if not self.is_group and len(self.allele_designation) > 2:
             further_designators = self.allele_designation[2:]
 
             if len(further_designators) > 2:
