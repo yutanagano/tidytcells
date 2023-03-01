@@ -285,15 +285,7 @@ class HLAStandardiser(GeneStandardiser):
                 return f'{self.gene}*{":".join(self.allele_designation)}'
             
             if precision == 'protein':
-                prot_designation = self.allele_designation[:2]
-                further_designation =\
-                    None if len(self.allele_designation) <= 2\
-                    else ':'+':'.join(self.allele_designation[2:])
-                
-                return (
-                    f'{self.gene}*{":".join(prot_designation)}',
-                    further_designation
-                )
+                return f'{self.gene}*{":".join(self.allele_designation[:2])}'
 
         return self.gene
 

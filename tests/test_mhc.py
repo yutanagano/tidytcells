@@ -47,7 +47,7 @@ class TestStandardise:
         ('gene', 'expected', 'precision'),
         (
             ('HLA-DRB3*01:01:02:01', 'HLA-DRB3*01:01:02:01', 'allele'),
-            ('HLA-DRB3*01:01:02:01', ('HLA-DRB3*01:01', ':02:01'), 'protein'),
+            ('HLA-DRB3*01:01:02:01', 'HLA-DRB3*01:01', 'protein'),
             ('HLA-DRB3*01:01:02:01', 'HLA-DRB3', 'gene')
         )
     )
@@ -59,6 +59,18 @@ class TestStandardise:
         )
 
         assert result == expected
+    
+
+    def test_standardize(self):
+        result = mhc.standardize('HLA-B*07')
+
+        assert result == 'HLA-B*07'
+
+
+    def test_gene_name(self):
+        result = mhc.standardise(gene_name='HLA-B*07')
+
+        assert result == 'HLA-B*07'
 
 
 
@@ -231,7 +243,7 @@ class TestGetChain:
         )
     )
     def test_get_chain(self, gene, expected):
-        result = mhc.get_chain(gene_name=gene)
+        result = mhc.get_chain(gene=gene)
 
         assert result == expected
 
@@ -241,7 +253,7 @@ class TestGetChain:
     )
     def test_unrecognised_gene_names(self, gene):
         with pytest.warns(UserWarning):
-            result = mhc.get_chain(gene_name=gene)
+            result = mhc.get_chain(gene=gene)
 
         assert result == None
 
@@ -252,6 +264,12 @@ class TestGetChain:
     def test_bad_type(self, gene):
         with pytest.raises(TypeError):
             mhc.get_chain(gene)
+    
+
+    def test_gene_name(self):
+        result = mhc.get_chain(gene_name='HLA-A')
+
+        assert result == 'alpha'
 
 
 class TestGetClass:
@@ -274,7 +292,7 @@ class TestGetClass:
         )
     )
     def test_get_class(self, gene, expected):
-        result = mhc.get_class(gene)
+        result = mhc.get_class(gene=gene)
 
         assert result == expected
     
@@ -284,7 +302,7 @@ class TestGetClass:
     )
     def test_unrecognised_gene_names(self, gene):
         with pytest.warns(UserWarning):
-            result = mhc.get_chain(gene_name=gene)
+            result = mhc.get_class(gene=gene)
 
         assert result == None
 
@@ -294,4 +312,10 @@ class TestGetClass:
     )
     def test_bad_type(self, gene):
         with pytest.raises(TypeError):
-            mhc.get_chain(gene)
+            mhc.get_class(gene)
+    
+
+    def test_gene_name(self):
+        result = mhc.get_class(gene_name='HLA-A')
+
+        assert result == 1

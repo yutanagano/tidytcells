@@ -3,6 +3,7 @@ Utility functions related to TCRs and TCR genes.
 '''
 
 
+from typing import Optional
 from .._utils.gene_standardisers import (
     HomoSapiensTCRStandardiser,
     MusMusculusTCRStandardiser
@@ -18,10 +19,12 @@ STANDARDISERS = {
 
 
 def standardise(
-    gene: str,
+    gene: Optional[str] = None,
     species: str = 'homosapiens',
     enforce_functional: bool = False,
-    precision: str = 'allele'
+    precision: str = 'allele',
+
+    gene_name: Optional[str] = None
 ) -> str:
     '''
     Attempt to standardise a TCR gene name to be IMGT-compliant.
@@ -47,6 +50,12 @@ def standardise(
         Defaults to ``'allele'``.
     :type precision:
         ``str``
+
+    :param gene_name:
+        Alias for the parameter ``gene``.
+    :type gene_name:
+        ``str``
+
     :return:
         If the specified ``species`` is supported, and ``gene`` could be standardised, then return the standardised gene name.
         If ``species`` is unsupported, then the function does not attempt to standardise , and returns the unaltered ``gene`` string.
@@ -54,6 +63,9 @@ def standardise(
     :rtype:
         ``str`` or ``None``
     '''
+    # Alias resolution
+    if gene is None:
+        gene = gene_name
     
     # If precision is not either 'allele' or 'gene' raise error
     if not precision in ('allele', 'gene'):

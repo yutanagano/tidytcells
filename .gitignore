@@ -6,5 +6,7 @@ __pycache__
 /.venv
 /.vscode
 /dist
-/docs/_*
+/docs/_build
+/docs/_static
+/docs/generated
 /ignore
