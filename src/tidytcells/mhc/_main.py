@@ -41,9 +41,10 @@ def standardise(
     '''
     Attempt to standardise an MHC gene name to be IMGT-compliant.
     
-    An important note here is that this function will verify the validity of an MHC gene up to the level of the protein.
-    Any further precise allele designations will not be verified, apart from the requirement that the format (colon-separated numbers) looks valid.
-    The reasons for this is firstly because new alleles at that level are added to the IMGT list quite often and so accurate verification is difficult, secondly because people rarely need verification to such a precise level, and finally because such verification costs more computational effort with diminishing returns.
+    .. note::
+        This function will only verify the validity of an MHC gene/allele up to the level of the protein.
+        Any further precise allele designations will not be verified, apart from the requirement that the format (colon-separated numbers) look valid.
+        The reasons for this is firstly because new alleles at that level are added to the IMGT list quite often and so accurate verification is difficult, secondly because people rarely need verification to such a precise level, and finally because such verification costs more computational effort with diminishing returns.
 
     :param gene:
         Potentially non-standardised MHC gene name.
@@ -58,7 +59,6 @@ def standardise(
         The maximum level of precision to standardise to.
         ``'allele'`` standardises to the maximum precision possible.
         ``'protein'`` keeps allele designators up to the level of the protein (first two).
-        In this setting, the function returns a tuple instead of a string, where the first element is a string representing the MHC up to the level of the protein,and any further allele designators are separated into a separate string, which is the second element of the tuple (if there are no further designators available, then the second element of the tuple is set to ``None``).
         ``'gene'`` standardises only to the level of the gene.
         Defaults to ``'allele'``.
     :type precision:
@@ -74,7 +74,7 @@ def standardise(
         If ``species`` is unsupported, then the function does not attempt to standardise, and returns the unaltered ``gene`` string.
         Else returns ``None``.
     :rtype:
-        ``str``, ``tuple[str]`` (see parameter ``precision``) or ``None``
+        ``str`` or ``None``
     '''
     # Alias resolution
     if gene is None:

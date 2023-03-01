@@ -47,7 +47,7 @@ class TestStandardise:
         ('gene', 'expected', 'precision'),
         (
             ('HLA-DRB3*01:01:02:01', 'HLA-DRB3*01:01:02:01', 'allele'),
-            ('HLA-DRB3*01:01:02:01', ('HLA-DRB3*01:01', ':02:01'), 'protein'),
+            ('HLA-DRB3*01:01:02:01', 'HLA-DRB3*01:01', 'protein'),
             ('HLA-DRB3*01:01:02:01', 'HLA-DRB3', 'gene')
         )
     )
