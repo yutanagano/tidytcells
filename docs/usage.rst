@@ -9,19 +9,15 @@ Usage
 Standardising TCR/MHC gene names
 --------------------------------
 
-``tidytcells`` provides a similar API for standardising TCR and MHC genes.
-The function for standardising TCR and MHC genes are ``tidytcells.tcr.standardise`` and ``tidytcells.mhc.standardise`` respectively.
-
-.. autofunction:: tidytcells.tcr.standardise
-
-.. autofunction:: tidytcells.mhc.standardise
+These are ``tidytcells``' primary usecases.
+The API for standardising TCR and MHC genes are similar: :py:func:`tidytcells.tcr.standardise` and :py:func:`tidytcells.mhc.standardise` respectively.
+At their core, these functions take as input a potentially non-standard string representation of a gene or allele and returns (if possible) an IMGT-standardised version of the gene/allele name.
+In both cases, ``standardize`` is a valid alias of the function as well.
 
 Other MHC utilities
 -------------------
 
-.. autofunction:: tidytcells.mhc.get_chain
-
-.. autofunction:: tidytcells.mhc.get_class
+``tidytcells`` also provides some extra utilities in the :py:mod:`mhc <tidytcells.mhc>` module, including :py:func:`get_chain <tidytcells.mhc.get_chain>` and :py:func:`get_class <tidytcells.mhc.get_class>`.
 
 .. _example_usage:
 
@@ -60,10 +56,10 @@ That being said, for backwards-compatibility and user friendliness, any combinat
 
 Below is a list of currently supported species:
 
-:py:func:`tidytcells.mhc.classify`
+:py:func:`tidytcells.mhc.get_chain`
     - ``homosapiens``
 
-:py:func:`tidytcells.mhc.get_chain`
+:py:func:`tidytcells.mhc.get_class`
     - ``homosapiens``
 
 :py:func:`tidytcells.mhc.standardise`

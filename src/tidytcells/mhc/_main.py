@@ -115,7 +115,7 @@ def get_chain(
         ``str``
 
     :return:
-        ``'alpha'`` or ``'beta'`` if ``gene_name`` is recognised and its chain is known, else ``None``.
+        ``'alpha'`` or ``'beta'`` if ``gene`` is recognised and its chain is known, else ``None``.
     :rtype:
         ``str`` or ``None``
     '''
@@ -164,7 +164,7 @@ def get_class(
         ``str``
 
     :return:
-        ``1`` or ``2`` if ``gene_name`` is recognised and its class is known, else ``None``.
+        ``1`` or ``2`` if ``gene`` is recognised and its class is known, else ``None``.
     :rtype:
         ``int`` or ``None``
     '''
