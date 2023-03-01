@@ -114,6 +114,18 @@ class TestStandardise:
         )
 
         assert result == expected
+    
+
+    def test_standardize(self):
+        result = tcr.standardize('TRBV20/OR9-2*01')
+
+        assert result == 'TRBV20/OR9-2*01'
+
+
+    def test_gene_name(self):
+        result = tcr.standardise(gene_name='TRBV20/OR9-2*01')
+
+        assert result == 'TRBV20/OR9-2*01'
 
 
 class TestStandardiseHomoSapiens:

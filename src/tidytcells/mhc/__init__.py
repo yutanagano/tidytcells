@@ -8,3 +8,10 @@ from ._main import (
     get_chain,
     get_class
 )
+
+
+def standardize(*args, **kwargs):
+    '''
+    Alias for :py:func:`tidytcells.mhc.standardise`.
+    '''
+    return standardise(*args, **kwargs)
