@@ -90,7 +90,8 @@ class TestStandardiseHomoSapiens:
         (
             'foobar',
             'yoinkdoink',
-            'HLA-FOOBAR123456'
+            'HLA-FOOBAR123456',
+            '======='
         )
     )
     def test_invalid_mhc(self, gene):
@@ -193,7 +194,8 @@ class TestStandardiseMusMusculus:
         (
             'foobar',
             'yoinkdoink',
-            'MH1-ABC'
+            'MH1-ABC',
+            '======='
         )
     )
     def test_invalid_mhc(self, gene):
