@@ -182,7 +182,7 @@ class HLAStandardiser(GeneStandardiser):
             return
         
         self.gene = gene
-        self.allele_designation = None
+        self.allele_designation = []
     
 
     @property
