@@ -82,28 +82,10 @@ class TestStandardise:
 
 
     @pytest.mark.parametrize(
-        ('gene', 'expected'),
-        (
-            ('TRAV14DV4', 'TRAV14/DV4'),
-            ('TRBV20OR9-2', 'TRBV20/OR9-2'),
-            ('TRBV01', 'TRBV1'),
-            ('TCRBV1', 'TRBV1')
-        )
-    )
-    def test_various_typos(self, gene, expected):
-        result = tcr.standardise(
-            gene=gene,
-            species='homosapiens'
-        )
-
-        assert result == expected
-
-
-    @pytest.mark.parametrize(
         ('gene', 'expected', 'precision'),
         (
             ('TRBV24/OR9-2*01', 'TRBV24/OR9-2*01', 'allele'),
-            ('TRAv16*01', 'TRAV16', 'gene')
+            ('TRAV16*01', 'TRAV16', 'gene')
         )
     )
     def test_precision(self, gene, expected, precision):
@@ -165,6 +147,26 @@ class TestStandardiseHomoSapiens:
         )
     )
     def test_resolve_alternate_tcr_names(self, gene, expected):
+        result = tcr.standardise(
+            gene=gene,
+            species='homosapiens'
+        )
+
+        assert result == expected
+
+
+    @pytest.mark.parametrize(
+        ('gene', 'expected'),
+        (
+            ('TRAV14DV4', 'TRAV14/DV4'),
+            ('TRBV20OR9-2', 'TRBV20/OR9-2'),
+            ('TRBV01', 'TRBV1'),
+            ('TCRBV1', 'TRBV1'),
+            ('TRAV14', 'TRAV14/DV4'),
+            ('TRDV4', 'TRAV14/DV4')
+        )
+    )
+    def test_various_typos(self, gene, expected):
         result = tcr.standardise(
             gene=gene,
             species='homosapiens'

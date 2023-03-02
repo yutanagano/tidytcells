@@ -91,12 +91,37 @@ class TCRStandardiser(GeneStandardiser):
         # If a synonym, correct to currently approved name
         if self.syn_dict and self.gene in self.syn_dict:
             self.gene = self.syn_dict[self.gene]
-            return # Done
+            return
 
         # Fix common errors
         self.gene = re.sub(r'(?<!TR)(?<!\/)DV', '/DV', self.gene)
         self.gene = re.sub(r'(?<!\d)0', '', self.gene)
         self.gene = self.gene.replace('TCR', 'TR')
+        if self.valid():
+            return
+        
+        # Make sure gene starts with 'TR'
+        if not self.gene.startswith('TR'):
+            self.gene = 'TR' + self.gene
+            if self.valid():
+                return
+        
+        # Resolve DV designation from AV if necessary
+        if self.gene.startswith('TRAV') and 'DV' not in self.gene:
+            for valid_gene in self.ref_dict:
+                if valid_gene.startswith(self.gene + '/DV'):
+                    self.gene = valid_gene
+                    return
+        
+        # Resolve AV designation from DV is necessary
+        if self.gene.startswith('TRDV'):
+            for valid_gene in self.ref_dict:
+                if re.match(
+                    rf'^TRAV\d+(-\d)?\/{self.gene[2:]}$',
+                    valid_gene
+                ):
+                    self.gene = valid_gene
+                    return
 
 
     def valid(self, enforce_functional: bool = False) -> bool:
