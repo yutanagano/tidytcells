@@ -4,6 +4,7 @@ from tidytcells._resources import (
     HOMOSAPIENS_MHC,
     MUSMUSCULUS_MHC
 )
+import warnings
 
 
 class TestStandardise:
@@ -72,6 +73,11 @@ class TestStandardise:
 
         assert result == 'HLA-B*07'
 
+
+    def test_suppress_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter('error')
+            mhc.standardise('foobarbaz', suppress_warnings=True)
 
 
 class TestStandardiseHomoSapiens:
