@@ -7,6 +7,7 @@ def standardise_template(
     species: str,
     enforce_functional: bool,
     precision: str,
+    suppress_warnings: bool,
     standardiser_dict: dict
 ) -> str:
     # Type errors
@@ -30,13 +31,19 @@ def standardise_template(
             'precision must be type str, got '
             f'{precision} ({type(precision)}).'
         )
+    if type(suppress_warnings) != bool:
+        raise TypeError(
+            'suppress_warnings must be type bool, got '
+            f'{suppress_warnings} ({type(suppress_warnings)}).'
+        )
     
     # For backward compatibility, fix CamelCased species
     species = ''.join(species.split()).lower()
 
     # If the specified species is not supported, no-op (with warning)
     if not species in standardiser_dict:
-        warn_unsupported_species(species, gene_type)
+        if not suppress_warnings:
+            warn_unsupported_species(species, gene_type)
         return gene
 
     # Take note of initial input for reference
@@ -51,7 +58,9 @@ def standardise_template(
     standardised = standardiser_dict[species](gene)
 
     if not standardised.valid(enforce_functional): # Standaridsation failure
-        warn_failure(original_input, standardised.compile('allele'), species)
+        if not suppress_warnings:
+            warn_failure(
+                original_input, standardised.compile('allele'), species)
         return None
     
     return standardised.compile(precision)

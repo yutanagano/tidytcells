@@ -4,6 +4,7 @@ from tidytcells._resources import (
     HOMOSAPIENS_MHC,
     MUSMUSCULUS_MHC
 )
+import warnings
 
 
 class TestStandardise:
@@ -72,6 +73,11 @@ class TestStandardise:
 
         assert result == 'HLA-B*07'
 
+
+    def test_suppress_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter('error')
+            mhc.standardise('foobarbaz', suppress_warnings=True)
 
 
 class TestStandardiseHomoSapiens:
@@ -166,7 +172,8 @@ class TestStandardiseHomoSapiens:
             ('A1', 'HLA-A*01'),
             ('HLA-B*5701', 'HLA-B*57:01'),
             ('B35.3', 'HLA-B*35:03'),
-            ('HLA-DQB103:01', 'HLA-DQB1*03:01')
+            ('HLA-DQB103:01', 'HLA-DQB1*03:01'),
+            ('HLA-A*01:01:1:1', 'HLA-A*01:01:01:01'),
         )
     )
     def test_various_typos(self, gene, expected):
@@ -274,6 +281,12 @@ class TestGetChain:
         assert result == 'alpha'
 
 
+    def test_suppress_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter('error')
+            mhc.get_chain('foobarbaz', suppress_warnings=True)
+
+
 class TestGetClass:
     @pytest.mark.parametrize(
         ('gene', 'expected'),
@@ -321,3 +334,9 @@ class TestGetClass:
         result = mhc.get_class(gene_name='HLA-A')
 
         assert result == 1
+
+
+    def test_suppress_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter('error')
+            mhc.get_class('foobarbaz', suppress_warnings=True)

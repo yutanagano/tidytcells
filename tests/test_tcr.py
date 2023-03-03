@@ -4,6 +4,7 @@ from tidytcells._resources import (
     HOMOSAPIENS_TCR,
     MUSMUSCULUS_TCR
 )
+import warnings
 
 
 class TestStandardise:
@@ -108,6 +109,12 @@ class TestStandardise:
         result = tcr.standardise(gene_name='TRBV20/OR9-2*01')
 
         assert result == 'TRBV20/OR9-2*01'
+
+
+    def test_suppress_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter('error')
+            tcr.standardise('foobarbaz', suppress_warnings=True)
 
 
 class TestStandardiseHomoSapiens:

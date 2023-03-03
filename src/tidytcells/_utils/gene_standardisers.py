@@ -184,15 +184,24 @@ class HLAStandardiser(GeneStandardiser):
         # If period between digits, replace with colon
         gene = re.sub(r'(?<=\d)\.(?=\d)', ':', gene)
 
+        def listify_allele_designation(allele_designation) -> list:
+            if allele_designation is None:
+                return []
+            
+            return [
+                f'{int(d):02}' if d.isdigit() else d
+                for d in allele_designation.split(':')
+            ]
+
         parse_attempt_1 = re.match(
             r'^((HLA-)?(D[PQ][AB]|DRB|TAP)\d)(\*?([\d:]+G?P?)[LSCAQN]?)?',
             gene
         )
         if parse_attempt_1:
             self.gene = parse_attempt_1.group(1)
-            self.allele_designation =\
-                [] if parse_attempt_1.group(5) is None\
-                else parse_attempt_1.group(5).split(':')
+            self.allele_designation = listify_allele_designation(
+                parse_attempt_1.group(5)
+            )
             return
 
         parse_attempt_2 = re.match(
@@ -201,9 +210,9 @@ class HLAStandardiser(GeneStandardiser):
         )
         if parse_attempt_2:
             self.gene = parse_attempt_2.group(1)
-            self.allele_designation =\
-                [] if parse_attempt_2.group(3) is None\
-                else parse_attempt_2.group(3).split(':')
+            self.allele_designation = listify_allele_designation(
+                parse_attempt_2.group(3)
+            )
             return
         
         self.gene = gene

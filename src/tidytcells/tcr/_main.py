@@ -23,6 +23,7 @@ def standardise(
     species: str = 'homosapiens',
     enforce_functional: bool = False,
     precision: str = 'allele',
+    suppress_warnings: bool = False,
 
     gene_name: Optional[str] = None
 ) -> str:
@@ -50,6 +51,11 @@ def standardise(
         Defaults to ``'allele'``.
     :type precision:
         ``str``
+    :param suppress_warnings:
+        Disable warnings that are usually emitted when standardisation fails.
+        Defaults to ``False``.
+    :type suppress_warnings:
+        ``bool``
 
     :param gene_name:
         Alias for the parameter ``gene``.
@@ -79,5 +85,6 @@ def standardise(
         species=species,
         enforce_functional=enforce_functional,
         precision=precision,
+        suppress_warnings=suppress_warnings,
         standardiser_dict=STANDARDISERS
     )

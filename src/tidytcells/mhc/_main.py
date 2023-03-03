@@ -35,6 +35,7 @@ def standardise(
     gene: Optional[str] = None,
     species: str = 'homosapiens',
     precision: str = 'allele',
+    suppress_warnings: bool = False,
 
     gene_name: Optional[str] = None
 ) -> tuple:
@@ -63,6 +64,11 @@ def standardise(
         Defaults to ``'allele'``.
     :type precision:
         ``str``
+    :param suppress_warnings:
+        Disable warnings that are usually emitted when standardisation fails.
+        Defaults to ``False``.
+    :type suppress_warnings:
+        ``bool``
 
     :param gene_name:
         Alias for the parameter ``gene``.
@@ -92,12 +98,15 @@ def standardise(
         species=species,
         enforce_functional=True,
         precision=precision,
+        suppress_warnings=suppress_warnings,
         standardiser_dict=STANDARDISERS
     )
 
 
 def get_chain(
     gene: Optional[str] = None,
+    suppress_warnings: bool = False,
+
     gene_name: Optional[str] = None
 ) -> str:
     '''
@@ -108,6 +117,11 @@ def get_chain(
         Standardised MHC gene name
     :type gene:
         ``str``
+    :param suppress_warnings:
+        Disable warnings that are usually emitted when chain classification fails.
+        Defaults to ``False``.
+    :type suppress_warnings:
+        ``bool``
 
     :param gene_name:
         Alias for the parameter ``gene``.
@@ -128,7 +142,8 @@ def get_chain(
         gene = gene.split('*')[0]
 
         if not gene in (*HOMOSAPIENS_MHC, 'B2M'):
-            warn(f'Unrecognised gene {gene}. Is this standardised?')
+            if not suppress_warnings:
+                warn(f'Unrecognised gene {gene}. Is this standardised?')
             return None
 
         if CHAIN_ALPHA_RE.match(gene):
@@ -137,7 +152,8 @@ def get_chain(
         if CHAIN_BETA_RE.match(gene):
             return 'beta'
 
-        warn(f'Chain for {gene} unknown.')
+        if not suppress_warnings:
+            warn(f'Chain for {gene} unknown.')
         return None
 
     raise TypeError(
@@ -147,6 +163,8 @@ def get_chain(
 
 def get_class(
     gene: Optional[str] = None,
+    suppress_warnings: bool = False,
+
     gene_name: Optional[str] = None
 ) -> int:
     '''
@@ -157,6 +175,11 @@ def get_class(
         Standardised MHC gene name
     :type gene:
         ``str``
+    :param suppress_warnings:
+        Disable warnings that are usually emitted when classification fails.
+        Defaults to ``False``.
+    :type suppress_warnings:
+        ``bool``
 
     :param gene_name:
         Alias for the parameter ``gene``.
@@ -177,7 +200,8 @@ def get_class(
         gene = gene.split('*')[0]
 
         if not gene in (*HOMOSAPIENS_MHC, 'B2M'):
-            warn(f'Unrecognised gene {gene}. Is this standardised?')
+            if not suppress_warnings:
+                warn(f'Unrecognised gene {gene}. Is this standardised?')
             return None
 
         if CLASS_1_RE.match(gene):
@@ -186,7 +210,8 @@ def get_class(
         if CLASS_2_RE.match(gene):
             return 2
 
-        warn(f'Class for {gene} unknown.')
+        if not suppress_warnings:
+            warn(f'Class for {gene} unknown.')
         return None
 
     raise TypeError(
