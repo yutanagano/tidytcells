@@ -166,7 +166,8 @@ class TestStandardiseHomoSapiens:
             ('A1', 'HLA-A*01'),
             ('HLA-B*5701', 'HLA-B*57:01'),
             ('B35.3', 'HLA-B*35:03'),
-            ('HLA-DQB103:01', 'HLA-DQB1*03:01')
+            ('HLA-DQB103:01', 'HLA-DQB1*03:01'),
+            ('HLA-A*01:01:1:1', 'HLA-A*01:01:01:01'),
         )
     )
     def test_various_typos(self, gene, expected):
