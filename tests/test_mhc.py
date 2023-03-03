@@ -281,6 +281,12 @@ class TestGetChain:
         assert result == 'alpha'
 
 
+    def test_suppress_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter('error')
+            mhc.get_chain('foobarbaz', suppress_warnings=True)
+
+
 class TestGetClass:
     @pytest.mark.parametrize(
         ('gene', 'expected'),
@@ -328,3 +334,9 @@ class TestGetClass:
         result = mhc.get_class(gene_name='HLA-A')
 
         assert result == 1
+
+
+    def test_suppress_warnings(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter('error')
+            mhc.get_class('foobarbaz', suppress_warnings=True)
