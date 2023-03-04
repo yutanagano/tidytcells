@@ -38,12 +38,17 @@ def standardise(
     """
     Attempt to standardise a TCR gene name to be IMGT-compliant.
 
+    .. topic:: Supported species
+
+        - ``'homosapiens'``
+        - ``'musmusculus'``
+
     :param gene:
         Potentially non-standardised TCR gene name.
     :type gene:
         ``str``
     :param species:
-        Species to which the TCR gene belongs (see :ref:`supported_species`).
+        Species to which the TCR gene belongs (see above for supported species).
         Defaults to ``'homosapiens'``.
     :type species:
         ``str``
@@ -102,8 +107,13 @@ def query(
     """
     Query the list of all known TCR genes/alleles.
 
+    .. topic:: Supported species
+
+        - ``'homosapiens'``
+        - ``'musmusculus'``
+
     :param species:
-        Species to query (see :ref:`supported_species`).
+        Species to query (see above for supported species).
         Defaults to ``'homosapiens'``.
     :type species:
         ``str``

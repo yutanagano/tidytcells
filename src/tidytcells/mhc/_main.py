@@ -43,6 +43,11 @@ def standardise(
     """
     Attempt to standardise an MHC gene name to be IMGT-compliant.
 
+    .. topic:: Supported species
+
+        - ``'homosapiens'``
+        - ``'musmusculus'``
+
     .. note::
         This function will only verify the validity of an MHC gene/allele up to the level of the protein.
         Any further precise allele designations will not be verified, apart from the requirement that the format (colon-separated numbers) look valid.
@@ -53,7 +58,7 @@ def standardise(
     :type gene:
         ``str``
     :param species:
-        Species to which the MHC gene belongs (see :ref:`supported_species`).
+        Species to which the MHC gene belongs (see above for supported species).
         Defaults to ``'homosapiens'``.
     :type species:
         ``str``
@@ -107,8 +112,19 @@ def query(
     """
     Query the list of all known MHC genes/alleles.
 
+    .. topic:: Supported species
+
+        - ``'homosapiens'``
+        - ``'musmusculus'``
+
+    .. note::
+
+        ``tidytcells``' knowledge of MHC alleles is limited, especially outside of humans.
+        ``tidytcells`` will allow you to query HLA alleles up to the level of the protein (first two allele designators), but that is the highest resolution available.
+        For Mus musculus, there is currently only support for gene-level querying.
+
     :param species:
-        Species to query (see :ref:`supported_species`).
+        Species to query (see above for supported species).
         Defaults to ``'homosapiens'``.
     :type species:
         ``str``
@@ -148,6 +164,10 @@ def get_chain(
 ) -> str:
     """
     Given a standardised MHC gene name, detect whether it codes for an alpha or a beta chain molecule.
+
+    .. note::
+
+        This function currently only recognises HLAs, and not MHCs from other species.
 
     :param gene:
         Standardised MHC gene name
@@ -203,6 +223,10 @@ def get_class(
     """
     Given a standardised MHC gene name, detect whether it comprises a class I
     or II MHC receptor complex.
+
+    .. note::
+
+        This function currently only recognises HLAs, and not MHCs from other species.
 
     :param gene:
         Standardised MHC gene name
