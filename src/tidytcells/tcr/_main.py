@@ -96,6 +96,7 @@ def standardise(
 def query(
     species: str = "homosapiens",
     precision: str = "allele",
+    functionality: str = "any",
     contains: Optional[str] = None,
 ) -> FrozenSet[str]:
     """
@@ -113,6 +114,18 @@ def query(
         Defaults to ``allele``.
     :type precision:
         ``str``
+    :param functionality:
+        Gene/allele functionality to subset by.
+        ``"any"`` queries from all possible genes/alleles.
+        ``"F"`` queries from functional genes/alleles.
+        ``"NF"`` queries from psuedogenes and ORFs.
+        ``"P"`` queries from pseudogenes.
+        ``"ORF"`` queries from ORFs.
+        An allele is considered queriable if its functionality label matches the description.
+        A gene is considered queriable if at least one of its alleles' functionality label matches the description.
+        Defaults to ``"any"``.
+    :type functionality:
+        ``str``
     :param contains:
         An optional regular expression string which will be used to filter the query result.
         If supplied, only genes/alleles which contain the regular expression will be returned.
@@ -129,6 +142,7 @@ def query(
     return query_template(
         species=species,
         precision=precision,
+        functionality=functionality,
         contains=contains,
         query_engine_dict=QUERY_ENGINES,
     )

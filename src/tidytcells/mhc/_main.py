@@ -135,6 +135,7 @@ def query(
     return query_template(
         species=species,
         precision=precision,
+        functionality="any",
         contains=contains,
         query_engine_dict=QUERY_ENGINES,
     )

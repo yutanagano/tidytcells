@@ -179,3 +179,36 @@ class TestQuery:
         assert len(result) == expected_len
         assert expected_in in result
         assert not expected_not_in in result
+
+    @pytest.mark.parametrize(
+        (
+            "species",
+            "precision",
+            "functionality",
+            "expected_len",
+            "expected_in",
+            "expected_not_in",
+        ),
+        (
+            ("homosapiens", "gene", "F", 186, "TRBJ2-7", "TRBV12-2"),
+            ("homosapiens", "allele", "NF", 105, "TRAV35*03", "TRAV35*01"),
+            ("musmusculus", "gene", "P", 59, "TRGC3", "TRDV5"),
+            ("musmusculus", "allele", "ORF", 24, "TRBV24*03", "TRBV24*01"),
+        ),
+    )
+    def test_query_functionality(
+        self,
+        species,
+        precision,
+        functionality,
+        expected_len,
+        expected_in,
+        expected_not_in,
+    ):
+        result = tcr.query(
+            species=species, precision=precision, functionality=functionality
+        )
+
+        assert len(result) == expected_len
+        assert expected_in in result
+        assert not expected_not_in in result

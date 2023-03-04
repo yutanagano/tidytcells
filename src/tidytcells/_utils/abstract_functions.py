@@ -66,11 +66,19 @@ def standardise_template(
 
 
 def query_template(
-    species: str, precision: str, contains: Optional[str], query_engine_dict: dict
+    species: str,
+    precision: str,
+    functionality: str,
+    contains: Optional[str],
+    query_engine_dict: dict,
 ) -> FrozenSet[str]:
     # Type checks
     if type(species) != str:
         raise TypeError(f"species must be type str, got {species} ({type(species)}).")
+    if type(functionality) != str:
+        raise TypeError(
+            f"functionality must be type str, got {functionality} ({type(functionality)})."
+        )
     if type(precision) != str:
         raise TypeError(
             f"precision must be type str, got {precision} ({type(precision)})."
@@ -85,11 +93,17 @@ def query_template(
         raise ValueError(
             f'precision must be either "allele" or "gene", got {precision}.'
         )
+    if not functionality in {"any", "F", "NF", "P", "ORF"}:
+        raise ValueError(
+            f'functionality must be "any", "F", "NF", "P", or "ORF", got {functionality}.'
+        )
 
     if not species in query_engine_dict:
         raise ValueError(f"Unsupported species: {species}. No data available.")
 
-    result = query_engine_dict[species].query(precision=precision)
+    result = query_engine_dict[species].query(
+        precision=precision, functionality=functionality
+    )
 
     if contains is None:
         return result

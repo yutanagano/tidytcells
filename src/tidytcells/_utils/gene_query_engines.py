@@ -27,16 +27,36 @@ class TCRQueryEngine(GeneQueryEngine):
     ref_dict = dict()
 
     @classmethod
-    def query(cls, precision: str) -> FrozenSet[str]:
+    def query(cls, precision: str, functionality: str) -> FrozenSet[str]:
         tcrs = []
 
         for gene in cls.ref_dict:
             if precision == "gene":
-                tcrs.append(gene)
+                if (
+                    functionality == "any"
+                    or (
+                        functionality in ("F", "P", "ORF")
+                        and functionality in cls.ref_dict[gene].values()
+                    )
+                    or (
+                        functionality == "NF"
+                        and {"P", "ORF"}.intersection(cls.ref_dict[gene].values)
+                    )
+                ):
+                    tcrs.append(gene)
+
                 continue
 
             for d in cls.ref_dict[gene]:
-                tcrs.append(gene + "*" + d)
+                if (
+                    functionality == "any"
+                    or (
+                        functionality in ("F", "P", "ORF")
+                        and cls.ref_dict[gene][d] == functionality
+                    )
+                    or (functionality == "NF" and cls.ref_dict[gene][d] in ("P", "ORF"))
+                ):
+                    tcrs.append(gene + "*" + d)
 
         return frozenset(tcrs)
 
@@ -51,7 +71,7 @@ class MusMusculusTCRQueryEngine(TCRQueryEngine):
 
 class HLAQueryEngine(GeneQueryEngine):
     @staticmethod
-    def query(precision: str) -> FrozenSet[str]:
+    def query(precision: str, functionality: str) -> FrozenSet[str]:
         if precision == "allele":
             warn(
                 "tidytcells is not fully aware of all HLA alleles, and the "
@@ -78,7 +98,7 @@ class HLAQueryEngine(GeneQueryEngine):
 
 class MusMusculusMHCQueryEngine(GeneQueryEngine):
     @staticmethod
-    def query(precision: str) -> FrozenSet[str]:
+    def query(precision: str, functionality: str) -> FrozenSet[str]:
         if precision == "allele":
             warn(
                 "tidytcells is not aware of Mus musculus MHC alleles at all, "
