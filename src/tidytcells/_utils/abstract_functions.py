@@ -1,4 +1,5 @@
-from typing import FrozenSet
+import re
+from typing import FrozenSet, Optional
 from .warnings import *
 
 
@@ -65,7 +66,7 @@ def standardise_template(
 
 
 def query_template(
-    species: str, precision: str, query_engine_dict: dict
+    species: str, precision: str, contains: Optional[str], query_engine_dict: dict
 ) -> FrozenSet[str]:
     # Type checks
     if type(species) != str:
@@ -73,6 +74,10 @@ def query_template(
     if type(precision) != str:
         raise TypeError(
             f"precision must be type str, got {precision} ({type(precision)})."
+        )
+    if not (contains is None or type(contains) == str):
+        raise TypeError(
+            f"contains must be either None or type str, got {contains} ({type(contains)})."
         )
 
     # Allowed value checks
@@ -84,4 +89,9 @@ def query_template(
     if not species in query_engine_dict:
         raise ValueError(f"Unsupported species: {species}. No data available.")
 
-    return query_engine_dict[species].query(precision=precision)
+    result = query_engine_dict[species].query(precision=precision)
+
+    if contains is None:
+        return result
+
+    return frozenset([i for i in result if re.search(contains, i)])

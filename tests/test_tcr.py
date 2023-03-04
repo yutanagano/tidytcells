@@ -156,3 +156,26 @@ class TestQuery:
         assert len(result) == expected_len
         assert expected_in in result
         assert not expected_not_in in result
+
+    @pytest.mark.parametrize(
+        (
+            "species",
+            "precision",
+            "contains",
+            "expected_len",
+            "expected_in",
+            "expected_not_in",
+        ),
+        (
+            ("homosapiens", "gene", "AJ", 61, "TRAJ11", "TRBJ1-6"),
+            ("musmusculus", "gene", "GC", 4, "TRGC1", "TRGV1"),
+        ),
+    )
+    def test_query_contains(
+        self, species, precision, contains, expected_len, expected_in, expected_not_in
+    ):
+        result = tcr.query(species=species, precision=precision, contains=contains)
+
+        assert len(result) == expected_len
+        assert expected_in in result
+        assert not expected_not_in in result

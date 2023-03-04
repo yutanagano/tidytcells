@@ -99,7 +99,11 @@ def standardise(
     )
 
 
-def query(species: str = "homosapiens", precision: str = "allele") -> FrozenSet[str]:
+def query(
+    species: str = "homosapiens",
+    precision: str = "allele",
+    contains: Optional[str] = None,
+) -> FrozenSet[str]:
     """
     Query the list of all known MHC genes/alleles.
 
@@ -115,6 +119,12 @@ def query(species: str = "homosapiens", precision: str = "allele") -> FrozenSet[
         Defaults to ``allele``.
     :type precision:
         ``str``
+    :param contains:
+        An optional regular expression string which will be used to filter the query result.
+        If supplied, only genes/alleles which contain the regular expression will be returned.
+        Defaults to ``None``.
+    :type contains:
+        ``str``
 
     :return:
         The set of all genes/alleles that satisfy the given constraints.
@@ -123,7 +133,10 @@ def query(species: str = "homosapiens", precision: str = "allele") -> FrozenSet[
     """
 
     return query_template(
-        species=species, precision=precision, query_engine_dict=QUERY_ENGINES
+        species=species,
+        precision=precision,
+        contains=contains,
+        query_engine_dict=QUERY_ENGINES,
     )
 
 
