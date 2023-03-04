@@ -1,33 +1,32 @@
-'''
+"""
 Utility functions related to TCRs and TCR genes.
-'''
+"""
 
 
 from typing import Optional
 from .._utils.gene_standardisers import (
     HomoSapiensTCRStandardiser,
-    MusMusculusTCRStandardiser
+    MusMusculusTCRStandardiser,
 )
 from .._utils.standardise_template import standardise_template
 from .._utils.warnings import *
 
 
 STANDARDISERS = {
-    'homosapiens': HomoSapiensTCRStandardiser,
-    'musmusculus': MusMusculusTCRStandardiser
+    "homosapiens": HomoSapiensTCRStandardiser,
+    "musmusculus": MusMusculusTCRStandardiser,
 }
 
 
 def standardise(
     gene: Optional[str] = None,
-    species: str = 'homosapiens',
+    species: str = "homosapiens",
     enforce_functional: bool = False,
-    precision: str = 'allele',
+    precision: str = "allele",
     suppress_warnings: bool = False,
-
-    gene_name: Optional[str] = None
+    gene_name: Optional[str] = None,
 ) -> str:
-    '''
+    """
     Attempt to standardise a TCR gene name to be IMGT-compliant.
 
     :param gene:
@@ -68,23 +67,23 @@ def standardise(
         Else returns ``None``.
     :rtype:
         ``str`` or ``None``
-    '''
+    """
     # Alias resolution
     if gene is None:
         gene = gene_name
-    
+
     # If precision is not either 'allele' or 'gene' raise error
-    if not precision in ('allele', 'gene'):
+    if not precision in ("allele", "gene"):
         raise ValueError(
             f'precision must be either "allele" or "gene", got {precision}.'
         )
 
     return standardise_template(
         gene=gene,
-        gene_type='TCR',
+        gene_type="TCR",
         species=species,
         enforce_functional=enforce_functional,
         precision=precision,
         suppress_warnings=suppress_warnings,
-        standardiser_dict=STANDARDISERS
+        standardiser_dict=STANDARDISERS,
     )

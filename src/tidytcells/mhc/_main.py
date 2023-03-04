@@ -1,15 +1,12 @@
-'''
+"""
 Utility functions related to MHCs and MHC genes.
-'''
+"""
 
 
 import re
 from .._resources import HOMOSAPIENS_MHC
 from typing import Optional
-from .._utils.gene_standardisers import (
-    HLAStandardiser,
-    MusMusculusMHCStandardiser
-)
+from .._utils.gene_standardisers import HLAStandardiser, MusMusculusMHCStandardiser
 from .._utils.standardise_template import standardise_template
 from .._utils.warnings import *
 from warnings import warn
@@ -17,31 +14,30 @@ from warnings import warn
 
 # --- STATIC RESOURCES ---
 
-CHAIN_ALPHA_RE = re.compile(r'HLA-([ABCEFG]|D[PQR]A)')
-CHAIN_BETA_RE = re.compile(r'HLA-D[PQR]B|B2M')
-CLASS_1_RE = re.compile(r'HLA-[ABCEFG]|B2M')
-CLASS_2_RE = re.compile(r'HLA-D[PQR][AB]')
+CHAIN_ALPHA_RE = re.compile(r"HLA-([ABCEFG]|D[PQR]A)")
+CHAIN_BETA_RE = re.compile(r"HLA-D[PQR]B|B2M")
+CLASS_1_RE = re.compile(r"HLA-[ABCEFG]|B2M")
+CLASS_2_RE = re.compile(r"HLA-D[PQR][AB]")
 
 
 # --- MAIN FUNCTIONS ---
 
 STANDARDISERS = {
-    'homosapiens': HLAStandardiser,
-    'musmusculus': MusMusculusMHCStandardiser
+    "homosapiens": HLAStandardiser,
+    "musmusculus": MusMusculusMHCStandardiser,
 }
 
 
 def standardise(
     gene: Optional[str] = None,
-    species: str = 'homosapiens',
-    precision: str = 'allele',
+    species: str = "homosapiens",
+    precision: str = "allele",
     suppress_warnings: bool = False,
-
-    gene_name: Optional[str] = None
+    gene_name: Optional[str] = None,
 ) -> tuple:
-    '''
+    """
     Attempt to standardise an MHC gene name to be IMGT-compliant.
-    
+
     .. note::
         This function will only verify the validity of an MHC gene/allele up to the level of the protein.
         Any further precise allele designations will not be verified, apart from the requirement that the format (colon-separated numbers) look valid.
@@ -81,38 +77,37 @@ def standardise(
         Else returns ``None``.
     :rtype:
         ``str`` or ``None``
-    '''
+    """
     # Alias resolution
     if gene is None:
         gene = gene_name
-    
+
     # If precision is not either 'allele' or 'gene' raise error
-    if not precision in ('allele', 'protein', 'gene'):
+    if not precision in ("allele", "protein", "gene"):
         raise ValueError(
             f'precision must be "allele", "protein" or "gene", got {precision}.'
         )
-    
+
     return standardise_template(
         gene=gene,
-        gene_type='MHC',
+        gene_type="MHC",
         species=species,
         enforce_functional=True,
         precision=precision,
         suppress_warnings=suppress_warnings,
-        standardiser_dict=STANDARDISERS
+        standardiser_dict=STANDARDISERS,
     )
 
 
 def get_chain(
     gene: Optional[str] = None,
     suppress_warnings: bool = False,
-
-    gene_name: Optional[str] = None
+    gene_name: Optional[str] = None,
 ) -> str:
-    '''
+    """
     Given a standardised MHC gene name, detect whether it codes for an alpha
     or a beta chain molecule.
-    
+
     :param gene:
         Standardised MHC gene name
     :type gene:
@@ -132,45 +127,42 @@ def get_chain(
         ``'alpha'`` or ``'beta'`` if ``gene`` is recognised and its chain is known, else ``None``.
     :rtype:
         ``str`` or ``None``
-    '''
+    """
     # Alias resolution
     if gene is None:
         gene = gene_name
 
     if type(gene) == str:
         # If we don't recognise the gene, return None with warning
-        gene = gene.split('*')[0]
+        gene = gene.split("*")[0]
 
-        if not gene in (*HOMOSAPIENS_MHC, 'B2M'):
+        if not gene in (*HOMOSAPIENS_MHC, "B2M"):
             if not suppress_warnings:
-                warn(f'Unrecognised gene {gene}. Is this standardised?')
+                warn(f"Unrecognised gene {gene}. Is this standardised?")
             return None
 
         if CHAIN_ALPHA_RE.match(gene):
-            return 'alpha'
-        
+            return "alpha"
+
         if CHAIN_BETA_RE.match(gene):
-            return 'beta'
+            return "beta"
 
         if not suppress_warnings:
-            warn(f'Chain for {gene} unknown.')
+            warn(f"Chain for {gene} unknown.")
         return None
 
-    raise TypeError(
-        f'gene_name must be type str, got {gene} ({type(gene)}).'
-    )
+    raise TypeError(f"gene_name must be type str, got {gene} ({type(gene)}).")
 
 
 def get_class(
     gene: Optional[str] = None,
     suppress_warnings: bool = False,
-
-    gene_name: Optional[str] = None
+    gene_name: Optional[str] = None,
 ) -> int:
-    '''
+    """
     Given a standardised MHC gene name, detect whether it comprises a class I
     or II MHC receptor complex.
-    
+
     :param gene:
         Standardised MHC gene name
     :type gene:
@@ -190,30 +182,28 @@ def get_class(
         ``1`` or ``2`` if ``gene`` is recognised and its class is known, else ``None``.
     :rtype:
         ``int`` or ``None``
-    '''
+    """
     # Alias resolution
     if gene is None:
         gene = gene_name
 
     if type(gene) == str:
         # If we don't recognise the gene, return None with warning
-        gene = gene.split('*')[0]
+        gene = gene.split("*")[0]
 
-        if not gene in (*HOMOSAPIENS_MHC, 'B2M'):
+        if not gene in (*HOMOSAPIENS_MHC, "B2M"):
             if not suppress_warnings:
-                warn(f'Unrecognised gene {gene}. Is this standardised?')
+                warn(f"Unrecognised gene {gene}. Is this standardised?")
             return None
 
         if CLASS_1_RE.match(gene):
             return 1
-        
+
         if CLASS_2_RE.match(gene):
             return 2
 
         if not suppress_warnings:
-            warn(f'Class for {gene} unknown.')
+            warn(f"Class for {gene} unknown.")
         return None
 
-    raise TypeError(
-        f'gene_name must be type str, got {gene} ({type(gene)}).'
-    )
+    raise TypeError(f"gene_name must be type str, got {gene} ({type(gene)}).")
