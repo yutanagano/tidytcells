@@ -16,19 +16,17 @@ setup(
     author="Yuta Nagano",
     author_email="yutanagano51@proton.me",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
-    keywords="immunology, bioinformatics, TCR, MHC, HLA, IMGT",
+    keywords="immunology, bioinformatics, TCR, MHC, HLA, T cell, IMGT",
     package_dir={"": "src"},
     packages=find_packages("src"),
     package_data={"tidytcells": ["_resources/*"]},
     python_requires=">=3.6",
-    extras_require={
-        "dev": ["odfpy>=1.4.1", "pandas>=1.1.5", "pytest>=7.0.1", "pytest-cov>=4.0.0"]
-    },
+    extras_require={"dev": ["odfpy>=1.4.1", "pandas>=1.1.5", "tox>=4"]},
 )
