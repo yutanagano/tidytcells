@@ -28,5 +28,15 @@ setup(
     packages=find_packages("src"),
     package_data={"tidytcells": ["_resources/*"]},
     python_requires=">=3.6",
-    extras_require={"dev": ["odfpy>=1.4.1", "pandas>=1.1.5", "tox>=4"]},
+    extras_require={
+        "dev": [
+            "build",
+            "odfpy>=1.4.1",
+            "pandas>=1.1.5",
+            "pip",
+            "setuptools",
+            "tox>=4",
+            "wheel",
+        ]
+    },
 )
