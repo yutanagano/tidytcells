@@ -6,19 +6,14 @@
 Welcome to tidytcells's documentation!
 ======================================
 
-.. note::
+.. attention::
 
-   This package is currently in the alpha stage of development.
+   This package is currently in the beta stage of development.
 
-.. note::
-
-   Support for species other than Homo sapiens is currently limited (see :ref:`supported_species`).
-   Support for more species is planned for the future.
-
-``tidytcells`` is a lightweight Python package written for bioinformaticians who work with T cell receptor (TCR) data.
+:py:mod:`tidytcells` is a lightweight python package that helps bioinformaticians clean T cell receptor (TCR) / Major Histocompatibility Complex (MHC) data and standardises it to be `IMGT <https://www.imgt.org/>`_-compliant.
 The main purpose of the package is to solve the problem of parsing and collating together non-standardised TCR datasets.
 It is often difficult to compile TCR data from multiple sources because the formats/nomenclature of how each dataset encodes TCR and MHC gene names are slightly different, or even inconsistent within themselves.
-``tidytcells`` attempts to ameliorate this issue by providing simple functions that can standardise TCR and MHC gene symbols to their officially accepted versions, as defined by `IMGT <https://www.imgt.org/>`_.
+:py:mod:`tidytcells` can ameliorate this issue by auto-correcting and auto-standardising your data!
 
 Contents
 --------

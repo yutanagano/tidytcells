@@ -1,23 +1,18 @@
 Usage
 =====
 
-.. note::
-    
-    As stated on the home page, there is currently limited support for non-human species.
-    Support for more species are planned for the future.
-
 Standardising TCR/MHC gene names
 --------------------------------
 
-These are ``tidytcells``' primary usecases.
+These are :py:mod:`tidytcells`' primary usecases.
 The API for standardising TCR and MHC genes are similar: :py:func:`tidytcells.tcr.standardise` and :py:func:`tidytcells.mhc.standardise` respectively.
 At their core, these functions take as input a potentially non-standard string representation of a gene or allele and returns (if possible) an IMGT-standardised version of the gene/allele name.
-In both cases, ``standardize`` is a valid alias of the function as well.
+In both cases, '``standardize``' is a valid alias of the function as well.
 
 Other MHC utilities
 -------------------
 
-``tidytcells`` also provides some extra utilities in the :py:mod:`mhc <tidytcells.mhc>` module, including :py:func:`get_chain <tidytcells.mhc.get_chain>` and :py:func:`get_class <tidytcells.mhc.get_class>`.
+:py:mod:`tidytcells` also provides some extra utilities in the :py:mod:`mhc <tidytcells.mhc>` module, including :py:func:`get_chain <tidytcells.mhc.get_chain>` and :py:func:`get_class <tidytcells.mhc.get_class>`.
 
 .. _example_usage:
 

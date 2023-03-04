@@ -34,6 +34,7 @@ setup(
             "odfpy>=1.4.1",
             "pandas>=1.1.5",
             "pip",
+            "pytest>=7",
             "setuptools",
             "tox>=4",
             "wheel",
