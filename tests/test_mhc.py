@@ -1,6 +1,7 @@
 import pytest
 from tidytcells import mhc
-from tidytcells._resources import HOMOSAPIENS_MHC, MUSMUSCULUS_MHC
+from tidytcells._resources import *
+from typing import FrozenSet
 import warnings
 
 
@@ -132,7 +133,7 @@ class TestStandardiseMusMusculus:
     @pytest.mark.parametrize("gene", ("foobar", "yoinkdoink", "MH1-ABC", "======="))
     def test_invalid_mhc(self, gene):
         with pytest.warns(UserWarning, match="Failed to standardise"):
-            result = mhc.standardise(gene=gene, species="homosapiens")
+            result = mhc.standardise(gene=gene, species="musmusculus")
 
         assert result == None
 
@@ -143,6 +144,28 @@ class TestStandardiseMusMusculus:
         result = mhc.standardise(gene=gene, species="musmusculus")
 
         assert result == expected
+
+
+class TestQuery:
+    @pytest.mark.filterwarnings("ignore:tidytcells is not.+aware")
+    @pytest.mark.parametrize(
+        ("species", "precision", "expected_len", "expected_in", "expected_not_in"),
+        (
+            ("homosapiens", "allele", 22475, "HLA-DRB3*03:04", "HLA-DRB3*03:04P"),
+            ("homosapiens", "gene", 45, "HLA-B", "HLA-FOO"),
+            ("musmusculus", "allele", 70, "MH1-M10-1", "HLA-A"),
+            ("musmusculus", "gene", 70, "MH1-Q8", "H2-Aa")
+        ),
+    )
+    def test_query_all(
+        self, species, precision, expected_len, expected_in, expected_not_in
+    ):
+        result = mhc.query(species=species, precision=precision)
+
+        assert type(result) == frozenset
+        assert len(result) == expected_len
+        assert expected_in in result
+        assert not expected_not_in in result
 
 
 class TestGetChain:
@@ -239,6 +262,6 @@ class TestGetClass:
             mhc.get_class("foobarbaz", suppress_warnings=True)
 
     def test_classify(self):
-        result = mhc.classify(gene='HLA-A')
+        result = mhc.classify(gene="HLA-A")
 
         assert result == 1

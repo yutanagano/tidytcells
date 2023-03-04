@@ -4,12 +4,12 @@ Utility functions related to MHCs and MHC genes.
 
 
 import re
-from .._resources import HOMOSAPIENS_MHC
-from typing import Optional
+from .._resources import *
+from typing import Optional, FrozenSet
+from .._utils.abstract_functions import standardise_template, query_template
+from .._utils.gene_query_engines import HLAQueryEngine, MusMusculusMHCQueryEngine
 from .._utils.gene_standardisers import HLAStandardiser, MusMusculusMHCStandardiser
-from .._utils.standardise_template import standardise_template
 from .._utils.warnings import *
-from warnings import warn
 
 
 # --- STATIC RESOURCES ---
@@ -25,6 +25,11 @@ CLASS_2_RE = re.compile(r"HLA-D[PQR][AB]")
 STANDARDISERS = {
     "homosapiens": HLAStandardiser,
     "musmusculus": MusMusculusMHCStandardiser,
+}
+
+QUERY_ENGINES = {
+    "homosapiens": HLAQueryEngine,
+    "musmusculus": MusMusculusMHCQueryEngine
 }
 
 
@@ -55,7 +60,7 @@ def standardise(
     :param precision:
         The maximum level of precision to standardise to.
         ``'allele'`` standardises to the maximum precision possible.
-        ``'protein'`` keeps allele designators up to the level of the protein (first two).
+        ``'protein'`` keeps allele designators up to the level of the protein.
         ``'gene'`` standardises only to the level of the gene.
         Defaults to ``'allele'``.
     :type precision:
@@ -82,12 +87,6 @@ def standardise(
     if gene is None:
         gene = gene_name
 
-    # If precision is not either 'allele' or 'gene' raise error
-    if not precision in ("allele", "protein", "gene"):
-        raise ValueError(
-            f'precision must be "allele", "protein" or "gene", got {precision}.'
-        )
-
     return standardise_template(
         gene=gene,
         gene_type="MHC",
@@ -96,7 +95,34 @@ def standardise(
         precision=precision,
         suppress_warnings=suppress_warnings,
         standardiser_dict=STANDARDISERS,
+        allowed_precision={'allele', 'protein', 'gene'}
     )
+
+
+def query(species: str = "homosapiens", precision: str = "protein") -> FrozenSet[str]:
+    """
+    Query the list of all known MHC genes/alleles.
+
+    :param species:
+        Species to query (see :ref:`supported_species`).
+        Defaults to ``'homosapiens'``.
+    :type species:
+        ``str``
+    :param precision:
+        The level of precision to query.
+        ``allele`` will query from the set of all possible alleles.
+        ``gene`` will query from the set of all possible genes.
+        Defaults to ``allele``.
+    :type precision:
+        ``str``
+
+    :return:
+        The set of all genes/alleles that satisfy the given constraints.
+    :rtype:
+        ``FrozenSet[str]``
+    """
+
+    return query_template(species=species, precision=precision, query_engine_dict=QUERY_ENGINES)
 
 
 def get_chain(
@@ -105,8 +131,7 @@ def get_chain(
     gene_name: Optional[str] = None,
 ) -> str:
     """
-    Given a standardised MHC gene name, detect whether it codes for an alpha
-    or a beta chain molecule.
+    Given a standardised MHC gene name, detect whether it codes for an alpha or a beta chain molecule.
 
     :param gene:
         Standardised MHC gene name

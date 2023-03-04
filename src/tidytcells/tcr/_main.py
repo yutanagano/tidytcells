@@ -4,11 +4,11 @@ Utility functions related to TCRs and TCR genes.
 
 
 from typing import Optional
+from .._utils.abstract_functions import standardise_template
 from .._utils.gene_standardisers import (
     HomoSapiensTCRStandardiser,
     MusMusculusTCRStandardiser,
 )
-from .._utils.standardise_template import standardise_template
 from .._utils.warnings import *
 
 
@@ -72,12 +72,6 @@ def standardise(
     if gene is None:
         gene = gene_name
 
-    # If precision is not either 'allele' or 'gene' raise error
-    if not precision in ("allele", "gene"):
-        raise ValueError(
-            f'precision must be either "allele" or "gene", got {precision}.'
-        )
-
     return standardise_template(
         gene=gene,
         gene_type="TCR",
@@ -86,4 +80,5 @@ def standardise(
         precision=precision,
         suppress_warnings=suppress_warnings,
         standardiser_dict=STANDARDISERS,
+        allowed_precision={'allele', 'gene'}
     )
