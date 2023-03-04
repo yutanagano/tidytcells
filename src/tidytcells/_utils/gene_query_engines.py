@@ -23,6 +23,32 @@ class GeneQueryEngine(ABC):
         """
 
 
+class TCRQueryEngine(GeneQueryEngine):
+    ref_dict = dict()
+
+    @classmethod
+    def query(cls, precision: str) -> FrozenSet[str]:
+        tcrs = []
+
+        for gene in cls.ref_dict:
+            if precision == "gene":
+                tcrs.append(gene)
+                continue
+
+            for d in cls.ref_dict[gene]:
+                tcrs.append(gene + "*" + d)
+
+        return frozenset(tcrs)
+
+
+class HomoSapiensTCRQueryEngine(TCRQueryEngine):
+    ref_dict = HOMOSAPIENS_TCR
+
+
+class MusMusculusTCRQueryEngine(TCRQueryEngine):
+    ref_dict = MUSMUSCULUS_TCR
+
+
 class HLAQueryEngine(GeneQueryEngine):
     @staticmethod
     def query(precision: str) -> FrozenSet[str]:

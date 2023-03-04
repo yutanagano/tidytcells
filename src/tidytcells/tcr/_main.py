@@ -3,8 +3,12 @@ Utility functions related to TCRs and TCR genes.
 """
 
 
-from typing import Optional
-from .._utils.abstract_functions import standardise_template
+from typing import FrozenSet, Optional
+from .._utils.abstract_functions import standardise_template, query_template
+from .._utils.gene_query_engines import (
+    HomoSapiensTCRQueryEngine,
+    MusMusculusTCRQueryEngine,
+)
 from .._utils.gene_standardisers import (
     HomoSapiensTCRStandardiser,
     MusMusculusTCRStandardiser,
@@ -15,6 +19,11 @@ from .._utils.warnings import *
 STANDARDISERS = {
     "homosapiens": HomoSapiensTCRStandardiser,
     "musmusculus": MusMusculusTCRStandardiser,
+}
+
+QUERY_ENGINES = {
+    "homosapiens": HomoSapiensTCRQueryEngine,
+    "musmusculus": MusMusculusTCRQueryEngine,
 }
 
 
@@ -81,4 +90,32 @@ def standardise(
         suppress_warnings=suppress_warnings,
         standardiser_dict=STANDARDISERS,
         allowed_precision={"allele", "gene"},
+    )
+
+
+def query(species: str = "homosapiens", precision: str = "allele") -> FrozenSet[str]:
+    """
+    Query the list of all known TCR genes/alleles.
+
+    :param species:
+        Species to query (see :ref:`supported_species`).
+        Defaults to ``'homosapiens'``.
+    :type species:
+        ``str``
+    :param precision:
+        The level of precision to query.
+        ``allele`` will query from the set of all possible alleles.
+        ``gene`` will query from the set of all possible genes.
+        Defaults to ``allele``.
+    :type precision:
+        ``str``
+
+    :return:
+        The set of all genes/alleles that satisfy the given constraints.
+    :rtype:
+        ``FrozenSet[str]``
+    """
+
+    return query_template(
+        species=species, precision=precision, query_engine_dict=QUERY_ENGINES
     )

@@ -99,7 +99,7 @@ def standardise(
     )
 
 
-def query(species: str = "homosapiens", precision: str = "protein") -> FrozenSet[str]:
+def query(species: str = "homosapiens", precision: str = "allele") -> FrozenSet[str]:
     """
     Query the list of all known MHC genes/alleles.
 

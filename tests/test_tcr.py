@@ -135,3 +135,24 @@ class TestStandardiseMusMusculus:
             result = tcr.standardise(gene=gene, species="musmusculus")
 
         assert result == None
+
+
+class TestQuery:
+    @pytest.mark.parametrize(
+        ("species", "precision", "expected_len", "expected_in", "expected_not_in"),
+        (
+            ("homosapiens", "allele", 457, "TRAJ8*02", "TRAJ8"),
+            ("homosapiens", "gene", 250, "TRAJ8", "TRAJ8*02"),
+            ("musmusculus", "allele", 552, "TRAJ4*01", "TRAJ4"),
+            ("musmusculus", "gene", 273, "TRAJ4", "TRAJ4*01"),
+        ),
+    )
+    def test_query_all(
+        self, species, precision, expected_len, expected_in, expected_not_in
+    ):
+        result = tcr.query(species=species, precision=precision)
+
+        assert type(result) == frozenset
+        assert len(result) == expected_len
+        assert expected_in in result
+        assert not expected_not_in in result
