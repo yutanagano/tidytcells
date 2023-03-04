@@ -53,7 +53,7 @@ class TestStandardise:
 
 
 class TestStandardiseHomoSapiens:
-    @pytest.mark.parametrize("gene", HOMOSAPIENS_MHC)
+    @pytest.mark.parametrize("gene", [*HOMOSAPIENS_MHC, "B2M"])
     def test_already_correctly_formatted(self, gene):
         result = mhc.standardise(gene=gene, species="homosapiens")
 
