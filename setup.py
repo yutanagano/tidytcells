@@ -35,6 +35,7 @@ setup(
             "pandas>=1.1.5",
             "pip",
             "pytest>=7",
+            "pytest-cov",
             "setuptools",
             "tox>=4",
             "wheel",
