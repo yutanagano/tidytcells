@@ -11,3 +11,10 @@ def standardize(*args, **kwargs):
     Alias for :py:func:`tidytcells.mhc.standardise`.
     """
     return standardise(*args, **kwargs)
+
+
+def classify(*args, **kwargs):
+    """
+    Alias for :py:func:`tidytcells.mhc.get_class`.
+    """
+    return get_class(*args, **kwargs)

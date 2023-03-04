@@ -237,3 +237,8 @@ class TestGetClass:
         with warnings.catch_warnings():
             warnings.simplefilter("error")
             mhc.get_class("foobarbaz", suppress_warnings=True)
+
+    def test_classify(self):
+        result = mhc.classify(gene='HLA-A')
+
+        assert result == 1
