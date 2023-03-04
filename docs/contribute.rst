@@ -21,7 +21,7 @@ Running tests
 
 The following commands should be run from the testing environment set up as per above.
 
-To run the complete suite of tests including the test building of the `sphinx <https://www.sphinx-doc.org/en/master/#>` docs and `pytest <https://docs.pytest.org>` tests on multiple python versions, you can use `tox <https://tox.wiki/en/latest/>`:
+To run the complete suite of tests including the test building of the `sphinx <https://www.sphinx-doc.org/en/master/#>`_ docs and `pytest <https://docs.pytest.org>`_ tests on multiple python versions, you can use `tox <https://tox.wiki/en/latest/>`_:
 
 .. code-block:: bash
 
