@@ -1,41 +1,54 @@
-'''
+"""
 Utility functions related to TCRs and TCR genes.
-'''
+"""
 
 
-from typing import Optional
+from typing import FrozenSet, Optional
+from .._utils.abstract_functions import standardise_template, query_template
+from .._utils.gene_query_engines import (
+    HomoSapiensTCRQueryEngine,
+    MusMusculusTCRQueryEngine,
+)
 from .._utils.gene_standardisers import (
     HomoSapiensTCRStandardiser,
-    MusMusculusTCRStandardiser
+    MusMusculusTCRStandardiser,
 )
-from .._utils.standardise_template import standardise_template
 from .._utils.warnings import *
 
 
 STANDARDISERS = {
-    'homosapiens': HomoSapiensTCRStandardiser,
-    'musmusculus': MusMusculusTCRStandardiser
+    "homosapiens": HomoSapiensTCRStandardiser,
+    "musmusculus": MusMusculusTCRStandardiser,
+}
+
+QUERY_ENGINES = {
+    "homosapiens": HomoSapiensTCRQueryEngine,
+    "musmusculus": MusMusculusTCRQueryEngine,
 }
 
 
 def standardise(
     gene: Optional[str] = None,
-    species: str = 'homosapiens',
+    species: str = "homosapiens",
     enforce_functional: bool = False,
-    precision: str = 'allele',
+    precision: str = "allele",
     suppress_warnings: bool = False,
-
-    gene_name: Optional[str] = None
+    gene_name: Optional[str] = None,
 ) -> str:
-    '''
+    """
     Attempt to standardise a TCR gene name to be IMGT-compliant.
+
+    .. topic:: Supported species
+
+        - ``'homosapiens'``
+        - ``'musmusculus'``
 
     :param gene:
         Potentially non-standardised TCR gene name.
     :type gene:
         ``str``
     :param species:
-        Species to which the TCR gene belongs (see :ref:`supported_species`).
+        Species to which the TCR gene belongs (see above for supported species).
         Defaults to ``'homosapiens'``.
     :type species:
         ``str``
@@ -68,23 +81,78 @@ def standardise(
         Else returns ``None``.
     :rtype:
         ``str`` or ``None``
-    '''
+    """
     # Alias resolution
     if gene is None:
         gene = gene_name
-    
-    # If precision is not either 'allele' or 'gene' raise error
-    if not precision in ('allele', 'gene'):
-        raise ValueError(
-            f'precision must be either "allele" or "gene", got {precision}.'
-        )
 
     return standardise_template(
         gene=gene,
-        gene_type='TCR',
+        gene_type="TCR",
         species=species,
         enforce_functional=enforce_functional,
         precision=precision,
         suppress_warnings=suppress_warnings,
-        standardiser_dict=STANDARDISERS
+        standardiser_dict=STANDARDISERS,
+        allowed_precision={"allele", "gene"},
+    )
+
+
+def query(
+    species: str = "homosapiens",
+    precision: str = "allele",
+    functionality: str = "any",
+    contains: Optional[str] = None,
+) -> FrozenSet[str]:
+    """
+    Query the list of all known TCR genes/alleles.
+
+    .. topic:: Supported species
+
+        - ``'homosapiens'``
+        - ``'musmusculus'``
+
+    :param species:
+        Species to query (see above for supported species).
+        Defaults to ``'homosapiens'``.
+    :type species:
+        ``str``
+    :param precision:
+        The level of precision to query.
+        ``allele`` will query from the set of all possible alleles.
+        ``gene`` will query from the set of all possible genes.
+        Defaults to ``allele``.
+    :type precision:
+        ``str``
+    :param functionality:
+        Gene/allele functionality to subset by.
+        ``"any"`` queries from all possible genes/alleles.
+        ``"F"`` queries from functional genes/alleles.
+        ``"NF"`` queries from psuedogenes and ORFs.
+        ``"P"`` queries from pseudogenes.
+        ``"ORF"`` queries from ORFs.
+        An allele is considered queriable if its functionality label matches the description.
+        A gene is considered queriable if at least one of its alleles' functionality label matches the description.
+        Defaults to ``"any"``.
+    :type functionality:
+        ``str``
+    :param contains:
+        An optional regular expression string which will be used to filter the query result.
+        If supplied, only genes/alleles which contain the regular expression will be returned.
+        Defaults to ``None``.
+    :type contains:
+        ``str``
+
+    :return:
+        The set of all genes/alleles that satisfy the given constraints.
+    :rtype:
+        ``FrozenSet[str]``
+    """
+
+    return query_template(
+        species=species,
+        precision=precision,
+        functionality=functionality,
+        contains=contains,
+        query_engine_dict=QUERY_ENGINES,
     )

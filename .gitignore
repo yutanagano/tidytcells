@@ -2,7 +2,7 @@
 .pytest_cache
 __pycache__
 *.egg-info
-/.python*
+/.tox
 /.venv
 /.vscode
 /dist

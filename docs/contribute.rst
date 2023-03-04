@@ -14,18 +14,26 @@ To set up a development environment for ``tidytcells``, please clone the git rep
     $ source .venv/bin/activate
     $ pip install -e .[dev]
 
-This will set up a python virtual environment in which an editable copy of the ``tidytcells`` package (changes in the source code will be reflected in real time), plus the development dependencies (currently ``pytest`` and ``pytest-cov``) will be installed.
+This will set up a python virtual environment in which an editable copy of the ``tidytcells`` package (changes in the source code will be reflected in real time), plus the development dependencies will be installed.
 
 Running tests
 -------------
 
-From inside the development environment set up above, you can run test code by executing:
+The following commands should be run from the testing environment set up as per above.
+
+To run the complete suite of tests including the test building of the `sphinx <https://www.sphinx-doc.org/en/master/#>`_ docs and `pytest <https://docs.pytest.org>`_ tests on multiple python versions, you can use `tox <https://tox.wiki/en/latest/>`_:
+
+.. code-block:: bash
+
+    $ tox
+
+To execute just the pytest unit tests, run:
 
 .. code-block:: bash
 
     $ python -m pytest
 
-If you want to also see test coverage, run instead:
+If you want to also see test coverage, run:
 
 .. code-block:: bash
 
