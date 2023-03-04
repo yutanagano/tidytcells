@@ -29,7 +29,7 @@ STANDARDISERS = {
 
 QUERY_ENGINES = {
     "homosapiens": HLAQueryEngine,
-    "musmusculus": MusMusculusMHCQueryEngine
+    "musmusculus": MusMusculusMHCQueryEngine,
 }
 
 
@@ -95,7 +95,7 @@ def standardise(
         precision=precision,
         suppress_warnings=suppress_warnings,
         standardiser_dict=STANDARDISERS,
-        allowed_precision={'allele', 'protein', 'gene'}
+        allowed_precision={"allele", "protein", "gene"},
     )
 
 
@@ -122,7 +122,9 @@ def query(species: str = "homosapiens", precision: str = "protein") -> FrozenSet
         ``FrozenSet[str]``
     """
 
-    return query_template(species=species, precision=precision, query_engine_dict=QUERY_ENGINES)
+    return query_template(
+        species=species, precision=precision, query_engine_dict=QUERY_ENGINES
+    )
 
 
 def get_chain(

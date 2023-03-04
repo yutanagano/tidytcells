@@ -80,5 +80,5 @@ def standardise(
         precision=precision,
         suppress_warnings=suppress_warnings,
         standardiser_dict=STANDARDISERS,
-        allowed_precision={'allele', 'gene'}
+        allowed_precision={"allele", "gene"},
     )

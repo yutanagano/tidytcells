@@ -28,7 +28,9 @@ class HLAQueryEngine(GeneQueryEngine):
     def query(precision: str) -> FrozenSet[str]:
         if precision == "allele":
             warn(
-                "tidytcells is not fully aware of all HLA alleles, and the highest resolution it can provide is up to the level of the protein (two allele designations)."
+                "tidytcells is not fully aware of all HLA alleles, and the "
+                "highest resolution it can provide is up to the level of the "
+                "protein (two allele designations)."
             )
 
         hlas = []
@@ -53,7 +55,8 @@ class MusMusculusMHCQueryEngine(GeneQueryEngine):
     def query(precision: str) -> FrozenSet[str]:
         if precision == "allele":
             warn(
-                "tidytcells is not aware of Mus musculus MHC alleles at all, and can only provide up to the level of the gene."
+                "tidytcells is not aware of Mus musculus MHC alleles at all, "
+                "and can only provide up to the level of the gene."
             )
-        
+
         return frozenset(MUSMUSCULUS_MHC)

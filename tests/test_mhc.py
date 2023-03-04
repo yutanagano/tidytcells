@@ -154,7 +154,7 @@ class TestQuery:
             ("homosapiens", "allele", 22475, "HLA-DRB3*03:04", "HLA-DRB3*03:04P"),
             ("homosapiens", "gene", 45, "HLA-B", "HLA-FOO"),
             ("musmusculus", "allele", 70, "MH1-M10-1", "HLA-A"),
-            ("musmusculus", "gene", 70, "MH1-Q8", "H2-Aa")
+            ("musmusculus", "gene", 70, "MH1-Q8", "H2-Aa"),
         ),
     )
     def test_query_all(
