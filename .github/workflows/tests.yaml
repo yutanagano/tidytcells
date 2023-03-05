@@ -1,0 +1,23 @@
+name: run unit tests
+on: pull_request
+jobs:
+  run_tox:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python_ver: ['3.7', '3.8', '3.9', '3.10', '3.11']
+    
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v3
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python_ver }}
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install tox tox-gh-actions
+      - name: Run tox
+        run: tox
