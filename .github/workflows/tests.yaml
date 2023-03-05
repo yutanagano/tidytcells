@@ -1,11 +1,11 @@
-name: run unit tests
+name: tests
 on: pull_request
 jobs:
   run_tox:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python_ver: ['3.7', '3.8', '3.9', '3.10', '3.11']
+        python_ver: ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
     
     runs-on: ${{ matrix.os }}
     steps:
