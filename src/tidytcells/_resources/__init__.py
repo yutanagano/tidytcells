@@ -18,3 +18,29 @@ with rs(__name__, "musmusculus_mhc.json") as s:
     MUSMUSCULUS_MHC = json.load(s)
 with rs(__name__, "musmusculus_mhc_synonyms.json") as s:
     MUSMUSCULUS_MHC_SYNONYMS = json.load(s)
+
+
+AMINO_ACIDS = frozenset(
+    (
+        "A",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "K",
+        "L",
+        "M",
+        "N",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "V",
+        "W",
+        "Y",
+    )
+)

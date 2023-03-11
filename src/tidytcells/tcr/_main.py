@@ -81,6 +81,30 @@ def standardise(
         Else returns ``None``.
     :rtype:
         ``str`` or ``None``
+
+    .. topic:: Example usage
+
+        Input strings will intelligently be corrected to IMGT-compliant gene symbols.
+
+        >>> tt.tcr.standardise("aj1")
+        'TRAJ1'
+
+        The ``precision`` setting can truncate unnecessary information.
+
+        >>> tt.tcr.standardise("TRBV6-4*01")
+        'TRBV6-4'
+
+        The ``enforce_functional`` setting will cause non-functional genes or alleles to be rejected.
+
+        >>> result = tt.tcr.standardise("TRBV1", enforce_functional=True)
+        UserWarning: Failed to standardise: "TRBV1" for species homosapiens. Attempted fix "TRBV1" did not meet the standardised format requirements. Ignoring this gene name...
+        >>> print(result)
+        None
+
+        *Mus musculus* is a supported species.
+
+        >>> tt.tcr.standardise("TCRBV22S1A2N1T", species="musmusculus")
+        'TRBV2'
     """
     # Alias resolution
     if gene is None:
@@ -147,6 +171,18 @@ def query(
         The set of all genes/alleles that satisfy the given constraints.
     :rtype:
         ``FrozenSet[str]``
+
+    .. topic:: Example usage
+
+        List all known variants for the human TCR gene TRBV6-1.
+
+        >>> tt.tcr.query(species="homosapiens", contains="TRBV6-1")
+        frozenset({'TRBV6-1*01'})
+
+        List all known *Mus musculus* TRAV genes that have at least one allele which is a non-functional ORF.
+
+        >>> tt.tcr.query(species="musmusculus", precision="gene", functionality="ORF", contains="TRAV")
+        frozenset({'TRAV21/DV12', 'TRAV14D-1', 'TRAV13-3', 'TRAV9D-2', 'TRAV5D-4', 'TRAV12D-3', 'TRAV12-1', 'TRAV18', 'TRAV11D'})
     """
 
     return query_template(

@@ -87,6 +87,23 @@ def standardise(
         Else returns ``None``.
     :rtype:
         ``str`` or ``None``
+
+    .. topic:: Example usage
+
+        Input strings will intelligently be corrected to IMGT-compliant gene symbols.
+
+        >>> tt.mhc.standardise("A1")
+        'HLA-A*01'
+
+        The ``precision`` setting can truncate unnecessary information.
+
+        >>> tt.mhc.standardise("HLA-A*01")
+        'HLA-A'
+
+        *Mus musculus* is a supported species.
+
+        >>> tt.mhc.standardise("CRW2", species="musmusculus")
+        'MH1-M5'
     """
     # Alias resolution
     if gene is None:
@@ -136,7 +153,7 @@ def query(
     :type precision:
         ``str``
     :param contains:
-        An optional regular expression string which will be used to filter the query result.
+        An optional **regular expression** string which will be used to filter the query result.
         If supplied, only genes/alleles which contain the regular expression will be returned.
         Defaults to ``None``.
     :type contains:
@@ -146,6 +163,18 @@ def query(
         The set of all genes/alleles that satisfy the given constraints.
     :rtype:
         ``FrozenSet[str]``
+
+    .. topic:: Example usage
+
+        List all known HLA-G variants.
+
+        >>> tt.mhc.query(species="homosapiens", contains="HLA-G")
+        frozenset({'HLA-TAP1*03:01', 'HLA-TAP1*01:02', 'HLA-TAP1*06:01', 'HLA-TAP1*04:01', 'HLA-TAP1*02:01', 'HLA-TAP1*05:01', 'HLA-TAP1*01:01'})
+
+        List all known *Mus musculus* MH1-Q genes.
+
+        >>> tt.mhc.query(species="musmusculus", precision="gene", contains="MH1-Q")
+        frozenset({'MH1-Q3', 'MH1-Q9', 'MH1-Q1', 'MH1-Q2', 'MH1-Q6', 'MH1-Q10', 'MH1-Q5', 'MH1-Q8', 'MH1-Q7', 'MH1-Q4'})
     """
 
     return query_template(
@@ -188,6 +217,15 @@ def get_chain(
         ``'alpha'`` or ``'beta'`` if ``gene`` is recognised and its chain is known, else ``None``.
     :rtype:
         ``str`` or ``None``
+
+    .. topic:: Example usage
+
+        >>> tt.mhc.get_chain("HLA-A")
+        'alpha'
+        >>> tt.mhc.get_chain("HLA-DRB2")
+        'beta'
+        >>> tt.mhc.get_chain("B2M")
+        'beta'
     """
     # Alias resolution
     if gene is None:
@@ -247,6 +285,15 @@ def get_class(
         ``1`` or ``2`` if ``gene`` is recognised and its class is known, else ``None``.
     :rtype:
         ``int`` or ``None``
+
+    .. topic:: Example usage
+
+        >>> tt.mhc.get_class("HLA-A")
+        1
+        >>> tt.mhc.get_class("HLA-DRB2")
+        2
+        >>> tt.mhc.get_class("B2M")
+        1
     """
     # Alias resolution
     if gene is None:

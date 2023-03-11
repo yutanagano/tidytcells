@@ -1,4 +1,5 @@
 import re
+from .._resources import AMINO_ACIDS
 from typing import FrozenSet, Optional
 from .warnings import *
 
@@ -109,3 +110,24 @@ def query_template(
         return result
 
     return frozenset([i for i in result if re.search(contains, i)])
+
+
+def standardise_aa_template(seq: str, suppress_warnings: bool):
+    # type checks
+    if type(seq) != str:
+        raise TypeError(f"seq must be type str, got {seq} ({type(seq)}).")
+
+    # take note of original input
+    original_input = seq
+
+    seq = seq.upper()
+
+    for char in seq:
+        if not char in AMINO_ACIDS:
+            if not suppress_warnings:
+                warn(
+                    f"Input {original_input} was rejected as it is not a valid amino acid sequence."
+                )
+            return None
+
+    return seq
