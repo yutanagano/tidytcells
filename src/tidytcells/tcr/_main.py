@@ -91,7 +91,7 @@ def standardise(
 
         The ``precision`` setting can truncate unnecessary information.
 
-        >>> tt.tcr.standardise("TRBV6-4*01")
+        >>> tt.tcr.standardise("TRBV6-4*01", precision="gene")
         'TRBV6-4'
 
         The ``enforce_functional`` setting will cause non-functional genes or alleles to be rejected.
