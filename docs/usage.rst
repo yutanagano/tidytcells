@@ -1,20 +1,97 @@
 Usage
 =====
 
-``tidytcells``' structure
+:py:mod:`tidytcells`' structure
 -------------------------
 
-:py:mod:`tidytcells` is comprised of the :py:mod:`tcr <tidytcells.tcr>` and :py:mod:`mhc <tidytcells.mhc>` submodules.
-Each module provides useful functions that can help you standardize or otherwise deal with data from their respective category.
+:py:mod:`tidytcells` is comprised of several modules, each of which provide a set of functions that help process a particular type of data that bioinformaticians working on TCR data may come accross.
+
+The submodules are:
+
++-------------------------------+----------------------------------------------------------+
+| Submodule                     | For                                                      |
++===============================+==========================================================+
+| :py:mod:`tidytcells.aa`       | General amino acid sequence data (e.g. peptide epitopes) |
++-------------------------------+----------------------------------------------------------+
+| :py:mod:`tidytcells.junction` | TCR junction (CDR3) amino acid data                      |
++-------------------------------+----------------------------------------------------------+
+| :py:mod:`tidytcells.mhc`      | MHC gene/allele data                                     |
++-------------------------------+----------------------------------------------------------+
+| :py:mod:`tidytcells.tcr`      | TCR gene/allele data                                     |
++-------------------------------+----------------------------------------------------------+
+
 For ease of use, function APIs are standardised accross modules wherever possible- for example, each module has a function named ``standardise`` (see below) which standardises data from each category to be `IMGT <https://www.imgt.org/>`_-compliant.
 Refer to :ref:`here <api>` for a full review of :py:mod:`tidytcells`' API.
 
-Standardising TCR/MHC gene names
---------------------------------
+Standardising TCR/MHC data using :py:mod:`tidytcells` and `pandas <https://pandas.pydata.org/>`_
+------------------------------------------------------------------------------------------------
 
 This is :py:mod:`tidytcells`' primary usecase.
-Both the :py:func:`tcr <tidytcells.tcr.standardise>` and :py:func:`mhc <tidytcells.mhc.standardise>` module provides a function named ``standardise`` which take as input a potentially non-standard string representation of a gene or allele and returns (if possible) an `IMGT <https://www.imgt.org/>`_-standardised version of the gene/allele name.
-In both cases, '``standardize``' is a valid alias of the function as well.
+
+Since each of :py:mod:`tidytcells`' submodules provide a ``standardise`` (``standardize`` is a valid alias as well) function that automates data cleaning in their respective data category, these functions can be used in ensemble to clean a whole dataset of TCR/MHC data.
+Now, these ``standardise`` functions can be used on their own to clean individual pieces of data- that is for example:
+
+>>> import tidytcells as tt
+>>> orig = "A1"
+>>> cleaned = tt.mhc.standardise(orig)
+>>> cleaned
+'HLA-A*01'
+
+However, in real-life scenarios one would like to clean a whole set of data contained in a table.
+This can be achieved in a fairly straightforward manner by using :py:mod:`tidytcells` in conjunction with a data analysis tool like `pandas <https://pandas.pydata.org/>`_.
+Pandas provides a nice way to blanket-apply data transformation functions to multiple ``DataFrame`` cells through their ``Series.map`` and ``DataFrame.applymap`` methods.
+Therefore, given a table of TCR and MHC data:
+
+>>> import pandas as pd
+>>> df = pd.DataFrame(
+...     data=[
+...         ["TRBV13*01",    "CASSYLPGQGDHYSNQPQHF", "trbj1-5*01"],
+...         ["TCRBV28S1*01", "CASSLGQSGANVLTF",      "TRBJ2-6*01"],
+...         ["unknown",      "ASSDWGSQNTLY",         "TRBJ2-4*01"]
+...     ],
+...     columns=["v", "junction", "j"]
+... )
+>>> df
+              v              junction           j
+0     TRBV13*01  CASSYLPGQGDHYSNQPQHF  trbj1-5*01
+1  TCRBV28S1*01       CASSLGQSGANVLTF  TRBJ2-6*01
+2       unknown          ASSDWGSQNTLY  TRBJ2-4*01
+
+One can apply the ``standardise`` functions from :py:mod:`tidytcells` over the whole table at once, like so:
+
+>>> cleaned = df.copy()
+>>> cleaned[["v", "j"]] = df[["v", "j"]].applymap(tt.tcr.standardise)
+>>> cleaned["junction"] = df["junction"].map(tt.junction.standardise)
+>>> cleaned
+           v              junction           j
+0  TRBV13*01  CASSYLPGQGDHYSNQPQHF  TRBJ1-5*01
+1  TRBV28*01       CASSLGQSGANVLTF  TRBJ2-6*01
+2       None        CASSDWGSQNTLYF  TRBJ2-4*01
+
+To apply the functions with optional arguments, one can wrap the ``standardise`` functions using lambda functions (see below).
+For use cases that require more flexibility, one could even define a wrapper function explicitly in the code.
+
+>>> cleaned = df.copy()
+>>> cleaned[["v", "j"]] = df[["v", "j"]].applymap(
+...     lambda x: tt.tcr.standardise(
+...         gene=x,
+...         species="homosapiens",
+...         precision="gene"
+...     )
+... )
+>>> cleaned["junction"] = df["junction"].map(
+...     lambda x: tt.junction.standardise(
+...         seq=x,
+...         strict=True
+...     )
+... )
+>>> cleaned
+        v              junction        j
+0  TRBV13  CASSYLPGQGDHYSNQPQHF  TRBJ1-5
+1  TRBV28       CASSLGQSGANVLTF  TRBJ2-6
+2    None                  None  TRBJ2-4
+
+For more complete documentations of the ``standardise`` functions, refer to :ref:`the api reference <api>`.
 
 Querying from `IMGT <https://www.imgt.org/>`_ TCR/MHC genes or alleles
 ----------------------------------------------------------------------
@@ -27,30 +104,3 @@ Other MHC utilities
 -------------------
 
 The :py:mod:`mhc <tidytcells.mhc>` module provides a couple more extra goodies, including :py:func:`get_chain <tidytcells.mhc.get_chain>` and :py:func:`get_class <tidytcells.mhc.get_class>`, each with self-explanatory names.
-
-.. _example_usage:
-
-Example usage
--------------
-
->>> import tidytcells
->>> # --- TCR parsing ---
->>> tidytcells.tcr.standardise('TCRAV32S1', 'homosapiens')
-'TRAV25'
->>> tidytcells.tcr.standardise('TRBV1*01', 'homosapiens', enforce_functional=True)
-None
->>> tidytcells.tcr.standardise('TRAJ12*01', 'musmusculus', precision='gene')
-'TRAJ12'
->>> # --- MHC parsing ---
->>> tidytcells.mhc.standardise('HLA-A', 'homosapiens')
-'HLA-A'
->>> tidytcells.mhc.standardise('A1', 'homosapiens')
-'HLA-A*01'
->>> tidytcells.mhc.standardise('HLA-B*07:02:01:01', 'homosapiens', precision='protein')
-('HLA-B*07:02', ':01:01')
->>> tidytcells.mhc.standardise('HLA-DR1BL')
-'HLA-DRB9'
->>> tidytcells.mhc.get_chain('HLA-A')
-'alpha'
->>> tidytcells.mhc.get_class('HLA-DRB1*01:01')
-2

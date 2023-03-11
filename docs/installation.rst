@@ -4,7 +4,7 @@ Installation
 Via `PyPI <https://pypi.org/project/tidytcells/>`_ (recommended)
 ----------------------------------------------------------------
 
-``tidytcells`` can be installed using ``pip``:
+:py:mod:`tidytcells` can be installed using ``pip``:
 
 .. code-block:: bash
 
