@@ -97,7 +97,7 @@ def standardise(
 
         The ``precision`` setting can truncate unnecessary information.
 
-        >>> tt.mhc.standardise("HLA-A*01")
+        >>> tt.mhc.standardise("HLA-A*01", precision="gene")
         'HLA-A'
 
         *Mus musculus* is a supported species.
