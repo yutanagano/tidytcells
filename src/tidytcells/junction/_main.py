@@ -9,9 +9,10 @@ def standardise(seq: str, strict: bool = False, suppress_warnings: bool = False)
     This function is a special variant of :py:func:`tidytcells.aa.standardise`.
 
     A valid junction sequence must:
-        1. Be a valid amino acid sequence
-        2. Begin with a cysteine (C)
-        3. End with a phenylalanine (F) or a tryptophan (W)
+
+    1. Be a valid amino acid sequence
+    2. Begin with a cysteine (C)
+    3. End with a phenylalanine (F) or a tryptophan (W)
 
     :param seq:
         String value representing a junction sequence.
@@ -34,6 +35,25 @@ def standardise(seq: str, strict: bool = False, suppress_warnings: bool = False)
         If the input string cannot be standardised, it is rejected and ``None`` is returned.
     :rtype:
         ``str`` or ``None``
+
+    .. topic:: Example usage
+
+        Strings that look like junction sequences will be accepted, and returned in capitalised form.
+
+        >>> tt.junction.standardise("csadaff")
+        'CSADAFF'
+
+        Strings that are valid amino acid sequences but do not stard and end with the appropriate residues will have a C and an F appended to its beginning and end respectively.
+
+        >>> tt.junction.standardise("sadaf")
+        'CSADAFF'
+
+        However, setting ``strict`` to ``True`` will cause these cases to be rejected.
+
+        >>> result = tt.junction.standardise("sadaf", strict=True)
+        UserWarning: Input sadaf was rejected as it is not a valid junction sequence.
+        >>> print(result)
+        None
     """
 
     # take note of original input
