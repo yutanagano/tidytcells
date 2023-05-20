@@ -212,3 +212,35 @@ class TestQuery:
         assert len(result) == expected_len
         assert expected_in in result
         assert not expected_not_in in result
+
+
+class TestGetAaSequence:
+    @pytest.mark.parametrize(
+        ("gene", "expected"),
+        (
+            (
+                "TRBV2*01",
+                {
+                    "CDR1-IMGT": "SNHLY",
+                    "CDR2-IMGT": "FYNNEI",
+                    "FR1-IMGT": "EPEVTQTPSHQVTQMGQEVILRCVPI",
+                    "FR2-IMGT": "FYWYRQILGQKVEFLVS",
+                    "FR3-IMGT": "SEKSEIFDDQFSVERPDGSNFTLKIRSTKLEDSAMYFC",
+                },
+            ),
+            (
+                "TRAV10*02",
+                {
+                    "CDR1-IMGT": "VSPFSN",
+                    "CDR2-IMGT": "MTFSENT",
+                    "FR1-IMGT": "KNQVEQSPQSLIILEGKNCTLQCNYT",
+                    "FR2-IMGT": "LRWYKQDTGRGPVSLTI",
+                    "FR3-IMGT": "KSNGRYTATLDADTKQSSLHITASQLSDSASYIC",
+                },
+            ),
+        ),
+    )
+    def test_get_aa_sequence(self, gene, expected):
+        result = tcr.get_aa_sequence(gene=gene)
+
+        assert result == expected

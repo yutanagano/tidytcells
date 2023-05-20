@@ -3,7 +3,8 @@ Utility functions related to TCRs and TCR genes.
 """
 
 
-from typing import FrozenSet, Optional
+from typing import Dict, FrozenSet, Optional
+from .._resources import HOMOSAPIENS_TCR_AA_SEQUENCES
 from .._utils.abstract_functions import standardise_template, query_template
 from .._utils.gene_query_engines import (
     HomoSapiensTCRQueryEngine,
@@ -192,3 +193,59 @@ def query(
         contains=contains,
         query_engine_dict=QUERY_ENGINES,
     )
+
+
+def get_aa_sequence(gene: str, species: str = "homosapiens") -> Dict[str, str]:
+    """
+    Look up the amino acid sequence of a given TCR gene.
+
+    .. topic:: Supported species
+
+        - ``'homosapiens'``
+
+    .. note::
+
+        This function currently only supports V genes.
+        Support for J genes is planned for the future.
+
+    :param gene:
+        Standardised gene name.
+        The gene must be specified to the level of the allele.
+        Note that some genes, notably the non-functional ones, will not have resolvable amino acid sequences.
+    :type gene:
+        ``str``
+    :param species:
+        Species to which the TCR gene in question belongs (see above for supported species).
+        Defaults to ``'homosapiens'``.
+    :type species:
+        ``str``
+
+    :return:
+        A dictionary with keys corresponding to names of different sequence regions within the gene, and values corresponding to their amino acid sequences.
+    :rtype:
+        ``Dict[str, str]``
+
+    .. topic:: Example usage
+
+        Get amino acid sequence information about the human V gene TRBV2*01.
+
+        >>> tt.tcr.get_aa_sequence(gene="TRBV2*01", species="homosapiens")
+        {'CDR1-IMGT': 'SNHLY', 'CDR2-IMGT': 'FYNNEI', 'FR1-IMGT': 'EPEVTQTPSHQVTQMGQEVILRCVPI', 'FR2-IMGT': 'FYWYRQILGQKVEFLVS', 'FR3-IMGT': 'SEKSEIFDDQFSVERPDGSNFTLKIRSTKLEDSAMYFC'}
+    """
+    # Type checks
+    if type(gene) != str:
+        raise TypeError(f"gene must be type str, got {gene} ({type(gene)}).")
+    if type(species) != str:
+        raise TypeError(f"species must be type str, got {species} ({type(species)}).")
+
+    # For backward compatibility, fix CamelCased species
+    species = "".join(species.split()).lower()
+
+    # Currently only supports homosapiens
+    if species != "homosapiens":
+        raise ValueError(f"Unsupported species: {species}. No data available.")
+
+    if gene in HOMOSAPIENS_TCR_AA_SEQUENCES:
+        return HOMOSAPIENS_TCR_AA_SEQUENCES[gene]
+
+    raise ValueError(f"No data found for TCR gene {gene} for species {species}.")
