@@ -3,7 +3,7 @@ Functions to clean and standardise TCR gene data.
 """
 
 
-from ._main import standardise, query
+from ._main import standardise, query, get_aa_sequence
 
 
 def standardize(*args, **kwargs):

@@ -99,6 +99,9 @@ def query_template(
             f'functionality must be "any", "F", "NF", "P", or "ORF", got {functionality}.'
         )
 
+    # For backward compatibility, fix CamelCased species
+    species = "".join(species.split()).lower()
+
     if not species in query_engine_dict:
         raise ValueError(f"Unsupported species: {species}. No data available.")
 
