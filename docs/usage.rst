@@ -2,7 +2,7 @@ Usage
 =====
 
 :py:mod:`tidytcells`' structure
--------------------------
+-------------------------------
 
 :py:mod:`tidytcells` is comprised of several modules, each of which provide a set of functions that help process a particular type of data that bioinformaticians working on TCR data may come accross.
 
