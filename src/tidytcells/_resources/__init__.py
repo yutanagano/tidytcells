@@ -1,25 +1,25 @@
 import json
-from pkg_resources import resource_stream as rs
+from importlib.resources import files
 
 
-with rs(__name__, "homosapiens_tcr.json") as s:
-    HOMOSAPIENS_TCR = json.load(s)
-with rs(__name__, "homosapiens_tcr_synonyms.json") as s:
-    HOMOSAPIENS_TCR_SYNONYMS = json.load(s)
-with rs(__name__, "homosapiens_tcr_aa_sequences.json") as s:
-    HOMOSAPIENS_TCR_AA_SEQUENCES = json.load(s)
-with rs(__name__, "homosapiens_mhc.json") as s:
-    HOMOSAPIENS_MHC = json.load(s)
-with rs(__name__, "homosapiens_mhc_synonyms.json") as s:
-    HOMOSAPIENS_MHC_SYNONYMS = json.load(s)
+with files(__name__).joinpath("homosapiens_tcr.json").open("rb") as f:
+    HOMOSAPIENS_TCR = json.load(f)
+with files(__name__).joinpath("homosapiens_tcr_synonyms.json").open("rb") as f:
+    HOMOSAPIENS_TCR_SYNONYMS = json.load(f)
+with files(__name__).joinpath("homosapiens_tcr_aa_sequences.json").open("rb") as f:
+    HOMOSAPIENS_TCR_AA_SEQUENCES = json.load(f)
+with files(__name__).joinpath("homosapiens_mhc.json").open("rb") as f:
+    HOMOSAPIENS_MHC = json.load(f)
+with files(__name__).joinpath("homosapiens_mhc_synonyms.json").open("rb") as f:
+    HOMOSAPIENS_MHC_SYNONYMS = json.load(f)
 
 
-with rs(__name__, "musmusculus_tcr.json") as s:
-    MUSMUSCULUS_TCR = json.load(s)
-with rs(__name__, "musmusculus_mhc.json") as s:
-    MUSMUSCULUS_MHC = json.load(s)
-with rs(__name__, "musmusculus_mhc_synonyms.json") as s:
-    MUSMUSCULUS_MHC_SYNONYMS = json.load(s)
+with files(__name__).joinpath("musmusculus_tcr.json").open("rb") as f:
+    MUSMUSCULUS_TCR = json.load(f)
+with files(__name__).joinpath("musmusculus_mhc.json").open("rb") as f:
+    MUSMUSCULUS_MHC = json.load(f)
+with files(__name__).joinpath("musmusculus_mhc_synonyms.json").open("rb") as f:
+    MUSMUSCULUS_MHC_SYNONYMS = json.load(f)
 
 
 AMINO_ACIDS = frozenset(
