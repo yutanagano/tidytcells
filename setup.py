@@ -27,7 +27,7 @@ setup(
     package_dir={"": "src"},
     packages=find_packages("src"),
     package_data={"tidytcells": ["_resources/*"]},
-    python_requires=">=3.6",
+    python_requires=">=3.9",
     extras_require={
         "dev": [
             "build",
