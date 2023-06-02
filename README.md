@@ -8,6 +8,7 @@
 The main purpose of the package is to solve the problem of parsing and collating together non-standardized TCR datasets.
 It is often difficult to compile TCR data from multiple sources because the formats/nomenclature of how each dataset encodes TCR and MHC gene names are slightly different, or even inconsistent within themselves.
 `tidytcells` can ameliorate this issue by auto-correcting and auto-standardizing your data!
+Check out the [documentation page](https://tidytcells.readthedocs.io).
 
 ## Installation
 
