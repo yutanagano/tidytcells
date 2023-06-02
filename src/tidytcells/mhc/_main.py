@@ -77,7 +77,7 @@ def standardize(
         ``bool``
 
     :param gene_name:
-        Alias for the parameter ``gene``.
+        Alias for the parameter ``gene``. This will be deprecated soon.
     :type gene_name:
         ``str``
 
@@ -106,7 +106,11 @@ def standardize(
         'MH1-M5'
     """
     # Alias resolution
-    if gene is None:
+    if gene is None and not gene_name is None:
+        warn(
+            'The parameter "gene_name" will be deprecated in the near future. Please switch to using "gene".',
+            FutureWarning,
+        )
         gene = gene_name
 
     return standardize_template(
@@ -209,7 +213,7 @@ def get_chain(
         ``bool``
 
     :param gene_name:
-        Alias for the parameter ``gene``.
+        Alias for the parameter ``gene``. This will be deprecated soon.
     :type gene_name:
         ``str``
 
@@ -228,7 +232,11 @@ def get_chain(
         'beta'
     """
     # Alias resolution
-    if gene is None:
+    if gene is None and not gene_name is None:
+        warn(
+            'The parameter "gene_name" will be deprecated in the near future. Please switch to using "gene".',
+            FutureWarning,
+        )
         gene = gene_name
 
     if type(gene) == str:
@@ -277,7 +285,7 @@ def get_class(
         ``bool``
 
     :param gene_name:
-        Alias for the parameter ``gene``.
+        Alias for the parameter ``gene``. This will be deprecated soon.
     :type gene_name:
         ``str``
 
@@ -296,7 +304,11 @@ def get_class(
         1
     """
     # Alias resolution
-    if gene is None:
+    if gene is None and not gene_name is None:
+        warn(
+            'The parameter "gene_name" will be deprecated in the near future. Please switch to using "gene".',
+            FutureWarning,
+        )
         gene = gene_name
 
     if type(gene) == str:

@@ -68,7 +68,8 @@ class TestStandardize:
         assert result == "TRBV20/OR9-2*01"
 
     def test_gene_name(self):
-        result = tcr.standardize(gene_name="TRBV20/OR9-2*01")
+        with pytest.warns(FutureWarning):
+            result = tcr.standardize(gene_name="TRBV20/OR9-2*01")
 
         assert result == "TRBV20/OR9-2*01"
 
