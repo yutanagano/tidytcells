@@ -1,7 +1,7 @@
-from .._utils.abstract_functions import standardise_aa_template
+from .._utils.abstract_functions import standardize_aa_template
 
 
-def standardise(seq: str, suppress_warnings: bool = False):
+def standardize(seq: str, suppress_warnings: bool = False):
     """
     Ensures that a string value looks like a valid amino acid sequence.
 
@@ -25,15 +25,15 @@ def standardise(seq: str, suppress_warnings: bool = False):
 
         Strings that look like amino acid sequences will be accepted, and returned in capitalised form.
 
-        >>> tt.aa.standardise("sqllnakyl")
+        >>> tt.aa.standardize("sqllnakyl")
         'SQLLNAKYL'
 
         Any strings that contain characters that cannot be recognised as amino acids will be rejected, and the function will return ``None``.
 
-        >>> result = tt.aa.standardise("sqll?akyl")
+        >>> result = tt.aa.standardize("sqll?akyl")
         UserWarning: Input sqll?akyl was rejected as it is not a valid amino acid sequence.
         >>> print(result)
         None
     """
 
-    return standardise_aa_template(seq, suppress_warnings)
+    return standardize_aa_template(seq, suppress_warnings)

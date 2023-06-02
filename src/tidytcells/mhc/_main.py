@@ -6,9 +6,9 @@ Utility functions related to MHCs and MHC genes.
 import re
 from .._resources import *
 from typing import Optional, FrozenSet
-from .._utils.abstract_functions import standardise_template, query_template
+from .._utils.abstract_functions import standardize_template, query_template
 from .._utils.gene_query_engines import HLAQueryEngine, MusMusculusMHCQueryEngine
-from .._utils.gene_standardisers import HLAStandardiser, MusMusculusMHCStandardiser
+from .._utils.gene_standardizers import HLAStandardizer, MusMusculusMHCStandardizer
 from .._utils.warnings import *
 
 
@@ -22,9 +22,9 @@ CLASS_2_RE = re.compile(r"HLA-D[PQR][AB]")
 
 # --- MAIN FUNCTIONS ---
 
-STANDARDISERS = {
-    "homosapiens": HLAStandardiser,
-    "musmusculus": MusMusculusMHCStandardiser,
+STANDARDIZERS = {
+    "homosapiens": HLAStandardizer,
+    "musmusculus": MusMusculusMHCStandardizer,
 }
 
 QUERY_ENGINES = {
@@ -33,7 +33,7 @@ QUERY_ENGINES = {
 }
 
 
-def standardise(
+def standardize(
     gene: Optional[str] = None,
     species: str = "homosapiens",
     precision: str = "allele",
@@ -41,7 +41,7 @@ def standardise(
     gene_name: Optional[str] = None,
 ) -> tuple:
     """
-    Attempt to standardise an MHC gene name to be IMGT-compliant.
+    Attempt to standardize an MHC gene name to be IMGT-compliant.
 
     .. topic:: Supported species
 
@@ -54,7 +54,7 @@ def standardise(
         The reasons for this is firstly because new alleles at that level are added to the IMGT list quite often and so accurate verification is difficult, secondly because people rarely need verification to such a precise level, and finally because such verification costs more computational effort with diminishing returns.
 
     :param gene:
-        Potentially non-standardised MHC gene name.
+        Potentially non-standardized MHC gene name.
     :type gene:
         ``str``
     :param species:
@@ -63,10 +63,10 @@ def standardise(
     :type species:
         ``str``
     :param precision:
-        The maximum level of precision to standardise to.
-        ``'allele'`` standardises to the maximum precision possible.
+        The maximum level of precision to standardize to.
+        ``'allele'`` standardizes to the maximum precision possible.
         ``'protein'`` keeps allele designators up to the level of the protein.
-        ``'gene'`` standardises only to the level of the gene.
+        ``'gene'`` standardizes only to the level of the gene.
         Defaults to ``'allele'``.
     :type precision:
         ``str``
@@ -77,13 +77,13 @@ def standardise(
         ``bool``
 
     :param gene_name:
-        Alias for the parameter ``gene``.
+        Alias for the parameter ``gene``. This will be deprecated soon.
     :type gene_name:
         ``str``
 
     :return:
-        If the specified ``species`` is supported, and ``gene`` could be standardised, then return the standardised gene name.
-        If ``species`` is unsupported, then the function does not attempt to standardise, and returns the unaltered ``gene`` string.
+        If the specified ``species`` is supported, and ``gene`` could be standardized, then return the standardized gene name.
+        If ``species`` is unsupported, then the function does not attempt to standardize, and returns the unaltered ``gene`` string.
         Else returns ``None``.
     :rtype:
         ``str`` or ``None``
@@ -92,31 +92,35 @@ def standardise(
 
         Input strings will intelligently be corrected to IMGT-compliant gene symbols.
 
-        >>> tt.mhc.standardise("A1")
+        >>> tt.mhc.standardize("A1")
         'HLA-A*01'
 
         The ``precision`` setting can truncate unnecessary information.
 
-        >>> tt.mhc.standardise("HLA-A*01", precision="gene")
+        >>> tt.mhc.standardize("HLA-A*01", precision="gene")
         'HLA-A'
 
         *Mus musculus* is a supported species.
 
-        >>> tt.mhc.standardise("CRW2", species="musmusculus")
+        >>> tt.mhc.standardize("CRW2", species="musmusculus")
         'MH1-M5'
     """
     # Alias resolution
-    if gene is None:
+    if gene is None and not gene_name is None:
+        warn(
+            'The parameter "gene_name" will be deprecated in the near future. Please switch to using "gene".',
+            FutureWarning,
+        )
         gene = gene_name
 
-    return standardise_template(
+    return standardize_template(
         gene=gene,
         gene_type="MHC",
         species=species,
         enforce_functional=True,
         precision=precision,
         suppress_warnings=suppress_warnings,
-        standardiser_dict=STANDARDISERS,
+        standardizer_dict=STANDARDIZERS,
         allowed_precision={"allele", "protein", "gene"},
     )
 
@@ -192,14 +196,14 @@ def get_chain(
     gene_name: Optional[str] = None,
 ) -> str:
     """
-    Given a standardised MHC gene name, detect whether it codes for an alpha or a beta chain molecule.
+    Given a standardized MHC gene name, detect whether it codes for an alpha or a beta chain molecule.
 
     .. note::
 
         This function currently only recognises HLAs, and not MHCs from other species.
 
     :param gene:
-        Standardised MHC gene name
+        Standardized MHC gene name
     :type gene:
         ``str``
     :param suppress_warnings:
@@ -209,7 +213,7 @@ def get_chain(
         ``bool``
 
     :param gene_name:
-        Alias for the parameter ``gene``.
+        Alias for the parameter ``gene``. This will be deprecated soon.
     :type gene_name:
         ``str``
 
@@ -228,7 +232,11 @@ def get_chain(
         'beta'
     """
     # Alias resolution
-    if gene is None:
+    if gene is None and not gene_name is None:
+        warn(
+            'The parameter "gene_name" will be deprecated in the near future. Please switch to using "gene".',
+            FutureWarning,
+        )
         gene = gene_name
 
     if type(gene) == str:
@@ -237,7 +245,7 @@ def get_chain(
 
         if not gene in (*HOMOSAPIENS_MHC, "B2M"):
             if not suppress_warnings:
-                warn(f"Unrecognised gene {gene}. Is this standardised?")
+                warn(f"Unrecognised gene {gene}. Is this standardized?")
             return None
 
         if CHAIN_ALPHA_RE.match(gene):
@@ -259,7 +267,7 @@ def get_class(
     gene_name: Optional[str] = None,
 ) -> int:
     """
-    Given a standardised MHC gene name, detect whether it comprises a class I
+    Given a standardized MHC gene name, detect whether it comprises a class I
     or II MHC receptor complex.
 
     .. note::
@@ -267,7 +275,7 @@ def get_class(
         This function currently only recognises HLAs, and not MHCs from other species.
 
     :param gene:
-        Standardised MHC gene name
+        Standardized MHC gene name
     :type gene:
         ``str``
     :param suppress_warnings:
@@ -277,7 +285,7 @@ def get_class(
         ``bool``
 
     :param gene_name:
-        Alias for the parameter ``gene``.
+        Alias for the parameter ``gene``. This will be deprecated soon.
     :type gene_name:
         ``str``
 
@@ -296,7 +304,11 @@ def get_class(
         1
     """
     # Alias resolution
-    if gene is None:
+    if gene is None and not gene_name is None:
+        warn(
+            'The parameter "gene_name" will be deprecated in the near future. Please switch to using "gene".',
+            FutureWarning,
+        )
         gene = gene_name
 
     if type(gene) == str:
@@ -305,7 +317,7 @@ def get_class(
 
         if not gene in (*HOMOSAPIENS_MHC, "B2M"):
             if not suppress_warnings:
-                warn(f"Unrecognised gene {gene}. Is this standardised?")
+                warn(f"Unrecognised gene {gene}. Is this standardized?")
             return None
 
         if CLASS_1_RE.match(gene):

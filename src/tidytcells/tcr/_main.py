@@ -5,21 +5,21 @@ Utility functions related to TCRs and TCR genes.
 
 from typing import Dict, FrozenSet, Optional
 from .._resources import HOMOSAPIENS_TCR_AA_SEQUENCES
-from .._utils.abstract_functions import standardise_template, query_template
+from .._utils.abstract_functions import standardize_template, query_template
 from .._utils.gene_query_engines import (
     HomoSapiensTCRQueryEngine,
     MusMusculusTCRQueryEngine,
 )
-from .._utils.gene_standardisers import (
-    HomoSapiensTCRStandardiser,
-    MusMusculusTCRStandardiser,
+from .._utils.gene_standardizers import (
+    HomoSapiensTCRStandardizer,
+    MusMusculusTCRStandardizer,
 )
 from .._utils.warnings import *
 
 
-STANDARDISERS = {
-    "homosapiens": HomoSapiensTCRStandardiser,
-    "musmusculus": MusMusculusTCRStandardiser,
+STANDARDIZERS = {
+    "homosapiens": HomoSapiensTCRStandardizer,
+    "musmusculus": MusMusculusTCRStandardizer,
 }
 
 QUERY_ENGINES = {
@@ -28,7 +28,7 @@ QUERY_ENGINES = {
 }
 
 
-def standardise(
+def standardize(
     gene: Optional[str] = None,
     species: str = "homosapiens",
     enforce_functional: bool = False,
@@ -37,7 +37,7 @@ def standardise(
     gene_name: Optional[str] = None,
 ) -> str:
     """
-    Attempt to standardise a TCR gene name to be IMGT-compliant.
+    Attempt to standardize a TCR gene name to be IMGT-compliant.
 
     .. topic:: Supported species
 
@@ -45,7 +45,7 @@ def standardise(
         - ``'musmusculus'``
 
     :param gene:
-        Potentially non-standardised TCR gene name.
+        Potentially non-standardized TCR gene name.
     :type gene:
         ``str``
     :param species:
@@ -59,9 +59,9 @@ def standardise(
     :type enforce_functional:
         ``bool``
     :param precision:
-        The maximum level of precision to standardise to.
-        ``'allele'`` standardises to the maximum precision possible.
-        ``'gene'`` standardises only to the level of the gene.
+        The maximum level of precision to standardize to.
+        ``'allele'`` standardizes to the maximum precision possible.
+        ``'gene'`` standardizes only to the level of the gene.
         Defaults to ``'allele'``.
     :type precision:
         ``str``
@@ -72,13 +72,13 @@ def standardise(
         ``bool``
 
     :param gene_name:
-        Alias for the parameter ``gene``.
+        Alias for the parameter ``gene``. This will be deprecated soon.
     :type gene_name:
         ``str``
 
     :return:
-        If the specified ``species`` is supported, and ``gene`` could be standardised, then return the standardised gene name.
-        If ``species`` is unsupported, then the function does not attempt to standardise , and returns the unaltered ``gene`` string.
+        If the specified ``species`` is supported, and ``gene`` could be standardized, then return the standardized gene name.
+        If ``species`` is unsupported, then the function does not attempt to standardize , and returns the unaltered ``gene`` string.
         Else returns ``None``.
     :rtype:
         ``str`` or ``None``
@@ -87,38 +87,42 @@ def standardise(
 
         Input strings will intelligently be corrected to IMGT-compliant gene symbols.
 
-        >>> tt.tcr.standardise("aj1")
+        >>> tt.tcr.standardize("aj1")
         'TRAJ1'
 
         The ``precision`` setting can truncate unnecessary information.
 
-        >>> tt.tcr.standardise("TRBV6-4*01", precision="gene")
+        >>> tt.tcr.standardize("TRBV6-4*01", precision="gene")
         'TRBV6-4'
 
         The ``enforce_functional`` setting will cause non-functional genes or alleles to be rejected.
 
-        >>> result = tt.tcr.standardise("TRBV1", enforce_functional=True)
-        UserWarning: Failed to standardise: "TRBV1" for species homosapiens. Attempted fix "TRBV1" did not meet the standardised format requirements. Ignoring this gene name...
+        >>> result = tt.tcr.standardize("TRBV1", enforce_functional=True)
+        UserWarning: Failed to standardize "TRBV1" for species homosapiens: gene has no functional alleles. Attempted fix "TRBV1".
         >>> print(result)
         None
 
         *Mus musculus* is a supported species.
 
-        >>> tt.tcr.standardise("TCRBV22S1A2N1T", species="musmusculus")
+        >>> tt.tcr.standardize("TCRBV22S1A2N1T", species="musmusculus")
         'TRBV2'
     """
     # Alias resolution
-    if gene is None:
+    if gene is None and not gene_name is None:
+        warn(
+            'The parameter "gene_name" will be deprecated in the near future. Please switch to using "gene".',
+            FutureWarning,
+        )
         gene = gene_name
 
-    return standardise_template(
+    return standardize_template(
         gene=gene,
         gene_type="TCR",
         species=species,
         enforce_functional=enforce_functional,
         precision=precision,
         suppress_warnings=suppress_warnings,
-        standardiser_dict=STANDARDISERS,
+        standardizer_dict=STANDARDIZERS,
         allowed_precision={"allele", "gene"},
     )
 
@@ -209,7 +213,7 @@ def get_aa_sequence(gene: str, species: str = "homosapiens") -> Dict[str, str]:
         Support for J genes is planned for the future.
 
     :param gene:
-        Standardised gene name.
+        Standardized gene name.
         The gene must be specified to the level of the allele.
         Note that some genes, notably the non-functional ones, will not have resolvable amino acid sequences.
     :type gene:

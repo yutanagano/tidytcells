@@ -1,13 +1,13 @@
 """
-Functions to clean and standardise junction (CDR3) data.
+Functions to clean and standardize junction (CDR3) data.
 """
 
 
-from ._main import standardise
+from ._main import standardize
 
 
-def standardize(*args, **kwargs):
+def standardise(*args, **kwargs):
     """
-    Alias for :py:func:`tidytcells.junction.standardise`.
+    Alias for :py:func:`tidytcells.junction.standardize`.
     """
-    return standardise(*args, **kwargs)
+    return standardize(*args, **kwargs)

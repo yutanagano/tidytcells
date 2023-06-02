@@ -1,5 +1,5 @@
 """
-Gene standardiser classes
+Gene standardizer classes
 """
 
 
@@ -17,27 +17,35 @@ SUB_OR_RE = re.compile(r"(?<!\/)OR")
 SUB_ZERO_RE = re.compile(r"(?<!\d)0")
 
 
-# --- STANDARDISER CLASSES ---
+# --- STANDARDIZER CLASSES ---
 
 
-class GeneStandardiser(ABC):
+class GeneStandardizer(ABC):
     """
-    Abstract base standardiser class.
+    Abstract base standardizer class.
     """
 
     @abstractmethod
     def __init__(self, gene: str) -> None:
         """
-        Init method for the standardiser objects. Should expect a whitespace-
+        Init method for the standardizer objects. Should expect a whitespace-
         cleaned, uppercased string to be supplied to the 'gene' parameter.
         """
 
-    @abstractmethod
     def valid(self, enforce_functional: bool = False) -> bool:
         """
-        Returns True if the gene's name is a real, valid and existing one.
-        Else returns False. If enforce_functional, additionally verify that
-        the gene in question is functional.
+        Taking into account whether enforcing functionality or not, returns
+        True if the gene/allele is valid in its current state. Returns False
+        otherwise.
+        """
+        return self.invalid(enforce_functional) is None
+
+    @abstractmethod
+    def invalid(self, enforce_functional: bool = False) -> bool:
+        """
+        If the gene cannot be standardized (it is invalid), this method returns
+        a string outlining the reason why (nonexistent gene, not functional,
+        etc.). Returns None if standardisation was successful.
         """
 
     @abstractmethod
@@ -49,9 +57,9 @@ class GeneStandardiser(ABC):
         """
 
 
-class TCRStandardiser(GeneStandardiser):
+class TCRStandardizer(GeneStandardizer):
     """
-    TCR standardiser base class.
+    TCR standardizer base class.
     """
 
     ref_dict = None
@@ -112,26 +120,28 @@ class TCRStandardiser(GeneStandardiser):
                     self.gene = valid_gene
                     return
 
-    def valid(self, enforce_functional: bool = False) -> bool:
-        # Is the gene valid?
+    def invalid(self, enforce_functional: bool = False) -> bool:
         if not self.gene in self.ref_dict:
-            return False
+            return "unrecognised gene name"
 
-        # If the gene exists and an allele is specified, check if it exists
         if self.allele_designation:
             allele_valid = self.allele_designation in self.ref_dict[self.gene]
 
-            if not enforce_functional:
-                return allele_valid
+            if not allele_valid:
+                return "nonexistent allele for recognised gene"
 
-            return self.ref_dict[self.gene][self.allele_designation] == "F"
+            if (
+                enforce_functional
+                and self.ref_dict[self.gene][self.allele_designation] != "F"
+            ):
+                return "nonfunctional allele"
 
-        # If enforce_functional, ensure there is at least one functional allele
-        if enforce_functional:
-            return "F" in self.ref_dict[self.gene].values()
+            return None
 
-        # Otherwise gene is valid so return true
-        return True
+        if enforce_functional and not "F" in self.ref_dict[self.gene].values():
+            return "gene has no functional alleles"
+
+        return None
 
     def compile(self, precision: str = "allele") -> str:
         if precision == "allele" and self.allele_designation:
@@ -140,7 +150,7 @@ class TCRStandardiser(GeneStandardiser):
         return self.gene
 
 
-class HomoSapiensTCRStandardiser(TCRStandardiser):
+class HomoSapiensTCRStandardizer(TCRStandardizer):
     ref_dict = HOMOSAPIENS_TCR
     syn_dict = HOMOSAPIENS_TCR_SYNONYMS
 
@@ -151,11 +161,11 @@ class HomoSapiensTCRStandardiser(TCRStandardiser):
         self.gene = re.sub(r"(?<!\/)OR", "/OR", self.gene)
 
 
-class MusMusculusTCRStandardiser(TCRStandardiser):
+class MusMusculusTCRStandardizer(TCRStandardizer):
     ref_dict = MUSMUSCULUS_TCR
 
 
-class HLAStandardiser(GeneStandardiser):
+class HLAStandardizer(GeneStandardizer):
     def __init__(self, gene: str) -> None:
         self.parse_gene(gene)
         self.resolve_errors()
@@ -253,14 +263,12 @@ class HLAStandardiser(GeneStandardiser):
             if self.valid():
                 return
 
-    def valid(self, enforce_functional: bool = False) -> bool:
-        # Is the gene B2M?
+    def invalid(self, enforce_functional: bool = False) -> bool:
         if self.gene == "B2M" and not self.allele_designation:
-            return True
+            return None
 
-        # Is the gene valid?
         if not self.gene in HOMOSAPIENS_MHC:
-            return False
+            return "unrecognised gene name"
 
         # Verify allele designators up to the level of the protein (or G/P)
         allele_designation = self.allele_designation.copy()
@@ -272,7 +280,7 @@ class HLAStandardiser(GeneStandardiser):
             try:
                 current_root = current_root[allele_designation.pop(0)]
             except KeyError:
-                return False
+                return "nonexistent allele for recognised gene"
 
         # If there are designator fields past the protein level, just make sure
         # they look like legitimate designator field values
@@ -280,17 +288,16 @@ class HLAStandardiser(GeneStandardiser):
             further_designators = self.allele_designation[2:]
 
             if len(further_designators) > 2:
-                return False
+                return "too many allele designators"
 
             for field in further_designators:
                 if not field.isdigit():
-                    return False
+                    return "non-numerical allele designators"
 
                 if len(field) < 2:
-                    return False
+                    return "non-2-digit allele designators"
 
-        # Valid gene with valid specifier fields, so valid!
-        return True
+        return None
 
     def compile(self, precision) -> str:
         if self.allele_designation:
@@ -303,7 +310,7 @@ class HLAStandardiser(GeneStandardiser):
         return self.gene
 
 
-class MusMusculusMHCStandardiser(GeneStandardiser):
+class MusMusculusMHCStandardizer(GeneStandardizer):
     def __init__(self, gene: str) -> None:
         self.parse_gene(gene)
         self.resolve_errors()
@@ -333,8 +340,11 @@ class MusMusculusMHCStandardiser(GeneStandardiser):
             if self.valid():
                 return
 
-    def valid(self, enforce_functional: bool = False) -> bool:
-        return self.gene in MUSMUSCULUS_MHC
+    def invalid(self, enforce_functional: bool = False) -> bool:
+        if not self.gene in MUSMUSCULUS_MHC:
+            return "unrecognised gene name"
+
+        return None
 
     def compile(self, precision: str = "allele") -> str:
         if precision == "allele" and self.allele_designation:

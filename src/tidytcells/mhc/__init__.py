@@ -1,20 +1,25 @@
 """
-Functions to clean and standardise MHC gene data.
+Functions to clean and standardize MHC gene data.
 """
 
 
-from ._main import standardise, get_chain, get_class, query
+from ._main import standardize, get_chain, get_class, query
+from warnings import warn as _warn
 
 
-def standardize(*args, **kwargs):
+def standardise(*args, **kwargs):
     """
-    Alias for :py:func:`tidytcells.mhc.standardise`.
+    Alias for :py:func:`tidytcells.mhc.standardize`.
     """
-    return standardise(*args, **kwargs)
+    return standardize(*args, **kwargs)
 
 
 def classify(*args, **kwargs):
     """
-    Alias for :py:func:`tidytcells.mhc.get_class`.
+    Alias for :py:func:`tidytcells.mhc.get_class`. This will be deprecated soon.
     """
+    _warn(
+        '"mhc.classify" as an alias will be deprecated in the near future. Please switch to using "mhc.get_class".',
+        FutureWarning,
+    )
     return get_class(*args, **kwargs)
