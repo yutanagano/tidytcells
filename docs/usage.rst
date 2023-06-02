@@ -20,7 +20,7 @@ The submodules are:
 | :py:mod:`tidytcells.tcr`      | TCR gene/allele data                                     |
 +-------------------------------+----------------------------------------------------------+
 
-For ease of use, function APIs are standardised accross modules wherever possible- for example, each module has a function named ``standardise`` (see below) which standardises data from each category to be `IMGT <https://www.imgt.org/>`_-compliant.
+For ease of use, function APIs are standardized accross modules wherever possible- for example, each module has a function named ``standardize`` (see below) which standardizes data from each category to be `IMGT <https://www.imgt.org/>`_-compliant.
 Refer to :ref:`here <api>` for a full review of :py:mod:`tidytcells`' API.
 
 Standardising TCR/MHC data using :py:mod:`tidytcells` and `pandas <https://pandas.pydata.org/>`_
@@ -28,12 +28,12 @@ Standardising TCR/MHC data using :py:mod:`tidytcells` and `pandas <https://panda
 
 This is :py:mod:`tidytcells`' primary usecase.
 
-Since each of :py:mod:`tidytcells`' submodules provide a ``standardise`` (``standardize`` is a valid alias as well) function that automates data cleaning in their respective data category, these functions can be used in ensemble to clean a whole dataset of TCR/MHC data.
-Now, these ``standardise`` functions can be used on their own to clean individual pieces of data- that is for example:
+Since each of :py:mod:`tidytcells`' submodules provide a ``standardize`` (``standardise`` is a valid alias as well) function that automates data cleaning in their respective data category, these functions can be used in ensemble to clean a whole dataset of TCR/MHC data.
+Now, these ``standardize`` functions can be used on their own to clean individual pieces of data- that is for example:
 
 >>> import tidytcells as tt
 >>> orig = "A1"
->>> cleaned = tt.mhc.standardise(orig)
+>>> cleaned = tt.mhc.standardize(orig)
 >>> cleaned
 'HLA-A*01'
 
@@ -57,30 +57,30 @@ Therefore, given a table of TCR and MHC data:
 1  TCRBV28S1*01       CASSLGQSGANVLTF  TRBJ2-6*01
 2       unknown          ASSDWGSQNTLY  TRBJ2-4*01
 
-One can apply the ``standardise`` functions from :py:mod:`tidytcells` over the whole table at once, like so:
+One can apply the ``standardize`` functions from :py:mod:`tidytcells` over the whole table at once, like so:
 
 >>> cleaned = df.copy()
->>> cleaned[["v", "j"]] = df[["v", "j"]].applymap(tt.tcr.standardise)
->>> cleaned["junction"] = df["junction"].map(tt.junction.standardise)
+>>> cleaned[["v", "j"]] = df[["v", "j"]].applymap(tt.tcr.standardize)
+>>> cleaned["junction"] = df["junction"].map(tt.junction.standardize)
 >>> cleaned
            v              junction           j
 0  TRBV13*01  CASSYLPGQGDHYSNQPQHF  TRBJ1-5*01
 1  TRBV28*01       CASSLGQSGANVLTF  TRBJ2-6*01
 2       None        CASSDWGSQNTLYF  TRBJ2-4*01
 
-To apply the functions with optional arguments, one can wrap the ``standardise`` functions using lambda functions (see below).
+To apply the functions with optional arguments, one can wrap the ``standardize`` functions using lambda functions (see below).
 For use cases that require more flexibility, one could even define a wrapper function explicitly in the code.
 
 >>> cleaned = df.copy()
 >>> cleaned[["v", "j"]] = df[["v", "j"]].applymap(
-...     lambda x: tt.tcr.standardise(
+...     lambda x: tt.tcr.standardize(
 ...         gene=x,
 ...         species="homosapiens",
 ...         precision="gene"
 ...     )
 ... )
 >>> cleaned["junction"] = df["junction"].map(
-...     lambda x: tt.junction.standardise(
+...     lambda x: tt.junction.standardize(
 ...         seq=x,
 ...         strict=True
 ...     )
@@ -91,7 +91,7 @@ For use cases that require more flexibility, one could even define a wrapper fun
 1  TRBV28       CASSLGQSGANVLTF  TRBJ2-6
 2    None                  None  TRBJ2-4
 
-For more complete documentations of the ``standardise`` functions, refer to :ref:`the api reference <api>`.
+For more complete documentations of the ``standardize`` functions, refer to :ref:`the api reference <api>`.
 
 Querying from `IMGT <https://www.imgt.org/>`_ TCR/MHC genes or alleles
 ----------------------------------------------------------------------

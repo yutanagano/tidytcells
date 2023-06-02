@@ -1,18 +1,18 @@
-from .gene_standardisers import GeneStandardiser
+from .gene_standardizers import GeneStandardizer
 import re
 from .._resources import AMINO_ACIDS
 from typing import Dict, FrozenSet, Optional
 from .warnings import *
 
 
-def standardise_template(
+def standardize_template(
     gene: str,
     gene_type: str,
     species: str,
     enforce_functional: bool,
     precision: str,
     suppress_warnings: bool,
-    standardiser_dict: Dict[str, GeneStandardiser],
+    standardizer_dict: Dict[str, GeneStandardizer],
     allowed_precision: set,
 ) -> str:
     if type(gene) != str:
@@ -40,7 +40,7 @@ def standardise_template(
     # For backward compatibility, fix CamelCased species
     species = "".join(species.split()).lower()
 
-    if not species in standardiser_dict:
+    if not species in standardizer_dict:
         if not suppress_warnings:
             warn_unsupported_species(species, gene_type)
         return gene
@@ -51,20 +51,20 @@ def standardise_template(
     gene = gene.replace("&nbsp;", "")
     gene = gene.upper()
 
-    standardised = standardiser_dict[species](gene)
+    standardized = standardizer_dict[species](gene)
 
-    invalid_reason = standardised.invalid(enforce_functional)
+    invalid_reason = standardized.invalid(enforce_functional)
     if invalid_reason:
         if not suppress_warnings:
             warn_failure(
                 reason_for_failure=invalid_reason,
                 original_input=original_input,
-                attempted_fix=standardised.compile("allele"),
+                attempted_fix=standardized.compile("allele"),
                 species=species,
             )
         return None
 
-    return standardised.compile(precision)
+    return standardized.compile(precision)
 
 
 def query_template(
@@ -114,7 +114,7 @@ def query_template(
     return frozenset([i for i in result if re.search(contains, i)])
 
 
-def standardise_aa_template(seq: str, suppress_warnings: bool):
+def standardize_aa_template(seq: str, suppress_warnings: bool):
     if type(seq) != str:
         raise TypeError(f"seq must be type str, got {seq} ({type(seq)}).")
 

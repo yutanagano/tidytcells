@@ -3,11 +3,11 @@ Functions to clean and standardise TCR gene data.
 """
 
 
-from ._main import standardise, query, get_aa_sequence
+from ._main import standardize, query, get_aa_sequence
 
 
-def standardize(*args, **kwargs):
+def standardise(*args, **kwargs):
     """
-    Alias for :py:func:`tidytcells.tcr.standardise`.
+    Alias for :py:func:`tidytcells.tcr.standardize`.
     """
-    return standardise(*args, **kwargs)
+    return standardize(*args, **kwargs)

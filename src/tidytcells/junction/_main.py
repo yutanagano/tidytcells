@@ -1,12 +1,12 @@
 import re
-from .._utils.abstract_functions import standardise_aa_template
+from .._utils.abstract_functions import standardize_aa_template
 from warnings import warn
 
 
-def standardise(seq: str, strict: bool = False, suppress_warnings: bool = False):
+def standardize(seq: str, strict: bool = False, suppress_warnings: bool = False):
     """
     Ensures that a string value looks like a valid junction (CDR3) amino acid sequence.
-    This function is a special variant of :py:func:`tidytcells.aa.standardise`.
+    This function is a special variant of :py:func:`tidytcells.aa.standardize`.
 
     A valid junction sequence must:
 
@@ -31,8 +31,8 @@ def standardise(seq: str, strict: bool = False, suppress_warnings: bool = False)
         ``bool``
 
     :return:
-        If possible, a standardised version of the input string is returned.
-        If the input string cannot be standardised, it is rejected and ``None`` is returned.
+        If possible, a standardized version of the input string is returned.
+        If the input string cannot be standardized, it is rejected and ``None`` is returned.
     :rtype:
         ``str`` or ``None``
 
@@ -40,17 +40,17 @@ def standardise(seq: str, strict: bool = False, suppress_warnings: bool = False)
 
         Strings that look like junction sequences will be accepted, and returned in capitalised form.
 
-        >>> tt.junction.standardise("csadaff")
+        >>> tt.junction.standardize("csadaff")
         'CSADAFF'
 
         Strings that are valid amino acid sequences but do not stard and end with the appropriate residues will have a C and an F appended to its beginning and end respectively.
 
-        >>> tt.junction.standardise("sadaf")
+        >>> tt.junction.standardize("sadaf")
         'CSADAFF'
 
         However, setting ``strict`` to ``True`` will cause these cases to be rejected.
 
-        >>> result = tt.junction.standardise("sadaf", strict=True)
+        >>> result = tt.junction.standardize("sadaf", strict=True)
         UserWarning: Input sadaf was rejected as it is not a valid junction sequence.
         >>> print(result)
         None
@@ -59,7 +59,7 @@ def standardise(seq: str, strict: bool = False, suppress_warnings: bool = False)
     # take note of original input
     original_input = seq
 
-    seq = standardise_aa_template(seq, suppress_warnings)
+    seq = standardize_aa_template(seq, suppress_warnings)
 
     if seq is None:  # not a valid amino acid sequence
         return None

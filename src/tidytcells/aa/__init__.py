@@ -1,13 +1,13 @@
 """
-Functions to clean and standardise amino acid sequence data.
+Functions to clean and standardize amino acid sequence data.
 """
 
 
-from ._main import standardise
+from ._main import standardize
 
 
-def standardize(*args, **kwargs):
+def standardise(*args, **kwargs):
     """
-    Alias for :py:func:`tidytcells.aa.standardise`.
+    Alias for :py:func:`tidytcells.aa.standardize`.
     """
-    return standardise(*args, **kwargs)
+    return standardize(*args, **kwargs)

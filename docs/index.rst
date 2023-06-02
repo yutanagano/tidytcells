@@ -10,8 +10,8 @@ Welcome to tidytcells's documentation!
 
    This package is currently in the beta stage of development.
 
-:py:mod:`tidytcells` is a lightweight python package that cleans and standardises T cell receptor (TCR) and Major Histocompatibility Complex (MHC) data to be `IMGT <https://www.imgt.org/>`_-compliant.
-The main purpose of the package is to solve the problem of parsing and collating together non-standardised TCR datasets.
+:py:mod:`tidytcells` is a lightweight python package that cleans and standardizes T cell receptor (TCR) and Major Histocompatibility Complex (MHC) data to be `IMGT <https://www.imgt.org/>`_-compliant.
+The main purpose of the package is to solve the problem of parsing and collating together non-standardized TCR datasets.
 It is often difficult to compile TCR data from multiple sources because the formats/nomenclature of how each dataset encodes TCR and MHC gene names are slightly different, or even inconsistent within themselves.
 :py:mod:`tidytcells` can ameliorate this issue by auto-correcting and auto-standardising your data!
 

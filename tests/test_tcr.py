@@ -4,21 +4,21 @@ from tidytcells._resources import HOMOSAPIENS_TCR, MUSMUSCULUS_TCR
 import warnings
 
 
-class TestStandardise:
+class TestStandardize:
     @pytest.mark.parametrize("species", ("foobar", "yoinkdoink", ""))
     def test_unsupported_species(self, species):
         with pytest.warns(UserWarning, match="Unsupported"):
-            result = tcr.standardise(gene="foobarbaz", species=species)
+            result = tcr.standardize(gene="foobarbaz", species=species)
 
         assert result == "foobarbaz"
 
     @pytest.mark.parametrize("gene", (1234, None))
     def test_bad_type(self, gene):
         with pytest.raises(TypeError):
-            tcr.standardise(gene=gene)
+            tcr.standardize(gene=gene)
 
     def test_default_homosapiens(self):
-        result = tcr.standardise("TRBV20/OR9-2*01")
+        result = tcr.standardize("TRBV20/OR9-2*01")
 
         assert result == "TRBV20/OR9-2*01"
 
@@ -27,11 +27,11 @@ class TestStandardise:
         (("TRAV3*01&nbsp;", "TRAV3*01"), (" TRAV3 * 01 ", "TRAV3*01")),
     )
     def test_remove_pollutants(self, gene, expected):
-        result = tcr.standardise(gene=gene, species="homosapiens")
+        result = tcr.standardize(gene=gene, species="homosapiens")
 
         assert result == expected
 
-    @pytest.mark.filterwarnings("ignore:Failed to standardise")
+    @pytest.mark.filterwarnings("ignore:Failed to standardize")
     @pytest.mark.parametrize(
         ("gene", "expected", "enforce_functional"),
         (
@@ -44,7 +44,7 @@ class TestStandardise:
         ),
     )
     def test_enforce_functional(self, gene, expected, enforce_functional):
-        result = tcr.standardise(
+        result = tcr.standardize(
             gene=gene, species="homosapiens", enforce_functional=enforce_functional
         )
 
@@ -58,37 +58,37 @@ class TestStandardise:
         ),
     )
     def test_precision(self, gene, expected, precision):
-        result = tcr.standardise(gene=gene, species="homosapiens", precision=precision)
+        result = tcr.standardize(gene=gene, species="homosapiens", precision=precision)
 
         assert result == expected
 
-    def test_standardize(self):
-        result = tcr.standardize("TRBV20/OR9-2*01")
+    def test_standardise(self):
+        result = tcr.standardise("TRBV20/OR9-2*01")
 
         assert result == "TRBV20/OR9-2*01"
 
     def test_gene_name(self):
-        result = tcr.standardise(gene_name="TRBV20/OR9-2*01")
+        result = tcr.standardize(gene_name="TRBV20/OR9-2*01")
 
         assert result == "TRBV20/OR9-2*01"
 
     def test_suppress_warnings(self):
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            tcr.standardise("foobarbaz", suppress_warnings=True)
+            tcr.standardize("foobarbaz", suppress_warnings=True)
 
 
-class TestStandardiseHomoSapiens:
+class TestStandardizeHomoSapiens:
     @pytest.mark.parametrize("gene", HOMOSAPIENS_TCR)
     def test_already_correctly_formatted(self, gene):
-        result = tcr.standardise(gene=gene, species="homosapiens")
+        result = tcr.standardize(gene=gene, species="homosapiens")
 
         assert result == gene
 
     @pytest.mark.parametrize("gene", ("foobar", "TRAV3D-3*01"))
     def test_invalid_tcr(self, gene):
-        with pytest.warns(UserWarning, match="Failed to standardise"):
-            result = tcr.standardise(gene=gene, species="homosapiens")
+        with pytest.warns(UserWarning, match="Failed to standardize"):
+            result = tcr.standardize(gene=gene, species="homosapiens")
 
         assert result == None
 
@@ -101,7 +101,7 @@ class TestStandardiseHomoSapiens:
         ),
     )
     def test_resolve_alternate_tcr_names(self, gene, expected):
-        result = tcr.standardise(gene=gene, species="homosapiens")
+        result = tcr.standardize(gene=gene, species="homosapiens")
 
         assert result == expected
 
@@ -117,22 +117,22 @@ class TestStandardiseHomoSapiens:
         ),
     )
     def test_various_typos(self, gene, expected):
-        result = tcr.standardise(gene=gene, species="homosapiens")
+        result = tcr.standardize(gene=gene, species="homosapiens")
 
         assert result == expected
 
 
-class TestStandardiseMusMusculus:
+class TestStandardizeMusMusculus:
     @pytest.mark.parametrize("gene", MUSMUSCULUS_TCR)
     def test_already_correctly_formatted(self, gene):
-        result = tcr.standardise(gene=gene, species="musmusculus")
+        result = tcr.standardize(gene=gene, species="musmusculus")
 
         assert result == gene
 
     @pytest.mark.parametrize("gene", ("foobar", "TRAV3*01"))
     def test_inivalid_tcr(self, gene):
-        with pytest.warns(UserWarning, match="Failed to standardise"):
-            result = tcr.standardise(gene=gene, species="musmusculus")
+        with pytest.warns(UserWarning, match="Failed to standardize"):
+            result = tcr.standardize(gene=gene, species="musmusculus")
 
         assert result == None
 

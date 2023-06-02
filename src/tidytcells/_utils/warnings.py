@@ -10,7 +10,7 @@ def warn_failure(
     reason_for_failure: str, original_input: str, attempted_fix: str, species: str
 ):
     warn(
-        f'Failed to standardise "{original_input}" for species {species}: '
+        f'Failed to standardize "{original_input}" for species {species}: '
         f'{reason_for_failure}. Attempted fix: "{attempted_fix}".'
     )
 
