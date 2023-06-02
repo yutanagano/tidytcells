@@ -23,7 +23,7 @@ The submodules are:
 For ease of use, function APIs are standardized accross modules wherever possible- for example, each module has a function named ``standardize`` (see below) which standardizes data from each category to be `IMGT <https://www.imgt.org/>`_-compliant.
 Refer to :ref:`here <api>` for a full review of :py:mod:`tidytcells`' API.
 
-Standardising TCR/MHC data using :py:mod:`tidytcells` and `pandas <https://pandas.pydata.org/>`_
+Standardizing TCR/MHC data using :py:mod:`tidytcells` and `pandas <https://pandas.pydata.org/>`_
 ------------------------------------------------------------------------------------------------
 
 This is :py:mod:`tidytcells`' primary usecase.

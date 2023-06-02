@@ -16,7 +16,7 @@ setup(
     author="Yuta Nagano",
     author_email="yutanagano51@proton.me",
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
@@ -27,7 +27,7 @@ setup(
     package_dir={"": "src"},
     packages=find_packages("src"),
     package_data={"tidytcells": ["_resources/*"]},
-    python_requires=">=3.9",
+    python_requires=">=3.7",
     extras_require={
         "dev": [
             "build",
