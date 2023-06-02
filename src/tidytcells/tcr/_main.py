@@ -98,7 +98,7 @@ def standardise(
         The ``enforce_functional`` setting will cause non-functional genes or alleles to be rejected.
 
         >>> result = tt.tcr.standardise("TRBV1", enforce_functional=True)
-        UserWarning: Failed to standardise: "TRBV1" for species homosapiens. Attempted fix "TRBV1" did not meet the standardised format requirements. Ignoring this gene name...
+        UserWarning: Failed to standardise "TRBV1" for species homosapiens: gene has no functional alleles. Attempted fix "TRBV1".
         >>> print(result)
         None
 
