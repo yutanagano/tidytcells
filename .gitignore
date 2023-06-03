@@ -10,3 +10,4 @@ __pycache__
 /docs/_static
 /docs/generated
 /ignore
+/notebooks
