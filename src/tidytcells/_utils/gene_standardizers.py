@@ -97,6 +97,7 @@ class TCRStandardizer(GeneStandardizer):
         self.gene = re.sub(r"(?<!TR)(?<!\/)DV", "/DV", self.gene)
         self.gene = re.sub(r"(?<!\d)0", "", self.gene)
         self.gene = self.gene.replace("TCR", "TR")
+        self.gene = self.gene.replace("S", "-")
         if self.valid():
             return
 
@@ -119,6 +120,11 @@ class TCRStandardizer(GeneStandardizer):
                 if re.match(rf"^TRAV\d+(-\d)?\/{self.gene[2:]}$", valid_gene):
                     self.gene = valid_gene
                     return
+
+        # Final try: remove "-1" if exists and try again
+        if "-1" in self.gene:
+            self.gene = self.gene.replace("-1", "")
+            return self.resolve_errors()
 
     def invalid(self, enforce_functional: bool = False) -> bool:
         if not self.gene in self.ref_dict:

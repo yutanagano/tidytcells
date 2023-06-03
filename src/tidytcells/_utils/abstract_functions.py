@@ -49,6 +49,7 @@ def standardize_template(
 
     gene = "".join(gene.split())
     gene = gene.replace("&nbsp;", "")
+    gene = gene.replace("&ndash;", "-")
     gene = gene.upper()
 
     standardized = standardizer_dict[species](gene)

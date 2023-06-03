@@ -115,6 +115,9 @@ class TestStandardizeHomoSapiens:
             ("TCRBV1", "TRBV1"),
             ("TRAV14", "TRAV14/DV4"),
             ("TRDV4", "TRAV14/DV4"),
+            ("TCRAV13S2", "TRAV13-2"),
+            ("TCRAV38S2", "TRAV38-2/DV8"),
+            ("TCRAV30-1", "TRAV30"),
         ),
     )
     def test_various_typos(self, gene, expected):
