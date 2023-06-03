@@ -38,6 +38,7 @@ setup(
             "pytest-cov",
             "setuptools",
             "tox>=4",
+            "twine",
             "wheel",
         ]
     },
