@@ -118,6 +118,11 @@ class TestStandardizeHomoSapiens:
             ("TCRAV13S2", "TRAV13-2"),
             ("TCRAV38S2", "TRAV38-2/DV8"),
             ("TCRAV30-1", "TRAV30"),
+            ("TCRDV01-01*01", "TRDV1*01"),
+            ("TCRAV14/4", "TRAV14/DV4"),
+            ("TCRAV36-01*01", "TRAV36/DV7*01"),
+            ("29/DV5*01", "TRAV29/DV5*01"),
+            ("TCRBJ2.7", "TRBJ2-7"),
         ),
     )
     def test_various_typos(self, gene, expected):
@@ -133,7 +138,7 @@ class TestStandardizeMusMusculus:
 
         assert result == gene
 
-    @pytest.mark.parametrize("gene", ("foobar", "TRAV3*01"))
+    @pytest.mark.parametrize("gene", ("foobar", "noice"))
     def test_inivalid_tcr(self, gene):
         with pytest.warns(UserWarning, match="Failed to standardize"):
             result = tcr.standardize(gene=gene, species="musmusculus")

@@ -25,12 +25,16 @@ class GeneStandardizer(ABC):
     Abstract base standardizer class.
     """
 
-    @abstractmethod
     def __init__(self, gene: str) -> None:
         """
-        Init method for the standardizer objects. Should expect a whitespace-
-        cleaned, uppercased string to be supplied to the 'gene' parameter.
+        Init method for the standardizer objects.
         """
+        gene = "".join(gene.split())
+        gene = gene.replace("&nbsp;", "")
+        gene = gene.replace("&ndash;", "-")
+        gene = gene.upper()
+
+        self.gene = gene
 
     def valid(self, enforce_functional: bool = False) -> bool:
         """
@@ -66,11 +70,12 @@ class TCRStandardizer(GeneStandardizer):
     syn_dict = None
 
     def __init__(self, gene: str) -> None:
-        self.parse_gene_str(gene)
+        super().__init__(gene)
+        self.parse_gene_str()
         self.resolve_errors()
 
-    def parse_gene_str(self, gene: str) -> None:
-        parse_attempt = re.match(r"^([A-Z0-9\-\.\(\)\/]+)(\*(\d+))?", gene)
+    def parse_gene_str(self) -> None:
+        parse_attempt = re.match(r"^([A-Z0-9\-\.\(\)\/]+)(\*(\d+))?", self.gene)
 
         if parse_attempt:
             self.gene = parse_attempt.group(1)
@@ -81,10 +86,9 @@ class TCRStandardizer(GeneStandardizer):
             )
             return
 
-        self.gene = gene
         self.allele_designation = None
 
-    def resolve_errors(self) -> None:
+    def resolve_errors(self, try_dash1: bool = True) -> None:
         if self.valid():
             return  # No resolution necessary
 
@@ -94,10 +98,11 @@ class TCRStandardizer(GeneStandardizer):
             return
 
         # Fix common errors
-        self.gene = re.sub(r"(?<!TR)(?<!\/)DV", "/DV", self.gene)
-        self.gene = re.sub(r"(?<!\d)0", "", self.gene)
         self.gene = self.gene.replace("TCR", "TR")
         self.gene = self.gene.replace("S", "-")
+        self.gene = self.gene.replace(".", "-")
+        self.gene = re.sub(r"(?<!TR)(?<!\/)DV", "/DV", self.gene)
+        self.gene = re.sub(r"(?<!\d)0", "", self.gene)
         if self.valid():
             return
 
@@ -109,22 +114,47 @@ class TCRStandardizer(GeneStandardizer):
 
         # Resolve DV designation from AV if necessary
         if self.gene.startswith("TRAV") and "DV" not in self.gene:
-            for valid_gene in self.ref_dict:
-                if valid_gene.startswith(self.gene + "/DV"):
-                    self.gene = valid_gene
+            if "/" in self.gene:
+                split_gene = self.gene.split("/")
+                dv = "DV" + split_gene.pop()
+                self.gene = "/".join([*split_gene, dv])
+                if self.valid():
                     return
+            else:
+                for valid_gene in self.ref_dict:
+                    if valid_gene.startswith(self.gene + "/DV"):
+                        self.gene = valid_gene
+                        return
 
         # Resolve AV designation from DV is necessary
-        if self.gene.startswith("TRDV"):
-            for valid_gene in self.ref_dict:
-                if re.match(rf"^TRAV\d+(-\d)?\/{self.gene[2:]}$", valid_gene):
-                    self.gene = valid_gene
-                    return
+        if "DV" in self.gene:
+            if self.gene.startswith("TRDV"):
+                for valid_gene in self.ref_dict:
+                    if re.match(rf"^TRAV\d+(-\d)?\/{self.gene[2:]}$", valid_gene):
+                        self.gene = valid_gene
+                        return
+            else:
+                parse_attempt = re.match(r"^TR([\d-]+)\/(DV[\d-]+)$", self.gene)
+                if parse_attempt:
+                    self.gene = f"TRAV{parse_attempt.group(1)}/{parse_attempt.group(2)}"
+                    if self.valid():
+                        return
 
-        # Final try: remove "-1" if exists and try again
-        if "-1" in self.gene:
-            self.gene = self.gene.replace("-1", "")
-            return self.resolve_errors()
+        # Try adding or removing "-1" to the end of the gene name
+        if try_dash1:
+            if "-1" in self.gene:
+                orig = self.gene
+                self.gene = self.gene.replace("-1", "")
+                self.resolve_errors(try_dash1=False)
+                if self.valid():
+                    return
+                self.gene = orig
+            else:
+                self.gene += "-1"
+                self.resolve_errors(try_dash1=False)
+                if self.valid():
+                    return
+                self.gene = self.gene.replace("-1", "")
 
     def invalid(self, enforce_functional: bool = False) -> bool:
         if not self.gene in self.ref_dict:
@@ -160,11 +190,10 @@ class HomoSapiensTCRStandardizer(TCRStandardizer):
     ref_dict = HOMOSAPIENS_TCR
     syn_dict = HOMOSAPIENS_TCR_SYNONYMS
 
-    def resolve_errors(self) -> None:
-        super().resolve_errors()
-
+    def resolve_errors(self, *args, **kwargs) -> None:
         # Fix common errors
         self.gene = re.sub(r"(?<!\/)OR", "/OR", self.gene)
+        super().resolve_errors(*args, **kwargs)
 
 
 class MusMusculusTCRStandardizer(TCRStandardizer):
@@ -173,17 +202,18 @@ class MusMusculusTCRStandardizer(TCRStandardizer):
 
 class HLAStandardizer(GeneStandardizer):
     def __init__(self, gene: str) -> None:
-        self.parse_gene(gene)
+        super().__init__(gene)
+        self.parse_gene()
         self.resolve_errors()
 
-    def parse_gene(self, gene: str) -> None:
-        if gene == "B2M":
+    def parse_gene(self) -> None:
+        if self.gene == "B2M":
             self.gene = "B2M"
             self.allele_designation = []
             return
 
         # If period between digits, replace with colon
-        gene = re.sub(r"(?<=\d)\.(?=\d)", ":", gene)
+        gene = re.sub(r"(?<=\d)\.(?=\d)", ":", self.gene)
 
         def listify_allele_designation(allele_designation) -> list:
             if allele_designation is None:
@@ -318,11 +348,12 @@ class HLAStandardizer(GeneStandardizer):
 
 class MusMusculusMHCStandardizer(GeneStandardizer):
     def __init__(self, gene: str) -> None:
-        self.parse_gene(gene)
+        super().__init__(gene)
+        self.parse_gene()
         self.resolve_errors()
 
-    def parse_gene(self, gene: str) -> None:
-        parse_attempt = re.match(r"^([A-Z0-9\-\.\(\)\/]+)(\*(\d+))?", gene)
+    def parse_gene(self) -> None:
+        parse_attempt = re.match(r"^([A-Z0-9\-\.\(\)\/]+)(\*(\d+))?", self.gene)
 
         if parse_attempt:
             self.gene = parse_attempt.group(1)
@@ -333,7 +364,6 @@ class MusMusculusMHCStandardizer(GeneStandardizer):
             )
             return
 
-        self.gene = gene
         self.allele_designation = None
 
     def resolve_errors(self) -> None:

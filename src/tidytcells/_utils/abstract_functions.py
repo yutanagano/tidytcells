@@ -45,13 +45,6 @@ def standardize_template(
             warn_unsupported_species(species, gene_type)
         return gene
 
-    original_input = gene
-
-    gene = "".join(gene.split())
-    gene = gene.replace("&nbsp;", "")
-    gene = gene.replace("&ndash;", "-")
-    gene = gene.upper()
-
     standardized = standardizer_dict[species](gene)
 
     invalid_reason = standardized.invalid(enforce_functional)
@@ -59,7 +52,7 @@ def standardize_template(
         if not suppress_warnings:
             warn_failure(
                 reason_for_failure=invalid_reason,
-                original_input=original_input,
+                original_input=gene,
                 attempted_fix=standardized.compile("allele"),
                 species=species,
             )
