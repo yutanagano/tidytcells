@@ -52,6 +52,12 @@ class TestStandardize:
             warnings.simplefilter("error")
             mhc.standardize("foobarbaz", suppress_warnings=True)
 
+    def test_on_fail(self):
+        with pytest.warns(UserWarning):
+            result = mhc.standardize("foobarbaz", on_fail="keep")
+
+        assert result == "foobarbaz"
+
 
 class TestStandardizeHomoSapiens:
     @pytest.mark.parametrize("gene", [*HOMOSAPIENS_MHC, "B2M"])
