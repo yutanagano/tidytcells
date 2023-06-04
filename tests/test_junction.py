@@ -28,7 +28,7 @@ class TestStandardise:
 
     @pytest.mark.parametrize("seq", ("123456", "ASDFGHJKL", "A?AAAA", "AAAXAA"))
     def test_various_rejections(self, seq):
-        with pytest.warns(UserWarning, match="is not a valid amino acid sequence"):
+        with pytest.warns(UserWarning, match="not a valid amino acid sequence"):
             result = junction.standardise(seq=seq)
 
         assert result is None
@@ -54,7 +54,7 @@ class TestStandardise:
 
     @pytest.mark.parametrize("seq", ("ASQY", "CASQY", "ASQYF", "ASQYW"))
     def test_strict(self, seq):
-        with pytest.warns(UserWarning, match="is not a valid junction"):
+        with pytest.warns(UserWarning, match="not a valid junction"):
             result = junction.standardise(seq=seq, strict=True)
 
         assert result is None
