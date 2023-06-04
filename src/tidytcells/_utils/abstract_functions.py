@@ -11,6 +11,7 @@ def standardize_template(
     species: str,
     enforce_functional: bool,
     precision: str,
+    on_fail: str,
     suppress_warnings: bool,
     standardizer_dict: Dict[str, GeneStandardizer],
     allowed_precision: set,
@@ -28,6 +29,8 @@ def standardize_template(
         raise TypeError(
             f"precision must be type str, got {precision} ({type(precision)})."
         )
+    if type(on_fail) != str:
+        raise TypeError(f"on_fail must be type str, got {on_fail} ({type(on_fail)}).")
     if type(suppress_warnings) != bool:
         raise TypeError(
             "suppress_warnings must be type bool, got "
@@ -36,6 +39,8 @@ def standardize_template(
 
     if not precision in allowed_precision:
         raise ValueError(f"precision must be in {allowed_precision}, got {precision}.")
+    if not on_fail in ("reject", "keep"):
+        raise ValueError(f'on_fail must be "reject" or "keep", got {on_fail}.')
 
     # For backward compatibility, fix CamelCased species
     species = "".join(species.split()).lower()
@@ -56,7 +61,9 @@ def standardize_template(
                 attempted_fix=standardized.compile("allele"),
                 species=species,
             )
-        return None
+        if on_fail == "reject":
+            return None
+        return gene
 
     return standardized.compile(precision)
 
@@ -108,9 +115,19 @@ def query_template(
     return frozenset([i for i in result if re.search(contains, i)])
 
 
-def standardize_aa_template(seq: str, suppress_warnings: bool):
+def standardize_aa_template(seq: str, on_fail: str, suppress_warnings: bool):
     if type(seq) != str:
         raise TypeError(f"seq must be type str, got {seq} ({type(seq)}).")
+    if type(on_fail) != str:
+        raise TypeError(f"on_fail must be type str, got {on_fail} ({type(on_fail)}).")
+    if type(suppress_warnings) != bool:
+        raise TypeError(
+            "suppress_warnings must be type bool, got "
+            f"{suppress_warnings} ({type(suppress_warnings)})."
+        )
+
+    if not on_fail in ("reject", "keep"):
+        raise ValueError(f'on_fail must be "reject" or "keep", got {on_fail}.')
 
     original_input = seq
 
@@ -122,6 +139,8 @@ def standardize_aa_template(seq: str, suppress_warnings: bool):
                 warn(
                     f"Input {original_input} was rejected as it is not a valid amino acid sequence."
                 )
-            return None
+            if on_fail == "reject":
+                return None
+            return original_input
 
     return seq

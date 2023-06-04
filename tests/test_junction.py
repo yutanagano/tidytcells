@@ -68,3 +68,9 @@ class TestStandardise:
         with warnings.catch_warnings():
             warnings.simplefilter("error")
             junction.standardise(seq="123456", suppress_warnings=True)
+
+    def test_on_fail(self):
+        with pytest.warns(UserWarning):
+            result = junction.standardize("foobarbaz", on_fail="keep")
+
+        assert result == "foobarbaz"

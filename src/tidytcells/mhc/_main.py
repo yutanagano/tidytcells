@@ -37,6 +37,7 @@ def standardize(
     gene: Optional[str] = None,
     species: str = "homosapiens",
     precision: str = "allele",
+    on_fail: str = "reject",
     suppress_warnings: bool = False,
     gene_name: Optional[str] = None,
 ) -> tuple:
@@ -56,12 +57,12 @@ def standardize(
     :param gene:
         Potentially non-standardized MHC gene name.
     :type gene:
-        ``str``
+        str
     :param species:
         Species to which the MHC gene belongs (see above for supported species).
         Defaults to ``'homosapiens'``.
     :type species:
-        ``str``
+        str
     :param precision:
         The maximum level of precision to standardize to.
         ``'allele'`` standardizes to the maximum precision possible.
@@ -69,24 +70,31 @@ def standardize(
         ``'gene'`` standardizes only to the level of the gene.
         Defaults to ``'allele'``.
     :type precision:
-        ``str``
+        str
+    :param on_fail:
+        Behaviour when standardization fails.
+        If set to ``"reject"``, returns ``None`` on failure.
+        If set to ``"keep"``, returns the original input.
+        Defaults to ``"reject"``.
+    :type on_fail:
+        str
     :param suppress_warnings:
         Disable warnings that are usually emitted when standardisation fails.
         Defaults to ``False``.
     :type suppress_warnings:
-        ``bool``
+        bool
 
     :param gene_name:
         Alias for the parameter ``gene``. This will be deprecated soon.
     :type gene_name:
-        ``str``
+        str
 
     :return:
         If the specified ``species`` is supported, and ``gene`` could be standardized, then return the standardized gene name.
         If ``species`` is unsupported, then the function does not attempt to standardize, and returns the unaltered ``gene`` string.
         Else returns ``None``.
     :rtype:
-        ``str`` or ``None``
+        Union[str, None]
 
     .. topic:: Example usage
 
@@ -119,6 +127,7 @@ def standardize(
         species=species,
         enforce_functional=True,
         precision=precision,
+        on_fail=on_fail,
         suppress_warnings=suppress_warnings,
         standardizer_dict=STANDARDIZERS,
         allowed_precision={"allele", "protein", "gene"},
@@ -140,33 +149,33 @@ def query(
 
     .. note::
 
-        ``tidytcells``' knowledge of MHC alleles is limited, especially outside of humans.
-        ``tidytcells`` will allow you to query HLA alleles up to the level of the protein (first two allele designators), but that is the highest resolution available.
+        :py:mod:`tidytcells`' knowledge of MHC alleles is limited, especially outside of humans.
+        :py:mod:`tidytcells` will allow you to query HLA alleles up to the level of the protein (first two allele designators), but that is the highest resolution available.
         For Mus musculus, there is currently only support for gene-level querying.
 
     :param species:
         Species to query (see above for supported species).
         Defaults to ``'homosapiens'``.
     :type species:
-        ``str``
+        str
     :param precision:
         The level of precision to query.
         ``allele`` will query from the set of all possible alleles.
         ``gene`` will query from the set of all possible genes.
         Defaults to ``allele``.
     :type precision:
-        ``str``
+        str
     :param contains:
         An optional **regular expression** string which will be used to filter the query result.
         If supplied, only genes/alleles which contain the regular expression will be returned.
         Defaults to ``None``.
     :type contains:
-        ``str``
+        str
 
     :return:
         The set of all genes/alleles that satisfy the given constraints.
     :rtype:
-        ``FrozenSet[str]``
+        FrozenSet[str]
 
     .. topic:: Example usage
 
@@ -205,22 +214,22 @@ def get_chain(
     :param gene:
         Standardized MHC gene name
     :type gene:
-        ``str``
+        str
     :param suppress_warnings:
         Disable warnings that are usually emitted when chain classification fails.
         Defaults to ``False``.
     :type suppress_warnings:
-        ``bool``
+        bool
 
     :param gene_name:
         Alias for the parameter ``gene``. This will be deprecated soon.
     :type gene_name:
-        ``str``
+        str
 
     :return:
         ``'alpha'`` or ``'beta'`` if ``gene`` is recognised and its chain is known, else ``None``.
     :rtype:
-        ``str`` or ``None``
+        Union[str, None]
 
     .. topic:: Example usage
 
@@ -277,22 +286,22 @@ def get_class(
     :param gene:
         Standardized MHC gene name
     :type gene:
-        ``str``
+        str
     :param suppress_warnings:
         Disable warnings that are usually emitted when classification fails.
         Defaults to ``False``.
     :type suppress_warnings:
-        ``bool``
+        bool
 
     :param gene_name:
         Alias for the parameter ``gene``. This will be deprecated soon.
     :type gene_name:
-        ``str``
+        str
 
     :return:
         ``1`` or ``2`` if ``gene`` is recognised and its class is known, else ``None``.
     :rtype:
-        ``int`` or ``None``
+        Union[int, None]
 
     .. topic:: Example usage
 

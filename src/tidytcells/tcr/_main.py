@@ -33,6 +33,7 @@ def standardize(
     species: str = "homosapiens",
     enforce_functional: bool = False,
     precision: str = "allele",
+    on_fail: str = "reject",
     suppress_warnings: bool = False,
     gene_name: Optional[str] = None,
 ) -> str:
@@ -47,41 +48,48 @@ def standardize(
     :param gene:
         Potentially non-standardized TCR gene name.
     :type gene:
-        ``str``
+        str
     :param species:
         Species to which the TCR gene belongs (see above for supported species).
         Defaults to ``'homosapiens'``.
     :type species:
-        ``str``
+        str
     :param enforce_functional:
         If ``True``, disallows TCR genes that are recognised by IMGT but are marked as non-functional (ORF or pseudogene).
         Defaults to ``False``.
     :type enforce_functional:
-        ``bool``
+        bool
     :param precision:
         The maximum level of precision to standardize to.
         ``'allele'`` standardizes to the maximum precision possible.
         ``'gene'`` standardizes only to the level of the gene.
         Defaults to ``'allele'``.
     :type precision:
-        ``str``
+        str
+    :param on_fail:
+        Behaviour when standardization fails.
+        If set to ``"reject"``, returns ``None`` on failure.
+        If set to ``"keep"``, returns the original input.
+        Defaults to ``"reject"``.
+    :type on_fail:
+        str
     :param suppress_warnings:
         Disable warnings that are usually emitted when standardisation fails.
         Defaults to ``False``.
     :type suppress_warnings:
-        ``bool``
+        bool
 
     :param gene_name:
         Alias for the parameter ``gene``. This will be deprecated soon.
     :type gene_name:
-        ``str``
+        str
 
     :return:
         If the specified ``species`` is supported, and ``gene`` could be standardized, then return the standardized gene name.
         If ``species`` is unsupported, then the function does not attempt to standardize , and returns the unaltered ``gene`` string.
         Else returns ``None``.
     :rtype:
-        ``str`` or ``None``
+        Union[str, None]
 
     .. topic:: Example usage
 
@@ -121,6 +129,7 @@ def standardize(
         species=species,
         enforce_functional=enforce_functional,
         precision=precision,
+        on_fail=on_fail,
         suppress_warnings=suppress_warnings,
         standardizer_dict=STANDARDIZERS,
         allowed_precision={"allele", "gene"},
@@ -145,14 +154,14 @@ def query(
         Species to query (see above for supported species).
         Defaults to ``'homosapiens'``.
     :type species:
-        ``str``
+        str
     :param precision:
         The level of precision to query.
         ``allele`` will query from the set of all possible alleles.
         ``gene`` will query from the set of all possible genes.
         Defaults to ``allele``.
     :type precision:
-        ``str``
+        str
     :param functionality:
         Gene/allele functionality to subset by.
         ``"any"`` queries from all possible genes/alleles.
@@ -164,18 +173,18 @@ def query(
         A gene is considered queriable if at least one of its alleles' functionality label matches the description.
         Defaults to ``"any"``.
     :type functionality:
-        ``str``
+        str
     :param contains:
         An optional regular expression string which will be used to filter the query result.
         If supplied, only genes/alleles which contain the regular expression will be returned.
         Defaults to ``None``.
     :type contains:
-        ``str``
+        str
 
     :return:
         The set of all genes/alleles that satisfy the given constraints.
     :rtype:
-        ``FrozenSet[str]``
+        FrozenSet[str]
 
     .. topic:: Example usage
 
@@ -217,17 +226,17 @@ def get_aa_sequence(gene: str, species: str = "homosapiens") -> Dict[str, str]:
         The gene must be specified to the level of the allele.
         Note that some genes, notably the non-functional ones, will not have resolvable amino acid sequences.
     :type gene:
-        ``str``
+        str
     :param species:
         Species to which the TCR gene in question belongs (see above for supported species).
         Defaults to ``'homosapiens'``.
     :type species:
-        ``str``
+        str
 
     :return:
         A dictionary with keys corresponding to names of different sequence regions within the gene, and values corresponding to their amino acid sequences.
     :rtype:
-        ``Dict[str, str]``
+        Dict[str, str]
 
     .. topic:: Example usage
 
