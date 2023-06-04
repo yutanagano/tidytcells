@@ -137,7 +137,7 @@ def standardize_aa_template(seq: str, on_fail: str, suppress_warnings: bool):
         if not char in AMINO_ACIDS:
             if not suppress_warnings:
                 warn(
-                    f"Input {original_input} was rejected as it is not a valid amino acid sequence."
+                    f"Failed to standardize {original_input}: not a valid amino acid sequence."
                 )
             if on_fail == "reject":
                 return None

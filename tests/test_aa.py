@@ -12,7 +12,7 @@ class TestStandardise:
 
     @pytest.mark.parametrize("seq", ("123456", "ASDFGHJKL", "A?AAAA", "AAAXAA"))
     def test_various_rejections(self, seq):
-        with pytest.warns(UserWarning, match="is not a valid amino acid"):
+        with pytest.warns(UserWarning, match="not a valid amino acid"):
             result = aa.standardize(seq=seq)
 
         assert result == None

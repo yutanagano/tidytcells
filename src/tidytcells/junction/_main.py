@@ -84,7 +84,7 @@ def standardize(
         if strict:
             if not suppress_warnings:
                 warn(
-                    f"Input {original_input} was rejected as it is not a valid junction sequence."
+                    f"Failed to standardize {original_input}: not a valid junction sequence."
                 )
             if on_fail == "reject":
                 return None
