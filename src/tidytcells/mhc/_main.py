@@ -92,7 +92,7 @@ def standardize(
     :return:
         If the specified ``species`` is supported, and ``gene`` could be standardized, then return the standardized gene name.
         If ``species`` is unsupported, then the function does not attempt to standardize, and returns the unaltered ``gene`` string.
-        Else returns ``None``.
+        Else follows the behvaiour as set by ``on_fail``.
     :rtype:
         Union[str, None]
 
