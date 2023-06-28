@@ -85,7 +85,9 @@ def standardize(
         bool
 
     :param gene_name:
-        Alias for the parameter ``gene``. This will be deprecated soon.
+        Alias for the parameter ``gene``.
+
+        .. caution:: This will be deprecated soon in favour of ``gene``.
     :type gene_name:
         str
 
@@ -222,7 +224,9 @@ def get_chain(
         bool
 
     :param gene_name:
-        Alias for the parameter ``gene``. This will be deprecated soon.
+        Alias for the parameter ``gene``.
+
+        .. caution:: This will be deprecated soon in favour of ``gene``.
     :type gene_name:
         str
 
@@ -294,7 +298,9 @@ def get_class(
         bool
 
     :param gene_name:
-        Alias for the parameter ``gene``. This will be deprecated soon.
+        Alias for the parameter ``gene``.
+
+        .. caution:: This will be deprecated soon in favour of ``gene``.
     :type gene_name:
         str
 
