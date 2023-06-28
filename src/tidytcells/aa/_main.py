@@ -24,7 +24,7 @@ def standardize(seq: str, on_fail: str = "reject", suppress_warnings: bool = Fal
 
     :return:
         Capitalised version of ``seq``, if seq is a valid amino acid sequence.
-        Otherwise the input is rejected and ``None`` is returned.
+        Otherwise follow behaviour set by ``on_fail``.
     :rtype:
         Union[str, None]
 
