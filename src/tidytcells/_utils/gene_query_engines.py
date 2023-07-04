@@ -40,7 +40,7 @@ class TCRQueryEngine(GeneQueryEngine):
                     )
                     or (
                         functionality == "NF"
-                        and {"P", "ORF"}.intersection(cls.ref_dict[gene].values)
+                        and {"P", "ORF"}.intersection(cls.ref_dict[gene].values())
                     )
                 ):
                     tcrs.append(gene)
