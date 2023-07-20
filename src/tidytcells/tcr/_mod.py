@@ -142,7 +142,7 @@ def query(
     species: str = "homosapiens",
     precision: str = "allele",
     functionality: str = "any",
-    contains: Optional[str] = None,
+    contains_substring: Optional[str] = None,
 ) -> FrozenSet[str]:
     """
     Query the list of all known TCR genes/alleles.
@@ -176,11 +176,11 @@ def query(
         Defaults to ``"any"``.
     :type functionality:
         str
-    :param contains:
+    :param contains_substring:
         An optional regular expression string which will be used to filter the query result.
         If supplied, only genes/alleles which contain the regular expression will be returned.
         Defaults to ``None``.
-    :type contains:
+    :type contains_substring:
         str
 
     :return:
@@ -192,12 +192,12 @@ def query(
 
         List all known variants for the human TCR gene TRBV6-1.
 
-        >>> tt.tcr.query(species="homosapiens", contains="TRBV6-1")
+        >>> tt.tcr.query(species="homosapiens", contains_substring="TRBV6-1")
         frozenset({'TRBV6-1*01'})
 
         List all known *Mus musculus* TRAV genes that have at least one allele which is a non-functional ORF.
 
-        >>> tt.tcr.query(species="musmusculus", precision="gene", functionality="ORF", contains="TRAV")
+        >>> tt.tcr.query(species="musmusculus", precision="gene", functionality="ORF", contains_substring="TRAV")
         frozenset({'TRAV21/DV12', 'TRAV14D-1', 'TRAV13-3', 'TRAV9D-2', 'TRAV5D-4', 'TRAV12D-3', 'TRAV12-1', 'TRAV18', 'TRAV11D'})
     """
 
@@ -205,7 +205,7 @@ def query(
         species=species,
         precision=precision,
         functionality=functionality,
-        contains_substring=contains,
+        contains_substring=contains_substring,
         query_engine_dict=QUERY_ENGINES,
     )
 

@@ -191,7 +191,9 @@ class TestQuery:
     def test_query_contains(
         self, species, precision, contains, expected_len, expected_in, expected_not_in
     ):
-        result = mhc.query(species=species, precision=precision, contains=contains)
+        result = mhc.query(
+            species=species, precision=precision, contains_substring=contains
+        )
 
         assert len(result) == expected_len
         assert expected_in in result

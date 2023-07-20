@@ -139,7 +139,7 @@ def standardize(
 def query(
     species: str = "homosapiens",
     precision: str = "allele",
-    contains: Optional[str] = None,
+    contains_substring: Optional[str] = None,
 ) -> FrozenSet[str]:
     """
     Query the list of all known MHC genes/alleles.
@@ -167,11 +167,11 @@ def query(
         Defaults to ``allele``.
     :type precision:
         str
-    :param contains:
+    :param contains_substring:
         An optional **regular expression** string which will be used to filter the query result.
         If supplied, only genes/alleles which contain the regular expression will be returned.
         Defaults to ``None``.
-    :type contains:
+    :type contains_substring:
         str
 
     :return:
@@ -183,12 +183,12 @@ def query(
 
         List all known HLA-G variants.
 
-        >>> tt.mhc.query(species="homosapiens", contains="HLA-G")
+        >>> tt.mhc.query(species="homosapiens", contains_substring="HLA-G")
         frozenset({'HLA-TAP1*03:01', 'HLA-TAP1*01:02', 'HLA-TAP1*06:01', 'HLA-TAP1*04:01', 'HLA-TAP1*02:01', 'HLA-TAP1*05:01', 'HLA-TAP1*01:01'})
 
         List all known *Mus musculus* MH1-Q genes.
 
-        >>> tt.mhc.query(species="musmusculus", precision="gene", contains="MH1-Q")
+        >>> tt.mhc.query(species="musmusculus", precision="gene", contains_substring="MH1-Q")
         frozenset({'MH1-Q3', 'MH1-Q9', 'MH1-Q1', 'MH1-Q2', 'MH1-Q6', 'MH1-Q10', 'MH1-Q5', 'MH1-Q8', 'MH1-Q7', 'MH1-Q4'})
     """
 
@@ -196,7 +196,7 @@ def query(
         species=species,
         precision=precision,
         functionality="any",
-        contains_substring=contains,
+        contains_substring=contains_substring,
         query_engine_dict=QUERY_ENGINES,
     )
 
