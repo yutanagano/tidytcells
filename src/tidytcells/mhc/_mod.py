@@ -131,8 +131,8 @@ def standardize(
         precision=precision,
         on_fail=on_fail,
         suppress_warnings=suppress_warnings,
-        standardizer_dict=STANDARDIZERS,
-        allowed_precision={"allele", "protein", "gene"},
+        standardizers_according_to_species=STANDARDIZERS,
+        available_precision_values_in_current_context={"allele", "protein", "gene"},
     )
 
 
@@ -196,7 +196,7 @@ def query(
         species=species,
         precision=precision,
         functionality="any",
-        contains=contains,
+        contains_substring=contains,
         query_engine_dict=QUERY_ENGINES,
     )
 

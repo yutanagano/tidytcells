@@ -14,9 +14,9 @@ class GeneQueryEngine(ABC):
     Abstract base class for gene query engines.
     """
 
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def query(precision: str) -> FrozenSet[str]:
+    def query(cls, precision: str, functionality: str) -> FrozenSet[str]:
         """
         List all unique genes/alleles of a particular type and species to the
         level of precision specified.
@@ -70,8 +70,8 @@ class MusMusculusTCRQueryEngine(TCRQueryEngine):
 
 
 class HLAQueryEngine(GeneQueryEngine):
-    @staticmethod
-    def query(precision: str, functionality: str) -> FrozenSet[str]:
+    @classmethod
+    def query(cls, precision: str, functionality: str) -> FrozenSet[str]:
         if precision == "allele":
             warn(
                 "tidytcells is not fully aware of all HLA alleles, and the "
@@ -97,8 +97,8 @@ class HLAQueryEngine(GeneQueryEngine):
 
 
 class MusMusculusMHCQueryEngine(GeneQueryEngine):
-    @staticmethod
-    def query(precision: str, functionality: str) -> FrozenSet[str]:
+    @classmethod
+    def query(cls, precision: str, functionality: str) -> FrozenSet[str]:
         if precision == "allele":
             warn(
                 "tidytcells is not aware of Mus musculus MHC alleles at all, "
