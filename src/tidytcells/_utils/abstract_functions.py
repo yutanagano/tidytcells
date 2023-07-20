@@ -13,8 +13,8 @@ def standardize_template(
     precision: str,
     on_fail: str,
     suppress_warnings: bool,
-    standardizer_dict: Dict[str, GeneStandardizer],
-    allowed_precision: set,
+    standardizers_according_to_species: Dict[str, GeneStandardizer],
+    available_precision_values_in_current_context: set,
 ) -> str:
     if type(gene) != str:
         raise TypeError(f"gene_name must be type str, got {gene} ({type(gene)}).")
@@ -37,22 +37,25 @@ def standardize_template(
             f"{suppress_warnings} ({type(suppress_warnings)})."
         )
 
-    if not precision in allowed_precision:
-        raise ValueError(f"precision must be in {allowed_precision}, got {precision}.")
+    if not precision in available_precision_values_in_current_context:
+        raise ValueError(
+            f"precision must be in {available_precision_values_in_current_context}, got {precision}."
+        )
     if not on_fail in ("reject", "keep"):
         raise ValueError(f'on_fail must be "reject" or "keep", got {on_fail}.')
 
     # For backward compatibility, fix CamelCased species
     species = "".join(species.split()).lower()
 
-    if not species in standardizer_dict:
+    if not species in standardizers_according_to_species:
         if not suppress_warnings:
             warn_unsupported_species(species, gene_type)
         return gene
 
-    standardized = standardizer_dict[species](gene)
+    standardizer_function = standardizers_according_to_species[species]
+    standardized = standardizer_function(gene)
 
-    invalid_reason = standardized.invalid(enforce_functional)
+    invalid_reason = standardized.get_invalid_reason(enforce_functional)
     if invalid_reason:
         if not suppress_warnings:
             warn_failure(
@@ -72,7 +75,7 @@ def query_template(
     species: str,
     precision: str,
     functionality: str,
-    contains: Optional[str],
+    contains_substring: Optional[str],
     query_engine_dict: dict,
 ) -> FrozenSet[str]:
     if type(species) != str:
@@ -85,9 +88,9 @@ def query_template(
         raise TypeError(
             f"precision must be type str, got {precision} ({type(precision)})."
         )
-    if not (contains is None or type(contains) == str):
+    if not (contains_substring is None or type(contains_substring) == str):
         raise TypeError(
-            f"contains must be either None or type str, got {contains} ({type(contains)})."
+            f"contains must be either None or type str, got {contains_substring} ({type(contains_substring)})."
         )
 
     if not precision in {"allele", "gene"}:
@@ -109,10 +112,10 @@ def query_template(
         precision=precision, functionality=functionality
     )
 
-    if contains is None:
+    if contains_substring is None:
         return result
 
-    return frozenset([i for i in result if re.search(contains, i)])
+    return frozenset([i for i in result if re.search(contains_substring, i)])
 
 
 def standardize_aa_template(seq: str, on_fail: str, suppress_warnings: bool):

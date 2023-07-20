@@ -3,7 +3,7 @@ Functions to clean and standardize MHC gene data.
 """
 
 
-from ._main import standardize, get_chain, get_class, query
+from ._mod import standardize, get_chain, get_class, query
 from warnings import warn as _warn
 
 

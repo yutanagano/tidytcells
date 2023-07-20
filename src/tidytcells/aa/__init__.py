@@ -3,7 +3,7 @@ Functions to clean and standardize amino acid sequence data.
 """
 
 
-from ._main import standardize
+from ._mod import standardize
 
 
 def standardise(*args, **kwargs):

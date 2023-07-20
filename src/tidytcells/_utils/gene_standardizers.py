@@ -6,7 +6,16 @@ Gene standardizer classes
 from abc import ABC, abstractmethod
 from itertools import product
 import re
-from .._resources import *
+from .._resources import (
+    HOMOSAPIENS_MHC,
+    HOMOSAPIENS_MHC_SYNONYMS,
+    HOMOSAPIENS_TCR,
+    HOMOSAPIENS_TCR_SYNONYMS,
+    MUSMUSCULUS_MHC,
+    MUSMUSCULUS_MHC_SYNONYMS,
+    MUSMUSCULUS_TCR,
+)
+from typing import Optional
 
 
 # --- STATIC RESOURCES ---
@@ -36,16 +45,8 @@ class GeneStandardizer(ABC):
 
         self.gene = gene
 
-    def valid(self, enforce_functional: bool = False) -> bool:
-        """
-        Taking into account whether enforcing functionality or not, returns
-        True if the gene/allele is valid in its current state. Returns False
-        otherwise.
-        """
-        return self.invalid(enforce_functional) is None
-
     @abstractmethod
-    def invalid(self, enforce_functional: bool = False) -> bool:
+    def get_invalid_reason(self, enforce_functional: bool = False) -> Optional[str]:
         """
         If the gene cannot be standardized (it is invalid), this method returns
         a string outlining the reason why (nonexistent gene, not functional,
@@ -88,14 +89,18 @@ class TCRStandardizer(GeneStandardizer):
 
         self.allele_designation = None
 
-    def resolve_errors(self, try_dash1: bool = True) -> None:
-        if self.valid():
-            return  # No resolution necessary
+    def resolve_errors(self, try_dash1: bool = True) -> bool:
+        """
+        Attempt to resolve any errors in the TCR symbol, return True if successful and False otherwise.
+        """
+
+        if self.get_invalid_reason() is None:
+            return True  # No resolution necessary
 
         # If a synonym, correct to currently approved name
         if self.syn_dict and self.gene in self.syn_dict:
             self.gene = self.syn_dict[self.gene]
-            return
+            return True  # No need to check for validity, as elements of syn_dict are guaranteed valid, and allele designation should already be formatted correctly
 
         # Fix common errors
         self.gene = self.gene.replace("TCR", "TR")
@@ -103,14 +108,14 @@ class TCRStandardizer(GeneStandardizer):
         self.gene = self.gene.replace(".", "-")
         self.gene = re.sub(r"(?<!TR)(?<!\/)DV", "/DV", self.gene)
         self.gene = re.sub(r"(?<!\d)0", "", self.gene)
-        if self.valid():
-            return
+        if self.get_invalid_reason() is None:
+            return True
 
         # Make sure gene starts with 'TR'
         if not self.gene.startswith("TR"):
             self.gene = "TR" + self.gene
-            if self.valid():
-                return
+            if self.get_invalid_reason() is None:
+                return True
 
         # Resolve DV designation from AV if necessary
         if self.gene.startswith("TRAV") and "DV" not in self.gene:
@@ -118,13 +123,13 @@ class TCRStandardizer(GeneStandardizer):
                 split_gene = self.gene.split("/")
                 dv = "DV" + split_gene.pop()
                 self.gene = "/".join([*split_gene, dv])
-                if self.valid():
-                    return
+                if self.get_invalid_reason() is None:
+                    return True
             else:
                 for valid_gene in self.ref_dict:
                     if valid_gene.startswith(self.gene + "/DV"):
                         self.gene = valid_gene
-                        return
+                        return True  # No need to check for validity, as elements of syn_dict are guaranteed valid, and allele designation should already be formatted correctly
 
         # Resolve AV designation from DV is necessary
         if "DV" in self.gene:
@@ -132,13 +137,13 @@ class TCRStandardizer(GeneStandardizer):
                 for valid_gene in self.ref_dict:
                     if re.match(rf"^TRAV\d+(-\d)?\/{self.gene[2:]}$", valid_gene):
                         self.gene = valid_gene
-                        return
+                        return True  # No need to check for validity, as elements of syn_dict are guaranteed valid, and allele designation should already be formatted correctly
             else:
                 parse_attempt = re.match(r"^TR([\d-]+)\/(DV[\d-]+)$", self.gene)
                 if parse_attempt:
                     self.gene = f"TRAV{parse_attempt.group(1)}/{parse_attempt.group(2)}"
-                    if self.valid():
-                        return
+                    if self.get_invalid_reason() is None:
+                        return True
 
         # Try adding or removing "-1" to the end of the gene name
         if try_dash1:
@@ -146,17 +151,19 @@ class TCRStandardizer(GeneStandardizer):
                 orig = self.gene
                 self.gene = self.gene.replace("-1", "")
                 self.resolve_errors(try_dash1=False)
-                if self.valid():
-                    return
+                if self.get_invalid_reason() is None:
+                    return True
                 self.gene = orig
             else:
                 self.gene += "-1"
                 self.resolve_errors(try_dash1=False)
-                if self.valid():
-                    return
+                if self.get_invalid_reason() is None:
+                    return True
                 self.gene = self.gene.replace("-1", "")
 
-    def invalid(self, enforce_functional: bool = False) -> bool:
+        return False
+
+    def get_invalid_reason(self, enforce_functional: bool = False) -> bool:
         if not self.gene in self.ref_dict:
             return "unrecognised gene name"
 
@@ -190,7 +197,7 @@ class HomoSapiensTCRStandardizer(TCRStandardizer):
     ref_dict = HOMOSAPIENS_TCR
     syn_dict = HOMOSAPIENS_TCR_SYNONYMS
 
-    def resolve_errors(self, *args, **kwargs) -> None:
+    def resolve_errors(self, *args, **kwargs) -> bool:
         # Fix common errors
         self.gene = re.sub(r"(?<!\/)OR", "/OR", self.gene)
         super().resolve_errors(*args, **kwargs)
@@ -256,22 +263,26 @@ class HLAStandardizer(GeneStandardizer):
             -1
         ].endswith("P")
 
-    def resolve_errors(self) -> None:
-        if self.valid():
-            return  # No resolution needed
+    def resolve_errors(self) -> bool:
+        """
+        Attempt to resolve any errors in the MHC symbol, return True if successful and False otherwise.
+        """
+
+        if self.get_invalid_reason() is None:
+            return True  # No resolution needed
 
         # If a synonym, correct to currently approved name
         if self.gene in HOMOSAPIENS_MHC_SYNONYMS:
             self.gene = HOMOSAPIENS_MHC_SYNONYMS[self.gene]
-            if self.valid():
-                return
+            if self.get_invalid_reason() is None:
+                return True
 
         # Handle common errors
         if not self.gene.startswith("HLA-"):
             self.gene = "HLA-" + self.gene
         self.gene = self.gene.replace("CW", "C")
-        if self.valid():
-            return
+        if self.get_invalid_reason() is None:
+            return True
 
         # Handle for forgotten asterisk
         if not self.allele_designation:
@@ -279,8 +290,8 @@ class HLAStandardizer(GeneStandardizer):
             if m:
                 self.gene = m.group(1)
                 self.allele_designation = m.group(2).split(":")
-            if self.valid():
-                return
+            if self.get_invalid_reason() is None:
+                return True
 
         # Handle forgotten colon between first/second allele designator
         if self.allele_designation and len(self.allele_designation[0]) == 4:
@@ -288,18 +299,20 @@ class HLAStandardizer(GeneStandardizer):
                 self.allele_designation[0][:2],
                 self.allele_designation[0][2:],
             ] + self.allele_designation[1:]
-            if self.valid():
-                return
+            if self.get_invalid_reason() is None:
+                return True
 
         # Try different amounts of leading zeros in first 2 allele designators
         ads = [int(ad) for ad in self.allele_designation[:2]]
         ads_reformatted = [[f"{ad:02}", f"{ad:03}"] for ad in ads]
         for new_ads in product(*ads_reformatted):
             self.allele_designation = list(new_ads) + self.allele_designation[2:]
-            if self.valid():
-                return
+            if self.get_invalid_reason() is None:
+                return True
 
-    def invalid(self, enforce_functional: bool = False) -> bool:
+        return False
+
+    def get_invalid_reason(self, enforce_functional: bool = False) -> bool:
         if self.gene == "B2M" and not self.allele_designation:
             return None
 
@@ -366,17 +379,23 @@ class MusMusculusMHCStandardizer(GeneStandardizer):
 
         self.allele_designation = None
 
-    def resolve_errors(self) -> None:
-        if self.valid():
-            return  # No resolution needed
+    def resolve_errors(self) -> bool:
+        """
+        Attempt to resolve any errors in the MHC symbol, return True if successful and False otherwise.
+        """
+
+        if self.get_invalid_reason() is None:
+            return True  # No resolution needed
 
         # If a synonym, correct to currently approved name
         if self.gene.replace("-", "") in MUSMUSCULUS_MHC_SYNONYMS:
             self.gene = MUSMUSCULUS_MHC_SYNONYMS[self.gene.replace("-", "")]
-            if self.valid():
-                return
+            if self.get_invalid_reason() is None:
+                return True
 
-    def invalid(self, enforce_functional: bool = False) -> bool:
+        return False
+
+    def get_invalid_reason(self, enforce_functional: bool = False) -> bool:
         if not self.gene in MUSMUSCULUS_MHC:
             return "unrecognised gene name"
 
