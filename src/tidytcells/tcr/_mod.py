@@ -138,6 +138,7 @@ def standardize(
     )
 
 
+# TODO: Add contains as a deprecated parameter
 def query(
     species: str = "homosapiens",
     precision: str = "allele",
