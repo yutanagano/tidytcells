@@ -144,6 +144,7 @@ def query(
     precision: str = "allele",
     functionality: str = "any",
     contains_substring: Optional[str] = None,
+    contains: Optional[str] = None
 ) -> FrozenSet[str]:
     """
     Query the list of all known TCR genes/alleles.
@@ -183,6 +184,12 @@ def query(
         Defaults to ``None``.
     :type contains_substring:
         str
+    :param contains:
+        Alias for ``contains_substring``.
+
+        .. caution:: This will be deprecated soon in favour of ``contains_substring``.
+    :type contains:
+        str
 
     :return:
         The set of all genes/alleles that satisfy the given constraints.
@@ -201,6 +208,14 @@ def query(
         >>> tt.tcr.query(species="musmusculus", precision="gene", functionality="ORF", contains_substring="TRAV")
         frozenset({'TRAV21/DV12', 'TRAV14D-1', 'TRAV13-3', 'TRAV9D-2', 'TRAV5D-4', 'TRAV12D-3', 'TRAV12-1', 'TRAV18', 'TRAV11D'})
     """
+
+    # Alias resolution
+    if contains_substring is None and not contains is None:
+        warn(
+            'The parameter "contains" will be deprecated in the near future. Please switch to using "contains_substring".',
+            FutureWarning,
+        )
+        contains_substring = contains
 
     return query_template(
         species=species,

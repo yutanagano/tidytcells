@@ -141,6 +141,7 @@ def query(
     species: str = "homosapiens",
     precision: str = "allele",
     contains_substring: Optional[str] = None,
+    contains: Optional[str] = None
 ) -> FrozenSet[str]:
     """
     Query the list of all known MHC genes/alleles.
@@ -174,6 +175,12 @@ def query(
         Defaults to ``None``.
     :type contains_substring:
         str
+    :param contains:
+        Alias for ``contains_substring``.
+
+        .. caution:: This will be deprecated soon in favour of ``contains_substring``.
+    :type contains:
+        str
 
     :return:
         The set of all genes/alleles that satisfy the given constraints.
@@ -192,6 +199,14 @@ def query(
         >>> tt.mhc.query(species="musmusculus", precision="gene", contains_substring="MH1-Q")
         frozenset({'MH1-Q3', 'MH1-Q9', 'MH1-Q1', 'MH1-Q2', 'MH1-Q6', 'MH1-Q10', 'MH1-Q5', 'MH1-Q8', 'MH1-Q7', 'MH1-Q4'})
     """
+
+    # Alias resolution
+    if contains_substring is None and not contains is None:
+        warn(
+            'The parameter "contains" will be deprecated in the near future. Please switch to using "contains_substring".',
+            FutureWarning,
+        )
+        contains_substring = contains
 
     return query_template(
         species=species,
