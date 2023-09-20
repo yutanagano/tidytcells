@@ -1,13 +1,7 @@
 """
-Functions to clean and standardise TCR gene data.
+Functions to manage TCR gene data.
 """
 
-
-from ._mod import standardize, query, get_aa_sequence
-
-
-def standardise(*args, **kwargs):
-    """
-    Alias for :py:func:`tidytcells.tcr.standardize`.
-    """
-    return standardize(*args, **kwargs)
+from ._standardize import standardize, standardise
+from ._query import query
+from ._get_aa_sequence import get_aa_sequence

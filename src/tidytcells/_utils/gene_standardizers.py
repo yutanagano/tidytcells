@@ -6,7 +6,9 @@ Gene standardizer classes
 from abc import ABC, abstractmethod
 from itertools import product
 import re
-from .._resources import (
+from typing import Optional
+
+from tidytcells._resources import (
     HOMOSAPIENS_MHC,
     HOMOSAPIENS_MHC_SYNONYMS,
     HOMOSAPIENS_TCR,
@@ -15,18 +17,10 @@ from .._resources import (
     MUSMUSCULUS_MHC_SYNONYMS,
     MUSMUSCULUS_TCR,
 )
-from typing import Optional
-
-
-# --- STATIC RESOURCES ---
-
 
 SUB_DV_RE = re.compile(r"(?<!TR)(?<!\/)DV")
 SUB_OR_RE = re.compile(r"(?<!\/)OR")
 SUB_ZERO_RE = re.compile(r"(?<!\d)0")
-
-
-# --- STANDARDIZER CLASSES ---
 
 
 class GeneStandardizer(ABC):

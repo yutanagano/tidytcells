@@ -1,6 +1,10 @@
 import re
-from .._utils.abstract_functions import standardize_aa_template
 from warnings import warn
+
+from tidytcells import aa
+
+
+JUNCTION_MATCHING_REGEX = re.compile(f"^C[A-Z]*[FW]$")
 
 
 def standardize(
@@ -67,20 +71,17 @@ def standardize(
         >>> print(result)
         None
     """
-
-    # take note of original input
     original_input = seq
 
-    seq = standardize_aa_template(
-        seq=seq, on_fail="reject", suppress_warnings=suppress_warnings
-    )
+    seq = aa.standardize(seq=seq, on_fail="reject", suppress_warnings=suppress_warnings)
 
-    if seq is None:  # not a valid amino acid sequence
+    not_valid_amino_acid_sequence = seq is None
+    if not_valid_amino_acid_sequence:
         if on_fail == "reject":
             return None
         return original_input
 
-    if not re.match(f"^C[A-Z]*[FW]$", seq):
+    if not JUNCTION_MATCHING_REGEX.match(seq):
         if strict:
             if not suppress_warnings:
                 warn(
@@ -92,3 +93,10 @@ def standardize(
         seq = "C" + seq + "F"
 
     return seq
+
+
+def standardise(*args, **kwargs):
+    """
+    Alias for :py:func:`tidytcells.junction.standardize`.
+    """
+    return standardize(*args, **kwargs)

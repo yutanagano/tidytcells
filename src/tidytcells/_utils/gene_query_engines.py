@@ -4,9 +4,15 @@ Gene query engines
 
 
 from abc import ABC, abstractmethod
-from .._resources import *
 from typing import FrozenSet
 from warnings import warn
+
+from tidytcells._resources import (
+    HOMOSAPIENS_TCR,
+    HOMOSAPIENS_MHC,
+    MUSMUSCULUS_TCR,
+    MUSMUSCULUS_MHC,
+)
 
 
 class GeneQueryEngine(ABC):

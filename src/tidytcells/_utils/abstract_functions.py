@@ -1,8 +1,9 @@
-from .gene_standardizers import GeneStandardizer
 import re
-from .._resources import AMINO_ACIDS
 from typing import Dict, FrozenSet, Optional
-from .warnings import *
+
+from tidytcells._utils.gene_standardizers import GeneStandardizer
+from tidytcells._utils import warnings
+from tidytcells._resources import AMINO_ACIDS
 
 
 def standardize_template(
@@ -49,7 +50,7 @@ def standardize_template(
 
     if not species in standardizers_according_to_species:
         if not suppress_warnings:
-            warn_unsupported_species(species, gene_type)
+            warnings.warn_unsupported_species(species, gene_type)
         return gene
 
     standardizer_function = standardizers_according_to_species[species]
@@ -58,7 +59,7 @@ def standardize_template(
     invalid_reason = standardized.get_invalid_reason(enforce_functional)
     if invalid_reason:
         if not suppress_warnings:
-            warn_failure(
+            warnings.warn_failure(
                 reason_for_failure=invalid_reason,
                 original_input=gene,
                 attempted_fix=standardized.compile("allele"),
@@ -139,7 +140,7 @@ def standardize_aa_template(seq: str, on_fail: str, suppress_warnings: bool):
     for char in seq:
         if not char in AMINO_ACIDS:
             if not suppress_warnings:
-                warn(
+                warnings.warn(
                     f"Failed to standardize {original_input}: not a valid amino acid sequence."
                 )
             if on_fail == "reject":

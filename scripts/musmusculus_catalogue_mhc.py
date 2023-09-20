@@ -8,8 +8,8 @@ df = pd.read_excel(Path("data") / "musmusculus_mhc.ods").drop(
     columns=["Unnamed: 2", "Unnamed: 4"]
 )
 df.columns = ["group", "subgroup", "gene name", "synonym"]
-df["group"] = df["group"].fillna(method="ffill")
-df["subgroup"] = df["subgroup"].fillna(method="ffill")
+df["group"] = df["group"].ffill()
+df["subgroup"] = df["subgroup"].ffill()
 
 df["synonym"] = df["synonym"].map(lambda s: re.sub(r"[\[\(].*[\]\)]", "", s))
 df["synonym"] = df["synonym"].map(
@@ -17,7 +17,7 @@ df["synonym"] = df["synonym"].map(
 )
 df = df.explode("synonym", ignore_index=True)
 
-df = df.applymap(lambda x: x.strip())
+df = df.map(lambda x: x.strip())
 df = df.drop_duplicates()
 
 
