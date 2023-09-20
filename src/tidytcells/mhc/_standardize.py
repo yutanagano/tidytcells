@@ -9,7 +9,7 @@ from tidytcells._standardized_gene_symbol import (
 )
 
 
-STANDARDIZERS: Dict[str, Type[StandardizedGeneSymbol]] = {
+SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[StandardizedGeneSymbol]] = {
     "homosapiens": StandardizedHlaSymbol,
     "musmusculus": StandardizedMusMusculusMhSymbol,
 }
@@ -111,13 +111,13 @@ def standardize(
 
     species = _utils.clean_and_lowercase(species)
 
-    species_is_supported = species in STANDARDIZERS
+    species_is_supported = species in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS
     if not species_is_supported:
         if not suppress_warnings:
             warnings.warn_unsupported_species(species, "MHC")
         return gene
 
-    StandardizedMhSymbolClass = STANDARDIZERS[species]
+    StandardizedMhSymbolClass = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]
     standardized_mh_symbol = StandardizedMhSymbolClass(gene)
 
     invalid_reason = standardized_mh_symbol.get_reason_why_invalid()
