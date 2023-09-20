@@ -1,5 +1,5 @@
 """
-Functions to clean and standardize amino acid sequence data.
+Functions to manage amino acid sequence data.
 """
 
 

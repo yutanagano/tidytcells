@@ -88,7 +88,7 @@ def query(
         str, optional=True
     )
 
-    species = _utils.lowercase_and_remove_whitespace(species)
+    species = _utils.clean_and_lowercase(species)
 
     species_is_supported = species in QUERY_ENGINES
     if not species_is_supported:

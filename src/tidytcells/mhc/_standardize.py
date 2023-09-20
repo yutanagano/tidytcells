@@ -2,16 +2,16 @@ from typing import Dict, Optional, Type
 
 from tidytcells import _utils
 from tidytcells._utils import Parameter, warnings
-from tidytcells._utils.gene_standardizers import (
-    GeneStandardizer,
-    HLAStandardizer,
-    MusMusculusMHCStandardizer,
+from tidytcells._standardized_gene_symbol import (
+    StandardizedGeneSymbol,
+    StandardizedHlaSymbol,
+    StandardizedMusMusculusMhSymbol,
 )
 
 
-STANDARDIZERS: Dict[str, Type[GeneStandardizer]] = {
-    "homosapiens": HLAStandardizer,
-    "musmusculus": MusMusculusMHCStandardizer,
+STANDARDIZERS: Dict[str, Type[StandardizedGeneSymbol]] = {
+    "homosapiens": StandardizedHlaSymbol,
+    "musmusculus": StandardizedMusMusculusMhSymbol,
 }
 
 
@@ -109,7 +109,7 @@ def standardize(
     Parameter(on_fail, "on_fail").throw_error_if_not_one_of("reject", "keep")
     Parameter(suppress_warnings, "suppress_warnings").throw_error_if_not_of_type(bool)
 
-    species = _utils.lowercase_and_remove_whitespace(species)
+    species = _utils.clean_and_lowercase(species)
 
     species_is_supported = species in STANDARDIZERS
     if not species_is_supported:
@@ -117,23 +117,23 @@ def standardize(
             warnings.warn_unsupported_species(species, "MHC")
         return gene
 
-    TcrStandardizerClass = STANDARDIZERS[species]
-    standardizer = TcrStandardizerClass(gene)
+    StandardizedMhSymbolClass = STANDARDIZERS[species]
+    standardized_mh_symbol = StandardizedMhSymbolClass(gene)
 
-    invalid_reason = standardizer.get_invalid_reason()
+    invalid_reason = standardized_mh_symbol.get_reason_why_invalid()
     if invalid_reason is not None:
         if not suppress_warnings:
             warnings.warn_failure(
                 reason_for_failure=invalid_reason,
                 original_input=gene,
-                attempted_fix=standardizer.compile("allele"),
+                attempted_fix=standardized_mh_symbol.compile("allele"),
                 species=species,
             )
         if on_fail == "reject":
             return None
         return gene
 
-    return standardizer.compile(precision)
+    return standardized_mh_symbol.compile(precision)
 
 
 def standardise(*args, **kwargs):

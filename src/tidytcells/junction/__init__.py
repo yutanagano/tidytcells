@@ -1,5 +1,5 @@
 """
-Functions to clean and standardize junction (CDR3) data.
+Functions to manage junction (CDR3) data.
 """
 
 

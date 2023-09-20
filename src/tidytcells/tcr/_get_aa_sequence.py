@@ -45,7 +45,7 @@ def get_aa_sequence(gene: str, species: str = "homosapiens") -> Dict[str, str]:
     Parameter(gene, "gene").throw_error_if_not_of_type(str)
     Parameter(species, "species").throw_error_if_not_of_type(str)
 
-    species = _utils.lowercase_and_remove_whitespace(species)
+    species = _utils.clean_and_lowercase(species)
 
     # Currently only supports homosapiens
     if species != "homosapiens":

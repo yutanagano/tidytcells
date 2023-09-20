@@ -4,13 +4,13 @@ from typing import Dict, FrozenSet, Optional, Type
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 from tidytcells._utils.gene_query_engines import (
-    TCRQueryEngine,
+    GeneQueryEngine,
     HomoSapiensTCRQueryEngine,
     MusMusculusTCRQueryEngine,
 )
 
 
-QUERY_ENGINES: Dict[str, Type[TCRQueryEngine]] = {
+QUERY_ENGINES: Dict[str, Type[GeneQueryEngine]] = {
     "homosapiens": HomoSapiensTCRQueryEngine,
     "musmusculus": MusMusculusTCRQueryEngine,
 }
@@ -99,7 +99,7 @@ def query(
         str, optional=True
     )
 
-    species = _utils.lowercase_and_remove_whitespace(species)
+    species = _utils.clean_and_lowercase(species)
 
     species_is_supported = species in QUERY_ENGINES
     if not species_is_supported:
