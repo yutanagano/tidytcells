@@ -186,7 +186,7 @@ class TestQuery:
         self, species, precision, contains, expected_len, expected_in, expected_not_in
     ):
         result = mh.query(
-            species=species, precision=precision, contains_substring=contains
+            species=species, precision=precision, contains_pattern=contains
         )
 
         assert len(result) == expected_len

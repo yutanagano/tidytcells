@@ -20,7 +20,7 @@ def query(
     species: str = "homosapiens",
     precision: str = "allele",
     functionality: str = "any",
-    contains_substring: Optional[str] = None,
+    contains_pattern: Optional[str] = None,
 ) -> FrozenSet[str]:
     """
     Query the list of all known TR genes/alleles.
@@ -54,11 +54,11 @@ def query(
         Defaults to ``"any"``.
     :type functionality:
         str
-    :param contains_substring:
+    :param contains_pattern:
         An optional regular expression string which will be used to filter the query result.
         If supplied, only genes/alleles which contain the regular expression will be returned.
         Defaults to ``None``.
-    :type contains_substring:
+    :type contains_pattern:
         str
 
     :return:
@@ -70,12 +70,12 @@ def query(
 
         List all known variants for the human TR gene TRBV6-1.
 
-        >>> tt.tr.query(species="homosapiens", contains_substring="TRBV6-1")
+        >>> tt.tr.query(species="homosapiens", contains_pattern="TRBV6-1")
         frozenset({'TRBV6-1*01'})
 
         List all known *Mus musculus* TRAV genes that have at least one allele which is a non-functional ORF.
 
-        >>> tt.tr.query(species="musmusculus", precision="gene", functionality="ORF", contains_substring="TRAV")
+        >>> tt.tr.query(species="musmusculus", precision="gene", functionality="ORF", contains_pattern="TRAV")
         frozenset({'TRAV21/DV12', 'TRAV14D-1', 'TRAV13-3', 'TRAV9D-2', 'TRAV5D-4', 'TRAV12D-3', 'TRAV12-1', 'TRAV18', 'TRAV11D'})
     """
     Parameter(species, "species").throw_error_if_not_of_type(str)
@@ -83,7 +83,7 @@ def query(
     Parameter(functionality, "functionality").throw_error_if_not_one_of(
         "any", "F", "NF", "P", "ORF"
     )
-    Parameter(contains_substring, "contains_substring").throw_error_if_not_of_type(
+    Parameter(contains_pattern, "contains_pattern").throw_error_if_not_of_type(
         str, optional=True
     )
 
@@ -96,10 +96,10 @@ def query(
     query_engine = QUERY_ENGINES[species]
     result = query_engine.query(precision, functionality)
 
-    if contains_substring is None:
+    if contains_pattern is None:
         return result
 
     results_containing_substring = [
-        i for i in result if re.search(contains_substring, i)
+        i for i in result if re.search(contains_pattern, i)
     ]
     return frozenset(results_containing_substring)

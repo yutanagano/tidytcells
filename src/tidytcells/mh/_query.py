@@ -19,7 +19,7 @@ QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
 def query(
     species: str = "homosapiens",
     precision: str = "allele",
-    contains_substring: Optional[str] = None,
+    contains_pattern: Optional[str] = None,
 ) -> FrozenSet[str]:
     """
     Query the list of all known MH genes/alleles.
@@ -47,11 +47,11 @@ def query(
         Defaults to ``allele``.
     :type precision:
         str
-    :param contains_substring:
+    :param contains_pattern:
         An optional **regular expression** string which will be used to filter the query result.
         If supplied, only genes/alleles which contain the regular expression will be returned.
         Defaults to ``None``.
-    :type contains_substring:
+    :type contains_pattern:
         str
 
     :return:
@@ -63,17 +63,17 @@ def query(
 
         List all known HLA-TAP1 variants.
 
-        >>> tt.mh.query(species="homosapiens", contains_substring="HLA-TAP1")
+        >>> tt.mh.query(species="homosapiens", contains_pattern="HLA-TAP1")
         frozenset({'HLA-TAP1*03:01', 'HLA-TAP1*01:02', 'HLA-TAP1*06:01', 'HLA-TAP1*04:01', 'HLA-TAP1*02:01', 'HLA-TAP1*05:01', 'HLA-TAP1*01:01'})
 
         List all known *Mus musculus* MH1-Q genes.
 
-        >>> tt.mh.query(species="musmusculus", precision="gene", contains_substring="MH1-Q")
+        >>> tt.mh.query(species="musmusculus", precision="gene", contains_pattern="MH1-Q")
         frozenset({'MH1-Q3', 'MH1-Q9', 'MH1-Q1', 'MH1-Q2', 'MH1-Q6', 'MH1-Q10', 'MH1-Q5', 'MH1-Q8', 'MH1-Q7', 'MH1-Q4'})
     """
     Parameter(species, "species").throw_error_if_not_of_type(str)
     Parameter(precision, "precision").throw_error_if_not_one_of("allele", "gene")
-    Parameter(contains_substring, "contains_substring").throw_error_if_not_of_type(
+    Parameter(contains_pattern, "contains_pattern").throw_error_if_not_of_type(
         str, optional=True
     )
 
@@ -86,10 +86,10 @@ def query(
     query_engine = QUERY_ENGINES[species]
     result = query_engine.query(precision, functionality=None)
 
-    if contains_substring is None:
+    if contains_pattern is None:
         return result
 
     results_containing_substring = [
-        i for i in result if re.search(contains_substring, i)
+        i for i in result if re.search(contains_pattern, i)
     ]
     return frozenset(results_containing_substring)
