@@ -61,9 +61,9 @@ def query(
 
     .. topic:: Example usage
 
-        List all known HLA-G variants.
+        List all known HLA-TAP1 variants.
 
-        >>> tt.mh.query(species="homosapiens", contains_substring="HLA-G")
+        >>> tt.mh.query(species="homosapiens", contains_substring="HLA-TAP1")
         frozenset({'HLA-TAP1*03:01', 'HLA-TAP1*01:02', 'HLA-TAP1*06:01', 'HLA-TAP1*04:01', 'HLA-TAP1*02:01', 'HLA-TAP1*05:01', 'HLA-TAP1*01:01'})
 
         List all known *Mus musculus* MH1-Q genes.
