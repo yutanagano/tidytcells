@@ -1,5 +1,5 @@
 """
-Functions to manage MHC gene data.
+Functions to manage MH gene data.
 """
 
 

@@ -16,14 +16,14 @@ def get_chain(
     gene_name: Optional[str] = None,
 ) -> str:
     """
-    Given a standardized MHC gene name, detect whether it codes for an alpha or a beta chain molecule.
+    Given a standardized MH gene name, detect whether it codes for an alpha or a beta chain molecule.
 
     .. note::
 
-        This function currently only recognises HLAs, and not MHCs from other species.
+        This function currently only recognises HLA, and not MH from other species.
 
     :param gene:
-        Standardized MHC gene name
+        Standardized MH gene name
     :type gene:
         str
     :param suppress_warnings:
@@ -46,11 +46,11 @@ def get_chain(
 
     .. topic:: Example usage
 
-        >>> tt.mhc.get_chain("HLA-A")
+        >>> tt.mh.get_chain("HLA-A")
         'alpha'
-        >>> tt.mhc.get_chain("HLA-DRB2")
+        >>> tt.mh.get_chain("HLA-DRB2")
         'beta'
-        >>> tt.mhc.get_chain("B2M")
+        >>> tt.mh.get_chain("B2M")
         'beta'
     """
     gene = Parameter(gene, "gene").resolve_with_alias_and_return_value(

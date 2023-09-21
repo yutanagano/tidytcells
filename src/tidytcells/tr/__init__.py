@@ -1,5 +1,5 @@
 """
-Functions to manage TCR gene data.
+Functions to manage TR gene data.
 """
 
 from ._standardize import standardize, standardise

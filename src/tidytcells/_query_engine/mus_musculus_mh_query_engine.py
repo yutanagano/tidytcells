@@ -10,7 +10,7 @@ class MusMusculusMhQueryEngine(QueryEngine):
     def query(cls, precision: str, functionality: str) -> FrozenSet[str]:
         if precision == "allele":
             warnings.warn(
-                "tidytcells is not aware of Mus musculus MHC alleles at all, "
+                "tidytcells is not aware of Mus musculus MH alleles at all, "
                 "and can only provide up to the level of the gene."
             )
 

@@ -7,7 +7,7 @@ from tidytcells._utils import Parameter
 
 def get_aa_sequence(gene: str, species: str = "homosapiens") -> Dict[str, str]:
     """
-    Look up the amino acid sequence of a given TCR gene.
+    Look up the amino acid sequence of a given TR gene.
 
     .. topic:: Supported species
 
@@ -25,7 +25,7 @@ def get_aa_sequence(gene: str, species: str = "homosapiens") -> Dict[str, str]:
     :type gene:
         str
     :param species:
-        Species to which the TCR gene in question belongs (see above for supported species).
+        Species to which the TR gene in question belongs (see above for supported species).
         Defaults to ``'homosapiens'``.
     :type species:
         str
@@ -39,7 +39,7 @@ def get_aa_sequence(gene: str, species: str = "homosapiens") -> Dict[str, str]:
 
         Get amino acid sequence information about the human V gene TRBV2*01.
 
-        >>> tt.tcr.get_aa_sequence(gene="TRBV2*01", species="homosapiens")
+        >>> tt.tr.get_aa_sequence(gene="TRBV2*01", species="homosapiens")
         {'CDR1-IMGT': 'SNHLY', 'CDR2-IMGT': 'FYNNEI', 'FR1-IMGT': 'EPEVTQTPSHQVTQMGQEVILRCVPI', 'FR2-IMGT': 'FYWYRQILGQKVEFLVS', 'FR3-IMGT': 'SEKSEIFDDQFSVERPDGSNFTLKIRSTKLEDSAMYFC', 'V-REGION': 'EPEVTQTPSHQVTQMGQEVILRCVPISNHLYFYWYRQILGQKVEFLVSFYNNEISEKSEIFDDQFSVERPDGSNFTLKIRSTKLEDSAMYFCASSE'}
     """
     Parameter(gene, "gene").throw_error_if_not_of_type(str)
@@ -54,4 +54,4 @@ def get_aa_sequence(gene: str, species: str = "homosapiens") -> Dict[str, str]:
     if gene in HOMOSAPIENS_TR_AA_SEQUENCES:
         return HOMOSAPIENS_TR_AA_SEQUENCES[gene]
 
-    raise ValueError(f"No data found for TCR gene {gene} for species {species}.")
+    raise ValueError(f"No data found for TR gene {gene} for species {species}.")

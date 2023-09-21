@@ -16,15 +16,14 @@ def get_class(
     gene_name: Optional[str] = None,
 ) -> int:
     """
-    Given a standardized MHC gene name, detect whether it comprises a class I
-    or II MHC receptor complex.
+    Given a standardized MH gene name, detect whether it comprises a class I or II MH receptor complex.
 
     .. note::
 
-        This function currently only recognises HLAs, and not MHCs from other species.
+        This function currently only recognises HLA, and not MH from other species.
 
     :param gene:
-        Standardized MHC gene name
+        Standardized MH gene name
     :type gene:
         str
     :param suppress_warnings:
@@ -47,11 +46,11 @@ def get_class(
 
     .. topic:: Example usage
 
-        >>> tt.mhc.get_class("HLA-A")
+        >>> tt.mh.get_class("HLA-A")
         1
-        >>> tt.mhc.get_class("HLA-DRB2")
+        >>> tt.mh.get_class("HLA-DRB2")
         2
-        >>> tt.mhc.get_class("B2M")
+        >>> tt.mh.get_class("B2M")
         1
     """
     gene = Parameter(gene, "gene").resolve_with_alias_and_return_value(
@@ -79,12 +78,12 @@ def get_class(
 
 def classify(*args, **kwargs):
     """
-    .. caution:: This will be deprecated soon in favour of :py:func:`tidytcells.mhc.get_class`.
+    .. caution:: This will be deprecated soon in favour of :py:func:`tidytcells.mh.get_class`.
 
-    Alias for :py:func:`tidytcells.mhc.get_class`.
+    Alias for :py:func:`tidytcells.mh.get_class`.
     """
     warnings.warn(
-        '"mhc.classify" as an alias will be deprecated in the near future. Please switch to using "mhc.get_class".',
+        '"mh.classify" as an alias will be deprecated in the near future. Please switch to using "mh.get_class".',
         FutureWarning,
     )
     return get_class(*args, **kwargs)

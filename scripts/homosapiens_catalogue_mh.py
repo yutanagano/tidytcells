@@ -113,55 +113,55 @@ with open(
 
 hgnc = pd.read_csv(Path("data") / "hgnc.tsv", sep="\t")
 
-# Get only MHC genes
-mhc_genes = hgnc[hgnc["Gene group name"].notna()]
-mhc_genes = mhc_genes[
-    mhc_genes["Gene group name"].str.contains("Histocompatibility complex")
+# Get only MH genes
+mh_genes = hgnc[hgnc["Gene group name"].notna()]
+mh_genes = mh_genes[
+    mh_genes["Gene group name"].str.contains("Histocompatibility complex")
 ]
 
 # Only keep genes whose 'approved symbols' are in our IMGT list
-mhc_genes = mhc_genes[mhc_genes["Approved symbol"].map(lambda x: x in hla_tree)]
+mh_genes = mh_genes[mh_genes["Approved symbol"].map(lambda x: x in hla_tree)]
 
-# Get MHC genes with aliases
-mhc_genes_with_aliases = mhc_genes[mhc_genes["Alias symbols"].notna()][
+# Get MH genes with aliases
+mh_genes_with_aliases = mh_genes[mh_genes["Alias symbols"].notna()][
     ["Approved symbol", "Alias symbols"]
 ]
-mhc_genes_with_aliases["Alias symbols"] = mhc_genes_with_aliases["Alias symbols"].map(
+mh_genes_with_aliases["Alias symbols"] = mh_genes_with_aliases["Alias symbols"].map(
     lambda x: x.split(", ")
 )
-mhc_genes_with_aliases.columns = ["Approved symbol", "Synonym"]
-mhc_genes_with_aliases = mhc_genes_with_aliases.explode("Synonym")
+mh_genes_with_aliases.columns = ["Approved symbol", "Synonym"]
+mh_genes_with_aliases = mh_genes_with_aliases.explode("Synonym")
 
-# Get MHC genes with deprecated names
-mhc_genes_with_depnames = mhc_genes[mhc_genes["Previous symbols"].notna()][
+# Get MH genes with deprecated names
+mh_genes_with_depnames = mh_genes[mh_genes["Previous symbols"].notna()][
     ["Approved symbol", "Previous symbols"]
 ]
-mhc_genes_with_depnames["Previous symbols"] = mhc_genes_with_depnames[
+mh_genes_with_depnames["Previous symbols"] = mh_genes_with_depnames[
     "Previous symbols"
 ].map(lambda x: x.split(", "))
-mhc_genes_with_depnames.columns = ["Approved symbol", "Synonym"]
-mhc_genes_with_depnames = mhc_genes_with_depnames.explode("Synonym")
+mh_genes_with_depnames.columns = ["Approved symbol", "Synonym"]
+mh_genes_with_depnames = mh_genes_with_depnames.explode("Synonym")
 
 # Combine both tables
-mhc_synonyms = pd.concat([mhc_genes_with_aliases, mhc_genes_with_depnames])
+mh_synonyms = pd.concat([mh_genes_with_aliases, mh_genes_with_depnames])
 
 # Capitalise synonyms
-mhc_synonyms["Synonym"] = mhc_synonyms["Synonym"].str.upper()
+mh_synonyms["Synonym"] = mh_synonyms["Synonym"].str.upper()
 
 # Group together by synonym
-mhc_synonyms = mhc_synonyms.groupby("Synonym").aggregate(lambda x: x.tolist())
+mh_synonyms = mh_synonyms.groupby("Synonym").aggregate(lambda x: x.tolist())
 
 # Discard ambiguous synonyms
-mhc_synonyms = mhc_synonyms[mhc_synonyms["Approved symbol"].map(len) == 1].copy()
-mhc_synonyms["Approved symbol"] = mhc_synonyms["Approved symbol"].map(lambda x: x.pop())
+mh_synonyms = mh_synonyms[mh_synonyms["Approved symbol"].map(len) == 1].copy()
+mh_synonyms["Approved symbol"] = mh_synonyms["Approved symbol"].map(lambda x: x.pop())
 
 # Discard redundant items (synonym == approved symbol)
-mhc_synonyms = mhc_synonyms[mhc_synonyms.index != mhc_synonyms["Approved symbol"]]
+mh_synonyms = mh_synonyms[mh_synonyms.index != mh_synonyms["Approved symbol"]]
 
 # Discard synonyms that are also names of other valid genes
-mhc_synonyms = mhc_synonyms[mhc_synonyms.index.map(lambda x: x not in hla_tree)]
+mh_synonyms = mh_synonyms[mh_synonyms.index.map(lambda x: x not in hla_tree)]
 
-mhc_synonyms["Approved symbol"].to_json(
+mh_synonyms["Approved symbol"].to_json(
     Path("src") / "tidytcells" / "_resources" / "homosapiens_mh_synonyms.json",
     indent=4,
 )

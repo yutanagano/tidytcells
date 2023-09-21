@@ -6,4 +6,4 @@ from tidytcells._resources import VALID_HOMOSAPIENS_TR, HOMOSAPIENS_TR_SYNONYMS
 
 class StandardizedHomoSapiensTrSymbol(StandardizedTrSymbol):
     _synonym_dictionary = HOMOSAPIENS_TR_SYNONYMS
-    _valid_tcr_dictionary = VALID_HOMOSAPIENS_TR
+    _valid_tr_dictionary = VALID_HOMOSAPIENS_TR

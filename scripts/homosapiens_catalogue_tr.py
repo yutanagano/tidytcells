@@ -5,7 +5,7 @@ import pandas as pd
 
 alleles = dict()
 
-with open(Path("data") / "homosapiens_tcr.fasta", "r") as f:
+with open(Path("data") / "homosapiens_tr.fasta", "r") as f:
     for line in f.readlines():
         if line.startswith(">"):
             fields = line.split("|")
@@ -32,77 +32,77 @@ with open(
 hgnc = pd.read_csv(Path("data") / "hgnc.tsv", sep="\t")
 
 
-# Get only TCR genes
-tcr_genes = hgnc[hgnc["Locus type"].str.contains("T cell receptor gene")].copy()
+# Get only TR genes
+tr_genes = hgnc[hgnc["Locus type"].str.contains("T cell receptor gene")].copy()
 
 
 # Put back slashes behind DV designations and OR designations
-tcr_genes["Approved symbol"] = tcr_genes["Approved symbol"].str.replace(
+tr_genes["Approved symbol"] = tr_genes["Approved symbol"].str.replace(
     r"(?<!TR)DV", "/DV", regex=True
 )
-tcr_genes["Approved symbol"] = tcr_genes["Approved symbol"].str.replace(
+tr_genes["Approved symbol"] = tr_genes["Approved symbol"].str.replace(
     r"OR", "/OR", regex=True
 )
 
 
 # Only keep genes whose 'approved symbols' are in our IMGT list
-tcr_genes = tcr_genes[tcr_genes["Approved symbol"].map(lambda x: x in alleles)].copy()
+tr_genes = tr_genes[tr_genes["Approved symbol"].map(lambda x: x in alleles)].copy()
 
 
-# Get TCR genes with aliases
-tcr_genes_with_aliases = tcr_genes[tcr_genes["Alias symbols"].notna()][
+# Get TR genes with aliases
+tr_genes_with_aliases = tr_genes[tr_genes["Alias symbols"].notna()][
     ["Approved symbol", "Alias symbols"]
 ]
-tcr_genes_with_aliases["Alias symbols"] = tcr_genes_with_aliases["Alias symbols"].map(
+tr_genes_with_aliases["Alias symbols"] = tr_genes_with_aliases["Alias symbols"].map(
     lambda x: x.split(", ")
 )
-tcr_genes_with_aliases.columns = ["Approved symbol", "Synonym"]
-tcr_genes_with_aliases = tcr_genes_with_aliases.explode("Synonym")
+tr_genes_with_aliases.columns = ["Approved symbol", "Synonym"]
+tr_genes_with_aliases = tr_genes_with_aliases.explode("Synonym")
 
 
-# Get TCR genes with deprecated names
-tcr_genes_with_depnames = tcr_genes[tcr_genes["Previous symbols"].notna()][
+# Get TR genes with deprecated names
+tr_genes_with_depnames = tr_genes[tr_genes["Previous symbols"].notna()][
     ["Approved symbol", "Previous symbols"]
 ]
-tcr_genes_with_depnames["Previous symbols"] = tcr_genes_with_depnames[
+tr_genes_with_depnames["Previous symbols"] = tr_genes_with_depnames[
     "Previous symbols"
 ].map(lambda x: x.split(", "))
-tcr_genes_with_depnames.columns = ["Approved symbol", "Synonym"]
-tcr_genes_with_depnames = tcr_genes_with_depnames.explode("Synonym")
+tr_genes_with_depnames.columns = ["Approved symbol", "Synonym"]
+tr_genes_with_depnames = tr_genes_with_depnames.explode("Synonym")
 
 
 # Combine both tables
-tcr_synonyms = pd.concat([tcr_genes_with_aliases, tcr_genes_with_depnames])
+tr_synonyms = pd.concat([tr_genes_with_aliases, tr_genes_with_depnames])
 
 # Remove any names that are now redundant (approved symbol and synonym are the same)
-tcr_synonyms = tcr_synonyms[tcr_synonyms["Approved symbol"] != tcr_synonyms["Synonym"]]
+tr_synonyms = tr_synonyms[tr_synonyms["Approved symbol"] != tr_synonyms["Synonym"]]
 
 # Group together by synonym
-tcr_synonyms = tcr_synonyms.groupby("Synonym").aggregate(lambda x: x.tolist())
+tr_synonyms = tr_synonyms.groupby("Synonym").aggregate(lambda x: x.tolist())
 
 
 # Remove ambiguous synonyms
-tcr_synonyms = tcr_synonyms[tcr_synonyms["Approved symbol"].map(len) == 1].copy()
-tcr_synonyms["Approved symbol"] = tcr_synonyms["Approved symbol"].map(lambda x: x.pop())
-tcr_synonyms.index = tcr_synonyms.index.str.upper()
+tr_synonyms = tr_synonyms[tr_synonyms["Approved symbol"].map(len) == 1].copy()
+tr_synonyms["Approved symbol"] = tr_synonyms["Approved symbol"].map(lambda x: x.pop())
+tr_synonyms.index = tr_synonyms.index.str.upper()
 
 
 # Remove any synonyms that are also names of other valid genes
-tcr_synonyms = tcr_synonyms[tcr_synonyms.index.map(lambda x: x not in alleles)]
+tr_synonyms = tr_synonyms[tr_synonyms.index.map(lambda x: x not in alleles)]
 
 
-tcr_synonyms["Approved symbol"].to_json(
+tr_synonyms["Approved symbol"].to_json(
     Path("src") / "tidytcells" / "_resources" / "homosapiens_tr_synonyms.json",
     indent=4,
 )
 
 
-# ## Catalogue amino acid sequences for TCR V genes
+# ## Catalogue amino acid sequences for TR V genes
 
 
 v_aa_seqs = dict()
 
-with open(Path("data") / "homosapiens_tcr_aa_sequences.fasta", "r") as f:
+with open(Path("data") / "homosapiens_tr_aa_sequences.fasta", "r") as f:
     current_v = None
     current_segment = None
 

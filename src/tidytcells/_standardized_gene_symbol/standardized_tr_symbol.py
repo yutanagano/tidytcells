@@ -10,8 +10,8 @@ class TrSymbolParser:
     gene_name: str
     allele_designation: int
 
-    def __init__(self, tcr_symbol: str) -> None:
-        parse_attempt = re.match(r"^([A-Z0-9\-\.\(\)\/]+)(\*(\d+))?", tcr_symbol)
+    def __init__(self, tr_symbol: str) -> None:
+        parse_attempt = re.match(r"^([A-Z0-9\-\.\(\)\/]+)(\*(\d+))?", tr_symbol)
 
         if parse_attempt:
             self.gene_name = parse_attempt.group(1)
@@ -21,7 +21,7 @@ class TrSymbolParser:
                 else f"{int(parse_attempt.group(3)):02}"
             )
         else:
-            self.gene_name = tcr_symbol
+            self.gene_name = tr_symbol
             self.allele_designation = None
 
 
@@ -33,18 +33,18 @@ class StandardizedTrSymbol(StandardizedGeneSymbol):
 
     @property
     @abstractmethod
-    def _valid_tcr_dictionary(self) -> Dict[str, Dict[int, str]]:
+    def _valid_tr_dictionary(self) -> Dict[str, Dict[int, str]]:
         pass
 
     def __init__(self, gene_symbol: str) -> None:
-        self._parse_tcr_symbol(gene_symbol)
+        self._parse_tr_symbol(gene_symbol)
         self._resolve_gene_name()
 
-    def _parse_tcr_symbol(self, tcr_symbol: str) -> None:
-        cleaned_tcr_symbol = _utils.clean_and_uppercase(tcr_symbol)
-        parsed_tcr_symbol = TrSymbolParser(cleaned_tcr_symbol)
-        self._gene_name = parsed_tcr_symbol.gene_name
-        self._allele_designation = parsed_tcr_symbol.allele_designation
+    def _parse_tr_symbol(self, tr_symbol: str) -> None:
+        cleaned_tr_symbol = _utils.clean_and_uppercase(tr_symbol)
+        parsed_tr_symbol = TrSymbolParser(cleaned_tr_symbol)
+        self._gene_name = parsed_tr_symbol.gene_name
+        self._allele_designation = parsed_tr_symbol.allele_designation
 
     def _resolve_gene_name(self, skip_dash1_section: bool = False) -> None:
         if self._has_valid_gene_name():
@@ -54,7 +54,7 @@ class StandardizedTrSymbol(StandardizedGeneSymbol):
             self._gene_name = self._synonym_dictionary[self._gene_name]
             return
 
-        self._fix_common_errors_in_tcr_gene_name()
+        self._fix_common_errors_in_tr_gene_name()
         if self._has_valid_gene_name():
             return
 
@@ -82,12 +82,12 @@ class StandardizedTrSymbol(StandardizedGeneSymbol):
             self._gene_name = original
 
     def _has_valid_gene_name(self) -> bool:
-        return self._gene_name in self._valid_tcr_dictionary
+        return self._gene_name in self._valid_tr_dictionary
 
     def _is_synonym(self) -> bool:
         return self._gene_name in self._synonym_dictionary
 
-    def _fix_common_errors_in_tcr_gene_name(self) -> None:
+    def _fix_common_errors_in_tr_gene_name(self) -> None:
         self._gene_name = self._gene_name.replace("TCR", "TR")
         self._gene_name = self._gene_name.replace("S", "-")
         self._gene_name = self._gene_name.replace(".", "-")
@@ -101,13 +101,13 @@ class StandardizedTrSymbol(StandardizedGeneSymbol):
             dv_segment = "DV" + split_gene_name.pop()
             self._gene_name = "/".join([*split_gene_name, dv_segment])
         else:
-            for valid_gene_name in self._valid_tcr_dictionary:
+            for valid_gene_name in self._valid_tr_dictionary:
                 if valid_gene_name.startswith(self._gene_name + "/DV"):
                     self._gene_name = valid_gene_name
 
     def _try_resolving_trav_designation_from_trdv_info(self) -> None:
         if self._gene_name.startswith("TRDV"):
-            for valid_gene in self._valid_tcr_dictionary:
+            for valid_gene in self._valid_tr_dictionary:
                 dv_segment = self._gene_name[2:]
                 if re.match(rf"^TRAV\d+(-\d)?\/{dv_segment}$", valid_gene):
                     self._gene_name = valid_gene
@@ -125,12 +125,12 @@ class StandardizedTrSymbol(StandardizedGeneSymbol):
             self._gene_name += "-1"
 
     def get_reason_why_invalid(self, enforce_functional: bool = False) -> Optional[str]:
-        if not self._gene_name in self._valid_tcr_dictionary:
+        if not self._gene_name in self._valid_tr_dictionary:
             return "unrecognised gene name"
 
         if self._allele_designation:
             allele_valid = (
-                self._allele_designation in self._valid_tcr_dictionary[self._gene_name]
+                self._allele_designation in self._valid_tr_dictionary[self._gene_name]
             )
 
             if not allele_valid:
@@ -138,9 +138,7 @@ class StandardizedTrSymbol(StandardizedGeneSymbol):
 
             if (
                 enforce_functional
-                and self._valid_tcr_dictionary[self._gene_name][
-                    self._allele_designation
-                ]
+                and self._valid_tr_dictionary[self._gene_name][self._allele_designation]
                 != "F"
             ):
                 return "nonfunctional allele"
@@ -149,7 +147,7 @@ class StandardizedTrSymbol(StandardizedGeneSymbol):
 
         if (
             enforce_functional
-            and not "F" in self._valid_tcr_dictionary[self._gene_name].values()
+            and not "F" in self._valid_tr_dictionary[self._gene_name].values()
         ):
             return "gene has no functional alleles"
 
