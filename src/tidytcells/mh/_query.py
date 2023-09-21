@@ -89,7 +89,5 @@ def query(
     if contains_pattern is None:
         return result
 
-    results_containing_substring = [
-        i for i in result if re.search(contains_pattern, i)
-    ]
+    results_containing_substring = [i for i in result if re.search(contains_pattern, i)]
     return frozenset(results_containing_substring)
