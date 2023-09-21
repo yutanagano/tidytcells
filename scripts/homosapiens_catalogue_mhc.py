@@ -105,7 +105,9 @@ hla_tree = {}
 
 make_hla_tree(hla_tree, combined_decomposed)
 
-with open(Path("src") / "tidytcells" / "_resources" / "homosapiens_mhc.json", "w") as f:
+with open(
+    Path("src") / "tidytcells" / "_resources" / "valid_homosapiens_mh.json", "w"
+) as f:
     json.dump(hla_tree, f, indent=4)
 
 
@@ -160,6 +162,6 @@ mhc_synonyms = mhc_synonyms[mhc_synonyms.index != mhc_synonyms["Approved symbol"
 mhc_synonyms = mhc_synonyms[mhc_synonyms.index.map(lambda x: x not in hla_tree)]
 
 mhc_synonyms["Approved symbol"].to_json(
-    Path("src") / "tidytcells" / "_resources" / "homosapiens_mhc_synonyms.json",
+    Path("src") / "tidytcells" / "_resources" / "homosapiens_mh_synonyms.json",
     indent=4,
 )

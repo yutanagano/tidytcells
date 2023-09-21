@@ -15,16 +15,16 @@ else:
             return json.load(f)
 
 
-HOMOSAPIENS_TCR = get_json_resource("homosapiens_tcr.json")
-HOMOSAPIENS_TCR_SYNONYMS = get_json_resource("homosapiens_tcr_synonyms.json")
-HOMOSAPIENS_TCR_AA_SEQUENCES = get_json_resource("homosapiens_tcr_aa_sequences.json")
-HOMOSAPIENS_MHC = get_json_resource("homosapiens_mhc.json")
-HOMOSAPIENS_MHC_SYNONYMS = get_json_resource("homosapiens_mhc_synonyms.json")
+VALID_HOMOSAPIENS_TR = get_json_resource("valid_homosapiens_tr.json")
+HOMOSAPIENS_TR_SYNONYMS = get_json_resource("homosapiens_tr_synonyms.json")
+HOMOSAPIENS_TR_AA_SEQUENCES = get_json_resource("homosapiens_tr_aa_sequences.json")
+VALID_HOMOSAPIENS_MH = get_json_resource("valid_homosapiens_mh.json")
+HOMOSAPIENS_MH_SYNONYMS = get_json_resource("homosapiens_mh_synonyms.json")
 
 
-MUSMUSCULUS_TCR = get_json_resource("musmusculus_tcr.json")
-MUSMUSCULUS_MHC = get_json_resource("musmusculus_mhc.json")
-MUSMUSCULUS_MHC_SYNONYMS = get_json_resource("musmusculus_mhc_synonyms.json")
+VALID_MUSMUSCULUS_TR = get_json_resource("valid_musmusculus_tr.json")
+VALID_MUSMUSCULUS_MH = get_json_resource("valid_musmusculus_mh.json")
+MUSMUSCULUS_MH_SYNONYMS = get_json_resource("musmusculus_mh_synonyms.json")
 
 
 AMINO_ACIDS = frozenset(

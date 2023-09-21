@@ -1,6 +1,6 @@
 from typing import Dict
 
-from tidytcells._resources import HOMOSAPIENS_TCR_AA_SEQUENCES
+from tidytcells._resources import HOMOSAPIENS_TR_AA_SEQUENCES
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 
@@ -51,7 +51,7 @@ def get_aa_sequence(gene: str, species: str = "homosapiens") -> Dict[str, str]:
     if species != "homosapiens":
         raise ValueError(f"Unsupported species: {species}. No data available.")
 
-    if gene in HOMOSAPIENS_TCR_AA_SEQUENCES:
-        return HOMOSAPIENS_TCR_AA_SEQUENCES[gene]
+    if gene in HOMOSAPIENS_TR_AA_SEQUENCES:
+        return HOMOSAPIENS_TR_AA_SEQUENCES[gene]
 
     raise ValueError(f"No data found for TCR gene {gene} for species {species}.")

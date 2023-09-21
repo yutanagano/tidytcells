@@ -2,7 +2,7 @@ import re
 from typing import Optional
 import warnings
 
-from tidytcells._resources import HOMOSAPIENS_MHC
+from tidytcells._resources import VALID_HOMOSAPIENS_MH
 from tidytcells._utils import Parameter
 
 
@@ -61,7 +61,7 @@ def get_class(
 
     gene = gene.split("*")[0]
 
-    if not gene in (*HOMOSAPIENS_MHC, "B2M"):
+    if not gene in (*VALID_HOMOSAPIENS_MH, "B2M"):
         if not suppress_warnings:
             warnings.warn(f"Unrecognised gene {gene}. Is this standardized?")
         return None

@@ -1,9 +1,9 @@
 from tidytcells._standardized_gene_symbol.standardized_tr_symbol import (
     StandardizedTrSymbol,
 )
-from tidytcells._resources import MUSMUSCULUS_TCR
+from tidytcells._resources import VALID_MUSMUSCULUS_TR
 
 
 class StandardizedMusMusculusTrSymbol(StandardizedTrSymbol):
     _synonym_dictionary = dict()
-    _valid_tcr_dictionary = MUSMUSCULUS_TCR
+    _valid_tcr_dictionary = VALID_MUSMUSCULUS_TR

@@ -20,7 +20,9 @@ with open(Path("data") / "homosapiens_tcr.fasta", "r") as f:
             alleles[gene][allele_designation] = functionality
 
 
-with open(Path("src") / "tidytcells" / "_resources" / "homosapiens_tcr.json", "w") as f:
+with open(
+    Path("src") / "tidytcells" / "_resources" / "valid_homosapiens_tr.json", "w"
+) as f:
     json.dump(alleles, f, indent=4)
 
 
@@ -90,7 +92,7 @@ tcr_synonyms = tcr_synonyms[tcr_synonyms.index.map(lambda x: x not in alleles)]
 
 
 tcr_synonyms["Approved symbol"].to_json(
-    Path("src") / "tidytcells" / "_resources" / "homosapiens_tcr_synonyms.json",
+    Path("src") / "tidytcells" / "_resources" / "homosapiens_tr_synonyms.json",
     indent=4,
 )
 
@@ -121,6 +123,6 @@ with open(Path("data") / "homosapiens_tcr_aa_sequences.fasta", "r") as f:
 
 
 with open(
-    Path("src") / "tidytcells" / "_resources" / "homosapiens_tcr_aa_sequences.json", "w"
+    Path("src") / "tidytcells" / "_resources" / "homosapiens_tr_aa_sequences.json", "w"
 ) as f:
     json.dump(v_aa_seqs, f, indent=4)

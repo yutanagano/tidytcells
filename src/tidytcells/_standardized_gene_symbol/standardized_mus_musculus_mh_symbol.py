@@ -2,7 +2,7 @@ import re
 from typing import Optional
 
 from tidytcells import _utils
-from tidytcells._resources import MUSMUSCULUS_MHC, MUSMUSCULUS_MHC_SYNONYMS
+from tidytcells._resources import VALID_MUSMUSCULUS_MH, MUSMUSCULUS_MH_SYNONYMS
 from tidytcells._standardized_gene_symbol import StandardizedGeneSymbol
 
 
@@ -41,15 +41,15 @@ class StandardizedMusMusculusMhSymbol(StandardizedGeneSymbol):
             return
 
         if self._is_synonym():
-            self._gene_name = MUSMUSCULUS_MHC_SYNONYMS[self._gene_name.replace("-", "")]
+            self._gene_name = MUSMUSCULUS_MH_SYNONYMS[self._gene_name.replace("-", "")]
             if self.get_reason_why_invalid() is None:
                 return
 
     def _is_synonym(self) -> bool:
-        return self._gene_name.replace("-", "") in MUSMUSCULUS_MHC_SYNONYMS
+        return self._gene_name.replace("-", "") in MUSMUSCULUS_MH_SYNONYMS
 
     def get_reason_why_invalid(self, enforce_functional: bool = False) -> Optional[str]:
-        if not self._gene_name in MUSMUSCULUS_MHC:
+        if not self._gene_name in VALID_MUSMUSCULUS_MH:
             return "unrecognised gene name"
 
         return None

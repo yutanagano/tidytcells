@@ -2,7 +2,7 @@ from typing import FrozenSet
 import warnings
 
 from tidytcells._query_engine import QueryEngine
-from tidytcells._resources import HOMOSAPIENS_MHC
+from tidytcells._resources import VALID_HOMOSAPIENS_MH
 
 
 class HlaQueryEngine(QueryEngine):
@@ -17,7 +17,7 @@ class HlaQueryEngine(QueryEngine):
 
         query_results = []
 
-        for gene_symbol, allele_dictionary in HOMOSAPIENS_MHC.items():
+        for gene_symbol, allele_dictionary in VALID_HOMOSAPIENS_MH.items():
             if precision == "gene":
                 query_results.append(gene_symbol)
                 continue

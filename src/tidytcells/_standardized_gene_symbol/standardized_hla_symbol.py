@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from tidytcells import _utils
 from tidytcells._standardized_gene_symbol import StandardizedGeneSymbol
-from tidytcells._resources import HOMOSAPIENS_MHC, HOMOSAPIENS_MHC_SYNONYMS
+from tidytcells._resources import VALID_HOMOSAPIENS_MH, HOMOSAPIENS_MH_SYNONYMS
 
 
 class HlaSymbolParser:
@@ -72,7 +72,7 @@ class StandardizedHlaSymbol(StandardizedGeneSymbol):
             return
 
         if self._is_synonym():
-            self._gene_name = HOMOSAPIENS_MHC_SYNONYMS[self._gene_name]
+            self._gene_name = HOMOSAPIENS_MH_SYNONYMS[self._gene_name]
             if self.get_reason_why_invalid() is None:
                 return
 
@@ -91,7 +91,7 @@ class StandardizedHlaSymbol(StandardizedGeneSymbol):
         self._try_different_amounts_of_leading_zeros_in_first_2_allele_designators()
 
     def _is_synonym(self) -> bool:
-        return self._gene_name in HOMOSAPIENS_MHC_SYNONYMS
+        return self._gene_name in HOMOSAPIENS_MH_SYNONYMS
 
     def _resolve_common_errors(self) -> None:
         if not self._gene_name.startswith("HLA-"):
@@ -136,14 +136,14 @@ class StandardizedHlaSymbol(StandardizedGeneSymbol):
         if self._gene_name == "B2M" and not self._allele_designation:
             return None
 
-        if not self._gene_name in HOMOSAPIENS_MHC:
+        if not self._gene_name in VALID_HOMOSAPIENS_MH:
             return "unrecognised gene name"
 
         # Verify allele designators up to the level of the protein (or G/P)
         allele_designation = self._allele_designation.copy()
         if not self._is_group():
             allele_designation = allele_designation[:2]
-        current_root = HOMOSAPIENS_MHC[self._gene_name]
+        current_root = VALID_HOMOSAPIENS_MH[self._gene_name]
 
         while len(allele_designation) > 0:
             try:

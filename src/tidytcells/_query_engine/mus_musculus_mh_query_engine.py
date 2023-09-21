@@ -2,7 +2,7 @@ from typing import FrozenSet
 import warnings
 
 from tidytcells._query_engine import QueryEngine
-from tidytcells._resources import MUSMUSCULUS_MHC
+from tidytcells._resources import VALID_MUSMUSCULUS_MH
 
 
 class MusMusculusMhQueryEngine(QueryEngine):
@@ -14,4 +14,4 @@ class MusMusculusMhQueryEngine(QueryEngine):
                 "and can only provide up to the level of the gene."
             )
 
-        return frozenset(MUSMUSCULUS_MHC)
+        return frozenset(VALID_MUSMUSCULUS_MH)

@@ -1,6 +1,6 @@
 import pytest
 from tidytcells import tcr
-from tidytcells._resources import HOMOSAPIENS_TCR, MUSMUSCULUS_TCR
+from tidytcells._resources import VALID_HOMOSAPIENS_TR, VALID_MUSMUSCULUS_TR
 import warnings
 
 
@@ -86,7 +86,7 @@ class TestStandardize:
 
 
 class TestStandardizeHomoSapiens:
-    @pytest.mark.parametrize("gene", HOMOSAPIENS_TCR)
+    @pytest.mark.parametrize("gene", VALID_HOMOSAPIENS_TR)
     def test_already_correctly_formatted(self, gene):
         result = tcr.standardize(gene=gene, species="homosapiens")
 
@@ -138,7 +138,7 @@ class TestStandardizeHomoSapiens:
 
 
 class TestStandardizeMusMusculus:
-    @pytest.mark.parametrize("gene", MUSMUSCULUS_TCR)
+    @pytest.mark.parametrize("gene", VALID_MUSMUSCULUS_TR)
     def test_already_correctly_formatted(self, gene):
         result = tcr.standardize(gene=gene, species="musmusculus")
 

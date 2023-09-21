@@ -31,7 +31,9 @@ df.head()
 genes = df["gene name"].unique().tolist()
 
 
-with open(Path("src") / "tidytcells" / "_resources" / "musmusculus_mhc.json", "w") as f:
+with open(
+    Path("src") / "tidytcells" / "_resources" / "valid_musmusculus_mh.json", "w"
+) as f:
     json.dump(genes, f, indent=4)
 
 
@@ -58,6 +60,6 @@ mhc_synonyms = mhc_synonyms[mhc_synonyms.index.map(lambda x: x not in genes)]
 
 
 mhc_synonyms["gene name"].to_json(
-    Path("src") / "tidytcells" / "_resources" / "musmusculus_mhc_synonyms.json",
+    Path("src") / "tidytcells" / "_resources" / "musmusculus_mh_synonyms.json",
     indent=4,
 )
