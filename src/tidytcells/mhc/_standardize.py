@@ -1,7 +1,7 @@
 from typing import Dict, Optional, Type
 
 from tidytcells import _utils
-from tidytcells._utils import Parameter, warnings
+from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
     StandardizedGeneSymbol,
     StandardizedHlaSymbol,
@@ -114,7 +114,7 @@ def standardize(
     species_is_supported = species in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS
     if not species_is_supported:
         if not suppress_warnings:
-            warnings.warn_unsupported_species(species, "MHC")
+            _utils.warn_unsupported_species(species, "MHC")
         return gene
 
     StandardizedMhSymbolClass = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]
@@ -123,7 +123,7 @@ def standardize(
     invalid_reason = standardized_mh_symbol.get_reason_why_invalid()
     if invalid_reason is not None:
         if not suppress_warnings:
-            warnings.warn_failure(
+            _utils.warn_failure(
                 reason_for_failure=invalid_reason,
                 original_input=gene,
                 attempted_fix=standardized_mh_symbol.compile("allele"),

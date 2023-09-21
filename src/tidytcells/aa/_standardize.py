@@ -1,5 +1,7 @@
+import warnings
+
 from tidytcells._resources import AMINO_ACIDS
-from tidytcells._utils import Parameter, warnings
+from tidytcells._utils import Parameter
 
 
 def standardize(seq: str, on_fail: str = "reject", suppress_warnings: bool = False):

@@ -1,8 +1,9 @@
 import re
 from typing import Optional
+import warnings
 
 from tidytcells._resources import HOMOSAPIENS_MHC
-from tidytcells._utils import Parameter, warnings
+from tidytcells._utils import Parameter
 
 
 CLASS_1_MATCHING_REGEX = re.compile(r"HLA-[ABCEFG]|B2M")

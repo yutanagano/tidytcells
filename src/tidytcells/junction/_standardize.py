@@ -1,5 +1,5 @@
 import re
-from warnings import warn
+import warnings
 
 from tidytcells import aa
 
@@ -84,7 +84,7 @@ def standardize(
     if not JUNCTION_MATCHING_REGEX.match(seq):
         if strict:
             if not suppress_warnings:
-                warn(
+                warnings.warn(
                     f"Failed to standardize {original_input}: not a valid junction sequence."
                 )
             if on_fail == "reject":

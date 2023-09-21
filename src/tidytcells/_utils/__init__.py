@@ -1,2 +1,3 @@
 from .parameter import Parameter
-from .misc import clean_and_lowercase, clean_and_uppercase
+from .string_cleaning import clean_and_lowercase, clean_and_uppercase
+from .warnings import warn_failure, warn_unsupported_species

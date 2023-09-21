@@ -1,8 +1,3 @@
-"""
-Warning message templates.
-"""
-
-
 from warnings import warn
 
 

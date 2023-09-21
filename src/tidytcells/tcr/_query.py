@@ -3,16 +3,16 @@ from typing import Dict, FrozenSet, Optional, Type
 
 from tidytcells import _utils
 from tidytcells._utils import Parameter
-from tidytcells._utils.gene_query_engines import (
-    GeneQueryEngine,
-    HomoSapiensTCRQueryEngine,
-    MusMusculusTCRQueryEngine,
+from tidytcells._query_engine import (
+    QueryEngine,
+    HomoSapiensTrQueryEngine,
+    MusMusculusTrQueryEngine,
 )
 
 
-QUERY_ENGINES: Dict[str, Type[GeneQueryEngine]] = {
-    "homosapiens": HomoSapiensTCRQueryEngine,
-    "musmusculus": MusMusculusTCRQueryEngine,
+QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
+    "homosapiens": HomoSapiensTrQueryEngine,
+    "musmusculus": MusMusculusTrQueryEngine,
 }
 
 
