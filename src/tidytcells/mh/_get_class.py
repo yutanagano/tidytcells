@@ -15,11 +15,11 @@ def get_class(
     suppress_warnings: bool = False,
 ) -> int:
     """
-    Given a standardized MH gene name, detect whether it comprises a class I or II MH receptor complex.
+    Given a standardized MH gene name, detect whether it comprises a class I (MH1) or II (MH2) receptor.
 
     .. note::
 
-        This function currently only recognises HLA, and not MH from other species.
+        This function currently only recognises HLA (human leucocyte antigen or Homo sapiens MH), and not MH from other species.
 
     :param gene:
         Standardized MH gene name

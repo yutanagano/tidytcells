@@ -15,11 +15,11 @@ def get_chain(
     suppress_warnings: bool = False,
 ) -> str:
     """
-    Given a standardized MH gene name, detect whether it codes for an alpha or a beta chain molecule.
+    Given a standardized MH gene name, detect whether it codes for an alpha chain, beta chain, or beta-2 microglobulin (B2M) molecule.
 
     .. note::
 
-        This function currently only recognises HLA, and not MH from other species.
+        This function currently only recognises HLA (human leucocyte antigen or Homo sapiens MH), and not MH from other species.
 
     :param gene:
         Standardized MH gene name

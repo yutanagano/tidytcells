@@ -4,7 +4,7 @@ Usage
 :py:mod:`tidytcells`' structure
 -------------------------------
 
-:py:mod:`tidytcells` is comprised of several modules, each of which provide a set of functions that help process a particular type of data that bioinformaticians working on TR data may come accross.
+:py:mod:`tidytcells` is comprised of several modules, each of which provide a set of functions that help process a particular type of data that bioinformaticians working on T cell receptor (TR) or Major Histocompatibility (MH) data may come accross.
 
 The submodules are:
 
@@ -20,7 +20,7 @@ The submodules are:
 | :py:mod:`tidytcells.tr`       | TR gene/allele data                                      |
 +-------------------------------+----------------------------------------------------------+
 
-For ease of use, function APIs are standardized accross modules wherever possible- for example, each module has a function named ``standardize`` (see below) which standardizes data from each category to be `IMGT <https://www.imgt.org/>`_-compliant.
+For ease of use, function APIs are standardized accross modules wherever possible- for example, each module has a function named ``standardize`` (see below) which standardizes data from each category to be IMGT-compliant (`IMGT/GENE-DB <https://www.imgt.org/genedb/>`_, `IMGT Repertoire <https://www.imgt.org/IMGTrepertoire/>`_).
 Refer to :ref:`here <api>` for a full review of :py:mod:`tidytcells`' API.
 
 Standardizing TR/MH data using :py:mod:`tidytcells` and `pandas <https://pandas.pydata.org/>`_
@@ -93,14 +93,14 @@ For use cases that require more flexibility, one could even define a wrapper fun
 
 For more complete documentations of the ``standardize`` functions, refer to :ref:`the api reference <api>`.
 
-Querying from `IMGT <https://www.imgt.org/>`_ TR/MH genes or alleles
-----------------------------------------------------------------------
+Querying from `IMGT TR/MH genes or alleles <https://www.imgt.org/IMGTrepertoire/>`_
+-----------------------------------------------------------------------------------
 
-:py:mod:`tidytcells` also provides the nifty functions :py:func:`tidytcells.tr.query` and :py:func:`tidytcells.mh.query` that allows users to obtain a list (actually a ``FrozenSet``) of `IMGT <https://www.imgt.org/>`_ gene/allele names from the respective categories.
+:py:mod:`tidytcells` also provides the nifty functions :py:func:`tidytcells.tr.query` and :py:func:`tidytcells.mh.query` that allows users to obtain a list (actually a ``FrozenSet``) of `IMGT gene/allele names <https://www.imgt.org/IMGTrepertoire/>`_ from the respective categories.
 The functions allow the user to provide various constraints relating to the genes/alleles' functionalities and names to filter the query results as well.
 The ``query`` functions can be useful when checking if a particular dataset covers all the TR or MH genes, or counting how many genes fulfill a particular set of constraints.
 
 Other MH utilities
--------------------
+------------------
 
 The :py:mod:`mh <tidytcells.mh>` module provides a couple more extra goodies, including :py:func:`get_chain <tidytcells.mh.get_chain>` and :py:func:`get_class <tidytcells.mh.get_class>`, each with self-explanatory names.
