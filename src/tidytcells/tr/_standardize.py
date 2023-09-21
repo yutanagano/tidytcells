@@ -22,7 +22,6 @@ def standardize(
     precision: str = "allele",
     on_fail: str = "reject",
     suppress_warnings: bool = False,
-    gene_name: Optional[str] = None,
 ) -> str:
     """
     Attempt to standardize a TR gene name to be IMGT-compliant.
@@ -66,13 +65,6 @@ def standardize(
     :type suppress_warnings:
         bool
 
-    :param gene_name:
-        Alias for the parameter ``gene``.
-
-        .. caution:: This will be deprecated soon in favour of ``gene``.
-    :type gene_name:
-        str
-
     :return:
         If the specified ``species`` is supported, and ``gene`` could be standardized, then return the standardized gene name.
         If ``species`` is unsupported, then the function does not attempt to standardize , and returns the unaltered ``gene`` string.
@@ -104,11 +96,6 @@ def standardize(
         >>> tt.tr.standardize("TCRBV22S1A2N1T", species="musmusculus")
         'TRBV2'
     """
-
-    gene = Parameter(gene, "gene").resolve_with_alias_and_return_value(
-        Parameter(gene_name, "gene_name")
-    )
-
     Parameter(gene, "gene").throw_error_if_not_of_type(str)
     Parameter(species, "species").throw_error_if_not_of_type(str)
     Parameter(enforce_functional, "enforce_functional").throw_error_if_not_of_type(bool)

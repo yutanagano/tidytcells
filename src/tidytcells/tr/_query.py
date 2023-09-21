@@ -21,7 +21,6 @@ def query(
     precision: str = "allele",
     functionality: str = "any",
     contains_substring: Optional[str] = None,
-    contains: Optional[str] = None,
 ) -> FrozenSet[str]:
     """
     Query the list of all known TR genes/alleles.
@@ -61,12 +60,6 @@ def query(
         Defaults to ``None``.
     :type contains_substring:
         str
-    :param contains:
-        Alias for ``contains_substring``.
-
-        .. caution:: This will be deprecated soon in favour of ``contains_substring``.
-    :type contains:
-        str
 
     :return:
         The set of all genes/alleles that satisfy the given constraints.
@@ -85,11 +78,6 @@ def query(
         >>> tt.tr.query(species="musmusculus", precision="gene", functionality="ORF", contains_substring="TRAV")
         frozenset({'TRAV21/DV12', 'TRAV14D-1', 'TRAV13-3', 'TRAV9D-2', 'TRAV5D-4', 'TRAV12D-3', 'TRAV12-1', 'TRAV18', 'TRAV11D'})
     """
-
-    contains_substring = Parameter(
-        contains_substring, "contains_substring"
-    ).resolve_with_alias_and_return_value(Parameter(contains, "contains"))
-
     Parameter(species, "species").throw_error_if_not_of_type(str)
     Parameter(precision, "precision").throw_error_if_not_one_of("allele", "gene")
     Parameter(functionality, "functionality").throw_error_if_not_one_of(

@@ -41,12 +41,6 @@ class TestStandardize:
 
         assert result == "HLA-B*07"
 
-    def test_gene_name(self):
-        with pytest.warns(FutureWarning):
-            result = mh.standardize(gene_name="HLA-B*07")
-
-        assert result == "HLA-B*07"
-
     def test_suppress_warnings(self):
         with warnings.catch_warnings():
             warnings.simplefilter("error")
@@ -236,12 +230,6 @@ class TestGetChain:
         with pytest.raises(TypeError):
             mh.get_chain(gene)
 
-    def test_gene_name(self):
-        with pytest.warns(FutureWarning):
-            result = mh.get_chain(gene_name="HLA-A")
-
-        assert result == "alpha"
-
     def test_suppress_warnings(self):
         with warnings.catch_warnings():
             warnings.simplefilter("error")
@@ -284,19 +272,7 @@ class TestGetClass:
         with pytest.raises(TypeError):
             mh.get_class(gene)
 
-    def test_gene_name(self):
-        with pytest.warns(FutureWarning):
-            result = mh.get_class(gene_name="HLA-A")
-
-        assert result == 1
-
     def test_suppress_warnings(self):
         with warnings.catch_warnings():
             warnings.simplefilter("error")
             mh.get_class("foobarbaz", suppress_warnings=True)
-
-    def test_classify(self):
-        with pytest.warns(FutureWarning):
-            result = mh.classify(gene="HLA-A")
-
-        assert result == 1

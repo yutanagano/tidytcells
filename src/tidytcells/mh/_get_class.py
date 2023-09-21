@@ -13,7 +13,6 @@ CLASS_2_MATCHING_REGEX = re.compile(r"HLA-D[PQR][AB]")
 def get_class(
     gene: Optional[str] = None,
     suppress_warnings: bool = False,
-    gene_name: Optional[str] = None,
 ) -> int:
     """
     Given a standardized MH gene name, detect whether it comprises a class I or II MH receptor complex.
@@ -32,13 +31,6 @@ def get_class(
     :type suppress_warnings:
         bool
 
-    :param gene_name:
-        Alias for the parameter ``gene``.
-
-        .. caution:: This will be deprecated soon in favour of ``gene``.
-    :type gene_name:
-        str
-
     :return:
         ``1`` or ``2`` if ``gene`` is recognised and its class is known, else ``None``.
     :rtype:
@@ -53,9 +45,6 @@ def get_class(
         >>> tt.mh.get_class("B2M")
         1
     """
-    gene = Parameter(gene, "gene").resolve_with_alias_and_return_value(
-        Parameter(gene_name, "gene_name")
-    )
     Parameter(gene, "gene").throw_error_if_not_of_type(str)
 
     gene = gene.split("*")[0]
@@ -74,16 +63,3 @@ def get_class(
     if not suppress_warnings:
         warnings.warn(f"Class for {gene} unknown.")
     return None
-
-
-def classify(*args, **kwargs):
-    """
-    .. caution:: This will be deprecated soon in favour of :py:func:`tidytcells.mh.get_class`.
-
-    Alias for :py:func:`tidytcells.mh.get_class`.
-    """
-    warnings.warn(
-        '"mh.classify" as an alias will be deprecated in the near future. Please switch to using "mh.get_class".',
-        FutureWarning,
-    )
-    return get_class(*args, **kwargs)
