@@ -44,6 +44,27 @@ def standardize(seq: str, on_fail: str = "reject", suppress_warnings: bool = Fal
         UserWarning: Input sqll?akyl was rejected as it is not a valid amino acid sequence.
         >>> print(result)
         None
+
+    .. topic:: Decision Logic
+
+        To provide an easy way to gauge the scope and limitations of standardization, below is a simplified overview of the decision logic employed when attempting to standardize an amino acid sequence.
+        For more detail, please refer to the `source code <https://github.com/yutanagano/tidytcells>`_.
+
+        .. code-block:: none
+
+            IF input sequence contains non-amino acid symbols:
+                set standardization status to failed
+            ELSE:
+                set standardization status to successful
+
+            IF standardization status is set to successful:
+                RETURN standardized sequence
+
+            ELSE:
+                IF on_fail is set to "reject":
+                    RETURN None
+                IF on_fail is set to "keep":
+                    RETURN original sequence
     """
     Parameter(seq, "seq").throw_error_if_not_of_type(str)
     Parameter(on_fail, "on_fail").throw_error_if_not_one_of("reject", "keep")

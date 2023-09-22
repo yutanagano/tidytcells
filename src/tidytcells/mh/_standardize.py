@@ -27,8 +27,8 @@ def standardize(
 
     .. topic:: Supported species
 
-        - ``'homosapiens'``
-        - ``'musmusculus'``
+        - ``"homosapiens"``
+        - ``"musmusculus"``
 
     .. note::
         This function will only verify the validity of an MH gene/allele up to the level of the protein.
@@ -41,15 +41,15 @@ def standardize(
         str
     :param species:
         Species to which the MH gene belongs (see above for supported species).
-        Defaults to ``'homosapiens'``.
+        Defaults to ``"homosapiens"``.
     :type species:
         str
     :param precision:
         The maximum level of precision to standardize to.
-        ``'allele'`` standardizes to the maximum precision possible.
-        ``'protein'`` keeps allele designators up to the level of the protein.
-        ``'gene'`` standardizes only to the level of the gene.
-        Defaults to ``'allele'``.
+        ``"allele"`` standardizes to the maximum precision possible.
+        ``"protein"`` keeps allele designators up to the level of the protein.
+        ``"gene"`` standardizes only to the level of the gene.
+        Defaults to ``"allele"``.
     :type precision:
         str
     :param on_fail:
@@ -88,6 +88,54 @@ def standardize(
 
         >>> tt.mh.standardize("CRW2", species="musmusculus")
         'MH1-M5'
+
+    .. topic:: Decision Logic
+
+        To provide an easy way to gauge the scope and limitations of standardization, below is a simplified overview of the decision logic employed when attempting to standardize an MH symbol.
+        For more detail, please refer to the `source code <https://github.com/yutanagano/tidytcells>`_.
+
+        .. code-block:: none
+
+            IF the specified species is not supported for standardization:
+                RETURN original gene symbol without modification
+
+            ELSE:
+                // attempt standardization
+                {
+                    IF gene symbol is already in IMGT-compliant form:
+                        set standardization status as successful
+                        skip rest of standardization
+
+                    IF gene symbol is a known deprecated symbol:
+                        overwrite gene symbol with current IMGT-compliant symbol
+                        set standardization status as successful
+                        skip rest of standardization
+
+                    // the rest is only applicable when species is set to homo sapiens
+                    add "HLA-" to the beginning of the gene symbol if necessary             //e.g. A -> HLA-A
+                    replace "Cw" with "C"                                                   //e.g. HLA-Cw -> HLA-C
+                    add back forgotten asterisks if necessary                               //e.g. HLA-A01 -> HLA-A*01
+                    add back forgotten colons if necessary                                  //e.g. HLA-A*0101 -> HLA-A*01:01
+                    If gene symbol is now in IMGT-compliant form:
+                        set standardization status as successful
+                        skip rest of standardization
+
+                    try adding or subtracting leading zeros from allele designation numbers //e.g. HLA-A*001 -> HLA-A*01
+                    If gene symbol is now in IMGT-compliant form:
+                        set standardization status as successful
+                        skip rest of standardization
+
+                    set standardization status as failed
+                }
+
+                IF standardization status is set to successful:
+                    RETURN standardized gene symbol
+
+                ELSE:
+                    IF on_fail is set to "reject":
+                        RETURN None
+                    IF on_fail is set to "keep":
+                        RETURN original gene symbol without modification
     """
     Parameter(gene, "gene").throw_error_if_not_of_type(str)
     Parameter(species, "species").throw_error_if_not_of_type(str)

@@ -26,8 +26,8 @@ def query(
 
     .. topic:: Supported species
 
-        - ``'homosapiens'``
-        - ``'musmusculus'``
+        - ``"homosapiens"``
+        - ``"musmusculus"``
 
     .. note::
 
@@ -37,7 +37,7 @@ def query(
 
     :param species:
         Species to query (see above for supported species).
-        Defaults to ``'homosapiens'``.
+        Defaults to ``"homosapiens"``.
     :type species:
         str
     :param precision:
