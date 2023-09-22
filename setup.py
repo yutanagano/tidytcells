@@ -10,7 +10,7 @@ VERSION = (HERE / "VERSION.txt").read_text(encoding="utf-8")
 setup(
     name="tidytcells",
     version=VERSION,
-    description="Standardise TCR/MHC data.",
+    description="Standardise TR/MH data.",
     long_description=README,
     long_description_content_type="text/markdown",
     author="Yuta Nagano",
@@ -23,7 +23,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
-    keywords="immunology, bioinformatics, TCR, MHC, HLA, T cell, IMGT",
+    keywords="immunology, bioinformatics, TCR, TR, MHC, MH, HLA, T cell, IMGT",
     package_dir={"": "src"},
     packages=find_packages("src"),
     package_data={"tidytcells": ["_resources/*"]},

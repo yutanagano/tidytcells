@@ -1,4 +1,7 @@
-from .._utils.abstract_functions import standardize_aa_template
+import warnings
+
+from tidytcells._resources import AMINO_ACIDS
+from tidytcells._utils import Parameter
 
 
 def standardize(seq: str, on_fail: str = "reject", suppress_warnings: bool = False):
@@ -42,7 +45,29 @@ def standardize(seq: str, on_fail: str = "reject", suppress_warnings: bool = Fal
         >>> print(result)
         None
     """
+    Parameter(seq, "seq").throw_error_if_not_of_type(str)
+    Parameter(on_fail, "on_fail").throw_error_if_not_one_of("reject", "keep")
+    Parameter(suppress_warnings, "suppress_warnings").throw_error_if_not_of_type(bool)
 
-    return standardize_aa_template(
-        seq=seq, on_fail=on_fail, suppress_warnings=suppress_warnings
-    )
+    original_input = seq
+
+    seq = seq.upper()
+
+    for char in seq:
+        if not char in AMINO_ACIDS:
+            if not suppress_warnings:
+                warnings.warn(
+                    f"Failed to standardize {original_input}: not a valid amino acid sequence."
+                )
+            if on_fail == "reject":
+                return None
+            return original_input
+
+    return seq
+
+
+def standardise(*args, **kwargs):
+    """
+    Alias for :py:func:`tidytcells.aa.standardize`.
+    """
+    return standardize(*args, **kwargs)

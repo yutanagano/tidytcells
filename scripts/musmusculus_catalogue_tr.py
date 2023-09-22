@@ -3,7 +3,7 @@ import json
 
 alleles = dict()
 
-with open(Path("data") / "musmusculus_tcr.fasta", "r") as f:
+with open(Path("data") / "musmusculus_tr.fasta", "r") as f:
     for line in f.readlines():
         if line.startswith(">"):
             fields = line.split("|")
@@ -18,5 +18,7 @@ with open(Path("data") / "musmusculus_tcr.fasta", "r") as f:
             alleles[gene][allele_designation] = functionality
 
 
-with open(Path("src") / "tidytcells" / "_resources" / "musmusculus_tcr.json", "w") as f:
+with open(
+    Path("src") / "tidytcells" / "_resources" / "valid_musmusculus_tr.json", "w"
+) as f:
     json.dump(alleles, f, indent=4)

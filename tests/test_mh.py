@@ -1,5 +1,5 @@
 import pytest
-from tidytcells import mhc
+from tidytcells import mh
 from tidytcells._resources import *
 from typing import FrozenSet
 import warnings
@@ -9,17 +9,17 @@ class TestStandardize:
     @pytest.mark.parametrize("species", ("foobar", "yoinkdoink", ""))
     def test_unsupported_species(self, species):
         with pytest.warns(UserWarning, match="Unsupported"):
-            result = mhc.standardize(gene="HLA-A*01:01:01:01", species=species)
+            result = mh.standardize(gene="HLA-A*01:01:01:01", species=species)
 
         assert result == "HLA-A*01:01:01:01"
 
     @pytest.mark.parametrize("gene", (1234, None))
     def test_bad_type(self, gene):
         with pytest.raises(TypeError):
-            mhc.standardize(gene=gene)
+            mh.standardize(gene=gene)
 
     def test_default_homosapiens(self):
-        result = mhc.standardize("HLA-B*07")
+        result = mh.standardize("HLA-B*07")
 
         assert result == "HLA-B*07"
 
@@ -32,53 +32,47 @@ class TestStandardize:
         ),
     )
     def test_precision(self, gene, expected, precision):
-        result = mhc.standardize(gene=gene, species="homosapiens", precision=precision)
+        result = mh.standardize(gene=gene, species="homosapiens", precision=precision)
 
         assert result == expected
 
     def test_standardise(self):
-        result = mhc.standardise("HLA-B*07")
-
-        assert result == "HLA-B*07"
-
-    def test_gene_name(self):
-        with pytest.warns(FutureWarning):
-            result = mhc.standardize(gene_name="HLA-B*07")
+        result = mh.standardise("HLA-B*07")
 
         assert result == "HLA-B*07"
 
     def test_suppress_warnings(self):
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            mhc.standardize("foobarbaz", suppress_warnings=True)
+            mh.standardize("foobarbaz", suppress_warnings=True)
 
     def test_on_fail(self):
         with pytest.warns(UserWarning):
-            result = mhc.standardize("foobarbaz", on_fail="keep")
+            result = mh.standardize("foobarbaz", on_fail="keep")
 
         assert result == "foobarbaz"
 
 
 class TestStandardizeHomoSapiens:
-    @pytest.mark.parametrize("gene", [*HOMOSAPIENS_MHC, "B2M"])
+    @pytest.mark.parametrize("gene", [*VALID_HOMOSAPIENS_MH, "B2M"])
     def test_already_correctly_formatted(self, gene):
-        result = mhc.standardize(gene=gene, species="homosapiens")
+        result = mh.standardize(gene=gene, species="homosapiens")
 
         assert result == gene
 
     @pytest.mark.parametrize(
         "gene", ("foobar", "yoinkdoink", "HLA-FOOBAR123456", "=======")
     )
-    def test_invalid_mhc(self, gene):
+    def test_invalid_mh(self, gene):
         with pytest.warns(UserWarning, match="Failed to standardize"):
-            result = mhc.standardize(gene=gene, species="homosapiens")
+            result = mh.standardize(gene=gene, species="homosapiens")
 
         assert result == None
 
     @pytest.mark.parametrize("gene", ("HLA-A*01:01:1:1:1:1:1:1",))
     def test_bad_allele_designation(self, gene):
         with pytest.warns(UserWarning, match="Failed to standardize"):
-            result = mhc.standardize(gene=gene, species="homosapiens")
+            result = mh.standardize(gene=gene, species="homosapiens")
 
         assert result == None
 
@@ -92,7 +86,7 @@ class TestStandardizeHomoSapiens:
         ),
     )
     def test_fix_deprecated_names(self, gene, expected):
-        result = mhc.standardize(gene=gene, species="homosapiens")
+        result = mh.standardize(gene=gene, species="homosapiens")
 
         assert result == expected
 
@@ -108,7 +102,7 @@ class TestStandardizeHomoSapiens:
         ),
     )
     def test_remove_expression_qualifier(self, gene):
-        result = mhc.standardize(gene=gene, species="homosapiens")
+        result = mh.standardize(gene=gene, species="homosapiens")
 
         assert result == "HLA-A*01:01:01:01"
 
@@ -125,22 +119,22 @@ class TestStandardizeHomoSapiens:
         ),
     )
     def test_various_typos(self, gene, expected):
-        result = mhc.standardize(gene=gene, species="homosapiens")
+        result = mh.standardize(gene=gene, species="homosapiens")
 
         assert result == expected
 
 
 class TestStandardizeMusMusculus:
-    @pytest.mark.parametrize("gene", MUSMUSCULUS_MHC)
+    @pytest.mark.parametrize("gene", VALID_MUSMUSCULUS_MH)
     def test_already_correctly_formatted(self, gene):
-        result = mhc.standardize(gene=gene, species="musmusculus")
+        result = mh.standardize(gene=gene, species="musmusculus")
 
         assert result == gene
 
     @pytest.mark.parametrize("gene", ("foobar", "yoinkdoink", "MH1-ABC", "======="))
-    def test_invalid_mhc(self, gene):
+    def test_invalid_mh(self, gene):
         with pytest.warns(UserWarning, match="Failed to standardize"):
-            result = mhc.standardize(gene=gene, species="musmusculus")
+            result = mh.standardize(gene=gene, species="musmusculus")
 
         assert result == None
 
@@ -148,7 +142,7 @@ class TestStandardizeMusMusculus:
         ("gene", "expected"), (("H-2Eb1", "MH2-EB1"), ("H-2Aa", "MH2-AA"))
     )
     def test_fix_deprecated_names(self, gene, expected):
-        result = mhc.standardize(gene=gene, species="musmusculus")
+        result = mh.standardize(gene=gene, species="musmusculus")
 
         assert result == expected
 
@@ -167,7 +161,7 @@ class TestQuery:
     def test_query_all(
         self, species, precision, expected_len, expected_in, expected_not_in
     ):
-        result = mhc.query(species=species, precision=precision)
+        result = mh.query(species=species, precision=precision)
 
         assert type(result) == frozenset
         assert len(result) == expected_len
@@ -191,7 +185,9 @@ class TestQuery:
     def test_query_contains(
         self, species, precision, contains, expected_len, expected_in, expected_not_in
     ):
-        result = mhc.query(species=species, precision=precision, contains=contains)
+        result = mh.query(
+            species=species, precision=precision, contains_pattern=contains
+        )
 
         assert len(result) == expected_len
         assert expected_in in result
@@ -218,32 +214,26 @@ class TestGetChain:
         ),
     )
     def test_get_chain(self, gene, expected):
-        result = mhc.get_chain(gene=gene)
+        result = mh.get_chain(gene=gene)
 
         assert result == expected
 
     @pytest.mark.parametrize("gene", ("foo", "HLA", "0"))
     def test_unrecognised_gene_names(self, gene):
         with pytest.warns(UserWarning):
-            result = mhc.get_chain(gene=gene)
+            result = mh.get_chain(gene=gene)
 
         assert result == None
 
     @pytest.mark.parametrize("gene", (1234, None))
     def test_bad_type(self, gene):
         with pytest.raises(TypeError):
-            mhc.get_chain(gene)
-
-    def test_gene_name(self):
-        with pytest.warns(FutureWarning):
-            result = mhc.get_chain(gene_name="HLA-A")
-
-        assert result == "alpha"
+            mh.get_chain(gene)
 
     def test_suppress_warnings(self):
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            mhc.get_chain("foobarbaz", suppress_warnings=True)
+            mh.get_chain("foobarbaz", suppress_warnings=True)
 
 
 class TestGetClass:
@@ -266,35 +256,23 @@ class TestGetClass:
         ),
     )
     def test_get_class(self, gene, expected):
-        result = mhc.get_class(gene=gene)
+        result = mh.get_class(gene=gene)
 
         assert result == expected
 
     @pytest.mark.parametrize("gene", ("foo", "HLA", "0"))
     def test_unrecognised_gene_names(self, gene):
         with pytest.warns(UserWarning):
-            result = mhc.get_class(gene=gene)
+            result = mh.get_class(gene=gene)
 
         assert result == None
 
     @pytest.mark.parametrize("gene", (1234, None))
     def test_bad_type(self, gene):
         with pytest.raises(TypeError):
-            mhc.get_class(gene)
-
-    def test_gene_name(self):
-        with pytest.warns(FutureWarning):
-            result = mhc.get_class(gene_name="HLA-A")
-
-        assert result == 1
+            mh.get_class(gene)
 
     def test_suppress_warnings(self):
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            mhc.get_class("foobarbaz", suppress_warnings=True)
-
-    def test_classify(self):
-        with pytest.warns(FutureWarning):
-            result = mhc.classify(gene="HLA-A")
-
-        assert result == 1
+            mh.get_class("foobarbaz", suppress_warnings=True)

@@ -1,6 +1,6 @@
 import pytest
-from tidytcells import tcr
-from tidytcells._resources import HOMOSAPIENS_TCR, MUSMUSCULUS_TCR
+from tidytcells import tr
+from tidytcells._resources import VALID_HOMOSAPIENS_TR, VALID_MUSMUSCULUS_TR
 import warnings
 
 
@@ -8,17 +8,17 @@ class TestStandardize:
     @pytest.mark.parametrize("species", ("foobar", "yoinkdoink", ""))
     def test_unsupported_species(self, species):
         with pytest.warns(UserWarning, match="Unsupported"):
-            result = tcr.standardize(gene="foobarbaz", species=species)
+            result = tr.standardize(gene="foobarbaz", species=species)
 
         assert result == "foobarbaz"
 
     @pytest.mark.parametrize("gene", (1234, None))
     def test_bad_type(self, gene):
         with pytest.raises(TypeError):
-            tcr.standardize(gene=gene)
+            tr.standardize(gene=gene)
 
     def test_default_homosapiens(self):
-        result = tcr.standardize("TRBV20/OR9-2*01")
+        result = tr.standardize("TRBV20/OR9-2*01")
 
         assert result == "TRBV20/OR9-2*01"
 
@@ -27,7 +27,7 @@ class TestStandardize:
         (("TRAV3*01&nbsp;", "TRAV3*01"), (" TRAV3 * 01 ", "TRAV3*01")),
     )
     def test_remove_pollutants(self, gene, expected):
-        result = tcr.standardize(gene=gene, species="homosapiens")
+        result = tr.standardize(gene=gene, species="homosapiens")
 
         assert result == expected
 
@@ -44,7 +44,7 @@ class TestStandardize:
         ),
     )
     def test_enforce_functional(self, gene, expected, enforce_functional):
-        result = tcr.standardize(
+        result = tr.standardize(
             gene=gene, species="homosapiens", enforce_functional=enforce_functional
         )
 
@@ -58,44 +58,38 @@ class TestStandardize:
         ),
     )
     def test_precision(self, gene, expected, precision):
-        result = tcr.standardize(gene=gene, species="homosapiens", precision=precision)
+        result = tr.standardize(gene=gene, species="homosapiens", precision=precision)
 
         assert result == expected
 
     def test_standardise(self):
-        result = tcr.standardise("TRBV20/OR9-2*01")
-
-        assert result == "TRBV20/OR9-2*01"
-
-    def test_gene_name(self):
-        with pytest.warns(FutureWarning):
-            result = tcr.standardize(gene_name="TRBV20/OR9-2*01")
+        result = tr.standardise("TRBV20/OR9-2*01")
 
         assert result == "TRBV20/OR9-2*01"
 
     def test_suppress_warnings(self):
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            tcr.standardize("foobarbaz", suppress_warnings=True)
+            tr.standardize("foobarbaz", suppress_warnings=True)
 
     def test_on_fail(self):
         with pytest.warns(UserWarning):
-            result = tcr.standardize("foobarbaz", on_fail="keep")
+            result = tr.standardize("foobarbaz", on_fail="keep")
 
         assert result == "foobarbaz"
 
 
 class TestStandardizeHomoSapiens:
-    @pytest.mark.parametrize("gene", HOMOSAPIENS_TCR)
+    @pytest.mark.parametrize("gene", VALID_HOMOSAPIENS_TR)
     def test_already_correctly_formatted(self, gene):
-        result = tcr.standardize(gene=gene, species="homosapiens")
+        result = tr.standardize(gene=gene, species="homosapiens")
 
         assert result == gene
 
     @pytest.mark.parametrize("gene", ("foobar", "TRAV3D-3*01"))
-    def test_invalid_tcr(self, gene):
+    def test_invalid_tr(self, gene):
         with pytest.warns(UserWarning, match="Failed to standardize"):
-            result = tcr.standardize(gene=gene, species="homosapiens")
+            result = tr.standardize(gene=gene, species="homosapiens")
 
         assert result == None
 
@@ -107,8 +101,8 @@ class TestStandardizeHomoSapiens:
             ("TCRBV21S1*01", "TRBV11-1*01"),
         ),
     )
-    def test_resolve_alternate_tcr_names(self, gene, expected):
-        result = tcr.standardize(gene=gene, species="homosapiens")
+    def test_resolve_alternate_tr_names(self, gene, expected):
+        result = tr.standardize(gene=gene, species="homosapiens")
 
         assert result == expected
 
@@ -132,22 +126,22 @@ class TestStandardizeHomoSapiens:
         ),
     )
     def test_various_typos(self, gene, expected):
-        result = tcr.standardize(gene=gene, species="homosapiens")
+        result = tr.standardize(gene=gene, species="homosapiens")
 
         assert result == expected
 
 
 class TestStandardizeMusMusculus:
-    @pytest.mark.parametrize("gene", MUSMUSCULUS_TCR)
+    @pytest.mark.parametrize("gene", VALID_MUSMUSCULUS_TR)
     def test_already_correctly_formatted(self, gene):
-        result = tcr.standardize(gene=gene, species="musmusculus")
+        result = tr.standardize(gene=gene, species="musmusculus")
 
         assert result == gene
 
     @pytest.mark.parametrize("gene", ("foobar", "noice"))
-    def test_inivalid_tcr(self, gene):
+    def test_inivalid_tr(self, gene):
         with pytest.warns(UserWarning, match="Failed to standardize"):
-            result = tcr.standardize(gene=gene, species="musmusculus")
+            result = tr.standardize(gene=gene, species="musmusculus")
 
         assert result == None
 
@@ -165,7 +159,7 @@ class TestQuery:
     def test_query_all(
         self, species, precision, expected_len, expected_in, expected_not_in
     ):
-        result = tcr.query(species=species, precision=precision)
+        result = tr.query(species=species, precision=precision)
 
         assert type(result) == frozenset
         assert len(result) == expected_len
@@ -189,7 +183,9 @@ class TestQuery:
     def test_query_contains(
         self, species, precision, contains, expected_len, expected_in, expected_not_in
     ):
-        result = tcr.query(species=species, precision=precision, contains=contains)
+        result = tr.query(
+            species=species, precision=precision, contains_pattern=contains
+        )
 
         assert len(result) == expected_len
         assert expected_in in result
@@ -221,7 +217,7 @@ class TestQuery:
         expected_in,
         expected_not_in,
     ):
-        result = tcr.query(
+        result = tr.query(
             species=species, precision=precision, functionality=functionality
         )
 
@@ -259,6 +255,6 @@ class TestGetAaSequence:
         ),
     )
     def test_get_aa_sequence(self, gene, expected):
-        result = tcr.get_aa_sequence(gene=gene)
+        result = tr.get_aa_sequence(gene=gene)
 
         assert result == expected
