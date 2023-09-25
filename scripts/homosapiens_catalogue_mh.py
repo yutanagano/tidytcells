@@ -54,7 +54,7 @@ p_groups = p_groups.apply(
 
 
 def decompose_hla(gene_str: str, max_spec_field_depth: int = 2):
-    m = re.match(r"^([A-Z0-9\-]+)\*([\dGP:]+)[LSCAQN]?$", gene_str)
+    m = re.match(r"^([A-Za-z0-9\-]+)\*([\dGP:]+)[LSCAQN]?$", gene_str)
 
     if m is None:
         raise ValueError(gene_str)

@@ -11,7 +11,7 @@ def get_aa_sequence(gene: str, species: str = "homosapiens") -> Dict[str, str]:
 
     .. topic:: Supported species
 
-        - ``'homosapiens'``
+        - ``"homosapiens"``
 
     .. note::
 
@@ -26,7 +26,7 @@ def get_aa_sequence(gene: str, species: str = "homosapiens") -> Dict[str, str]:
         str
     :param species:
         Species to which the TR gene in question belongs (see above for supported species).
-        Defaults to ``'homosapiens'``.
+        Defaults to ``"homosapiens"``.
     :type species:
         str
 
