@@ -6,7 +6,8 @@
 
 - Data source: IMGT/GENE-DB (https://www.imgt.org/genedb/)
     - Use interactive GENE-DB interface to retrieve all Homo sapiens TR genes
-    - Then, in order to get a list of all known alleles of each gene, request the nucleotide sequence of all functional, ORF and pseudogene alleles in FASTA format.
+    - Then, in order to get a list of all known alleles of each gene, request the nucleotide sequence of all functional, ORF and pseudogene alleles in FASTA format
+    - Downloaded FASTA data found at: https://github.com/yutanagano/tidytcells/tree/main/data/homosapiens_tr.fasta
 - Last date of access: 22nd September 2023
 - Data parsing:
     - Using the FASTA data retrieved as above, use the data processing script (found at: https://github.com/yutanagano/tidytcells/tree/main/scripts/homosapiens_catalogue_tr.py) to transform the data to json form, where the data is encoded as:
@@ -43,4 +44,30 @@
 
 ### Valid TR genes
 
-- Data source
+- Data source: IMGT/GENE-DB (https://www.imgt.org/genedb/)
+    - Use interactive GENE-DB interface to retrieve all Mus musculus TR genes
+    - Then, in order to get a list of all known alleles of each gene, request the nucleotide sequence of all functional, ORF and pseudogene alleles in FASTA format
+    - Downloaded FASTA data found at: https://github.com/yutanagano/tidytcells/tree/main/data/musmusculus_tr.fasta
+- Last date of access: 22nd September 2023
+- Data parsing:
+    - Using the FASTA data retrieved as above, use the data processing script (found at: https://github.com/yutanagano/tidytcells/tree/main/scripts/musmusculus_catalogue_tr.py) to transform the data to json form, where the data is encoded as:
+    ```
+    {
+        gene name: {
+            allele number: functionality
+        }
+    }
+    ```
+
+### Valid MH genes
+
+- Data source: IMGT Repertoire (https://www.imgt.org/IMGTrepertoireMH/index.php?section=LocusGenes&repertoire=Chromosomal%20localization&species=mouse)
+    - Tabular data from the above website is copied onto an ODS spreadsheet (found at: https://github.com/yutanagano/tidytcells/tree/main/data/musmusculus_mh.ods)
+- Last date of access: 22nd September 2023
+- Data parsing:
+    - The data processing script (found at: https://github.com/yutanagano/tidytcells/tree/main/scripts/musmusculus_catalogue_mh.py) transforms the data from the spreadsheet as above into a json, where the data is encoded as:
+    ```
+    [
+        gene name
+    ]
+    ```
