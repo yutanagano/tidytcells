@@ -70,6 +70,34 @@ def standardize(
         UserWarning: Input sadaf was rejected as it is not a valid junction sequence.
         >>> print(result)
         None
+
+    .. topic:: Decision Logic
+
+        To provide an easy way to gauge the scope and limitations of standardization, below is a simplified overview of the decision logic employed when attempting to standardize a junction sequence.
+        For more detail, please refer to the `source code <https://github.com/yutanagano/tidytcells>`_.
+
+        .. code-block:: none
+
+            IF input sequence contains non-amino acid symbols:
+                set standardization status to failed
+
+            IF input sequence does not start with C and end with F:
+                IF strict is set to True:
+                    set standardization status to failed
+                ELSE:
+                    add C to the beginning and F to the end of the input sequence
+                    set standardization status to successful
+            ELSE:
+                set standardization status to successful
+
+            IF standardization status is set to successful:
+                RETURN standardized sequence
+
+            ELSE:
+                IF on_fail is set to "reject":
+                    RETURN None
+                IF on_fail is set to "keep":
+                    RETURN original sequence
     """
     original_input = seq
 
