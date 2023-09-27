@@ -13,7 +13,7 @@ The submodules are:
 +===============================+==========================================================+
 | :py:mod:`tidytcells.aa`       | General amino acid sequence data (e.g. peptide epitopes) |
 +-------------------------------+----------------------------------------------------------+
-| :py:mod:`tidytcells.junction` | TR junction (CDR3) amino acid data                       |
+| :py:mod:`tidytcells.junction` | TR JUNCTION or CDR3-IMGT amino acid sequence data        |
 +-------------------------------+----------------------------------------------------------+
 | :py:mod:`tidytcells.mh`       | MH gene/allele data                                      |
 +-------------------------------+----------------------------------------------------------+
@@ -23,8 +23,8 @@ The submodules are:
 For ease of use, function APIs are standardized accross modules wherever possible- for example, each module has a function named ``standardize`` (see below) which standardizes data from each category to be IMGT-compliant (`IMGT/GENE-DB <https://www.imgt.org/genedb/>`_, `IMGT Repertoire <https://www.imgt.org/IMGTrepertoire/>`_).
 Refer to :ref:`here <api>` for a full review of :py:mod:`tidytcells`' API.
 
-Standardizing TR/MH data using :py:mod:`tidytcells` and `pandas <https://pandas.pydata.org/>`_
-------------------------------------------------------------------------------------------------
+Standardizing TR/junction/peptide-MH data using :py:mod:`tidytcells` and `pandas <https://pandas.pydata.org/>`_
+---------------------------------------------------------------------------------------------------------------
 
 This is :py:mod:`tidytcells`' primary usecase.
 
@@ -39,8 +39,8 @@ Now, these ``standardize`` functions can be used on their own to clean individua
 
 However, in real-life scenarios one would like to clean a whole set of data contained in a table.
 This can be achieved in a fairly straightforward manner by using :py:mod:`tidytcells` in conjunction with a data analysis tool like `pandas <https://pandas.pydata.org/>`_.
-Pandas provides a nice way to blanket-apply data transformation functions to multiple ``DataFrame`` cells through their ``Series.map`` and ``DataFrame.applymap`` methods.
-Therefore, given a table of TR and MH data:
+Pandas provides a nice way to blanket-apply data transformation functions to multiple ``DataFrame`` cells through their ``Series.map`` and ``DataFrame.map`` methods.
+For example, given a table of TR/junction data (a similar procedure would work for tables with peptide-MH data as well):
 
 >>> import pandas as pd
 >>> df = pd.DataFrame(
@@ -60,7 +60,7 @@ Therefore, given a table of TR and MH data:
 One can apply the ``standardize`` functions from :py:mod:`tidytcells` over the whole table at once, like so:
 
 >>> cleaned = df.copy()
->>> cleaned[["v", "j"]] = df[["v", "j"]].applymap(tt.tr.standardize)
+>>> cleaned[["v", "j"]] = df[["v", "j"]].map(tt.tr.standardize)
 >>> cleaned["junction"] = df["junction"].map(tt.junction.standardize)
 >>> cleaned
            v              junction           j
@@ -72,7 +72,7 @@ To apply the functions with optional arguments, one can wrap the ``standardize``
 For use cases that require more flexibility, one could even define a wrapper function explicitly in the code.
 
 >>> cleaned = df.copy()
->>> cleaned[["v", "j"]] = df[["v", "j"]].applymap(
+>>> cleaned[["v", "j"]] = df[["v", "j"]].map(
 ...     lambda x: tt.tr.standardize(
 ...         gene=x,
 ...         species="homosapiens",
