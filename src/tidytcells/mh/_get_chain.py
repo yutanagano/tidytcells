@@ -19,7 +19,7 @@ def get_chain(
 
     .. note::
 
-        This function currently only recognises HLA (human leucocyte antigen or Homo sapiens MH), and not MH from other species.
+        This function currently only recognises HLA (human leucocyte antigen or *Homo sapiens* MH), and not MH from other species.
 
     :param gene:
         Standardized MH gene name

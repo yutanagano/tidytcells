@@ -33,7 +33,7 @@ def query(
 
         :py:mod:`tidytcells`' knowledge of MH alleles is limited, especially outside of humans.
         :py:mod:`tidytcells` will allow you to query HLA alleles up to the level of the protein (first two allele designators), but that is the highest resolution available.
-        For Mus musculus, there is currently only support for gene-level querying.
+        For *Mus musculus*, there is currently only support for gene-level querying.
 
     :param species:
         Species to query (see above for supported species).
