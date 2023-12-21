@@ -30,16 +30,19 @@ setup(
     python_requires=">=3.7",
     extras_require={
         "dev": [
+            "beautifulsoup4",
             "build",
             "odfpy>=1.4.1",
             "pandas>=1.1.5",
             "pip",
             "pytest>=7",
             "pytest-cov",
+            "requests",
             "setuptools",
             "tox>=4",
             "twine",
             "wheel",
-        ]
+        ],
+        "docs": ["sphinx_rtd_theme"],
     },
 )
