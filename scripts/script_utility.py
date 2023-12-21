@@ -1,16 +1,19 @@
 from bs4 import BeautifulSoup
 import collections
+from io import StringIO
 import json
+import pandas as pd
+from pandas import DataFrame
 from pathlib import Path
 import requests
 
 
 def get_tr_alleles_list(species: str) -> dict:
     gene_groups = (
-        "TRAC", "TRAJ", "TRAV",
-        "TRBC", "TRBJ", "TRBD", "TRBV",
-        "TRGC", "TRGJ", "TRGV",
-        "TRDC", "TRDJ", "TRDD", "TRDV"
+        "TRAC", "TRAV", "TRAJ",
+        "TRBC", "TRBV", "TRBD", "TRBJ",
+        "TRGC", "TRGV", "TRGJ",
+        "TRDC", "TRDV", "TRDD", "TRDJ"
     )
 
     alleles_per_gene_group = [get_tr_alleles_for_gene_group_for_species(gene_group, species) for gene_group in gene_groups]
@@ -50,3 +53,9 @@ def save_as_json(data: dict, file_name: str) -> None:
     path_to_resources_dir = Path("src")/"tidytcells"/"_resources"
     with open(path_to_resources_dir/file_name, "w") as f:
         json.dump(data, f, indent=4)
+
+
+def fetch_hgnc_data() -> DataFrame:
+    response = requests.get("https://www.genenames.org/cgi-bin/download/custom?col=gd_hgnc_id&col=gd_app_sym&col=gd_app_name&col=gd_status&col=gd_prev_sym&col=gd_aliases&col=gd_locus_type&col=family.name&status=Approved&hgnc_dbtag=on&order_by=gd_app_sym_sort&format=text&submit=submit", stream=True)
+    buffer = StringIO(response.text)
+    return pd.read_csv(buffer, sep="\t")

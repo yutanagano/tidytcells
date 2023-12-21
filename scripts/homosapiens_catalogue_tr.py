@@ -23,9 +23,7 @@ def main() -> None:
 
 
 def get_synonyms_data(valid_alleles: Iterable[str]) -> dict:
-    response = requests.get("https://www.genenames.org/cgi-bin/download/custom?col=gd_hgnc_id&col=gd_app_sym&col=gd_app_name&col=gd_status&col=gd_prev_sym&col=gd_aliases&col=gd_locus_type&col=family.name&status=Approved&hgnc_dbtag=on&order_by=gd_app_sym_sort&format=text&submit=submit", stream=True)
-    buffer = StringIO(response.text)
-    hgnc = pd.read_csv(buffer, sep="\t")
+    hgnc = script_utility.fetch_hgnc_data()
 
     tr_genes = hgnc[hgnc["Locus type"].str.contains("T cell receptor gene")].copy()
     tr_genes["Approved symbol"] = tr_genes["Approved symbol"].str.replace(
@@ -54,7 +52,7 @@ def get_synonyms_data(valid_alleles: Iterable[str]) -> dict:
     ]
     tr_genes_with_depnames["Previous symbols"] = tr_genes_with_depnames[
         "Previous symbols"
-    ].map(lambda x: x.split(", "))
+    ].map(lambda x: [element.strip() for element in x.split(",")])
     tr_genes_with_depnames.columns = ["Approved symbol", "Synonym"]
     tr_genes_with_depnames = tr_genes_with_depnames.explode("Synonym")
 
