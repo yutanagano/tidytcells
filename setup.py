@@ -43,6 +43,6 @@ setup(
             "twine",
             "wheel",
         ],
-        "docs": ["sphinx_rtd_theme"]
+        "docs": ["sphinx_rtd_theme"],
     },
 )
