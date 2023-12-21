@@ -42,6 +42,7 @@ setup(
             "tox>=4",
             "twine",
             "wheel",
-        ]
+        ],
+        "docs": ["sphinx_rtd_theme"]
     },
 )
