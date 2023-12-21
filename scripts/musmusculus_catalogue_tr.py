@@ -1,24 +1,11 @@
-from pathlib import Path
-import json
-
-alleles = dict()
-
-with open(Path("data") / "musmusculus_tr.fasta", "r") as f:
-    for line in f.readlines():
-        if line.startswith(">"):
-            fields = line.split("|")
-            allele_name = fields[1]
-            gene = allele_name.split("*")[0]
-            allele_designation = allele_name.split("*")[1]
-            functionality = fields[3].strip("()[]")
-
-            if not gene in alleles:
-                alleles[gene] = dict()
-
-            alleles[gene][allele_designation] = functionality
+import script_utility
 
 
-with open(
-    Path("src") / "tidytcells" / "_resources" / "valid_musmusculus_tr.json", "w"
-) as f:
-    json.dump(alleles, f, indent=4)
+def main() -> None:
+    print("Fetching TR allele data from IMGT...")
+    valid_allele_data = script_utility.get_tr_alleles_list("Mus+musculus")
+    script_utility.save_as_json(valid_allele_data, "valid_musmusculus_tr.json")
+
+
+if __name__ == "__main__":
+    main()
