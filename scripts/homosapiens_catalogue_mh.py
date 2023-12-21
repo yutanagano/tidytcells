@@ -40,7 +40,10 @@ def get_hla_alleles_tree() -> dict:
 
 
 def get_alleles_data() -> ndarray:
-    response = requests.get("https://raw.githubusercontent.com/ANHIG/IMGTHLA/Latest/wmda/hla_nom.txt", stream=True)
+    response = requests.get(
+        "https://raw.githubusercontent.com/ANHIG/IMGTHLA/Latest/wmda/hla_nom.txt",
+        stream=True,
+    )
     buffer = StringIO(response.text)
     df = pd.read_csv(
         buffer,
@@ -53,53 +56,35 @@ def get_alleles_data() -> ndarray:
             "deleted",
             "identical to",
             "reason for deletion",
-        ]
+        ],
     )
     df = df[df.locus.str.endswith("*")]
     df = df[df.deleted.isna()]
-    return df.apply(
-        lambda row: "HLA-" + row["locus"] + row["allele"], axis=1
-    ).unique()
+    return df.apply(lambda row: "HLA-" + row["locus"] + row["allele"], axis=1).unique()
 
 
 def get_g_groups_data() -> ndarray:
-    response = requests.get("https://raw.githubusercontent.com/ANHIG/IMGTHLA/Latest/wmda/hla_nom_g.txt", stream=True)
-    buffer = StringIO(response.text)
-    df = pd.read_csv(
-        buffer,
-        sep=";",
-        skiprows=6,
-        names=[
-            "locus",
-            "allele",
-            "group"
-        ]
+    response = requests.get(
+        "https://raw.githubusercontent.com/ANHIG/IMGTHLA/Latest/wmda/hla_nom_g.txt",
+        stream=True,
     )
+    buffer = StringIO(response.text)
+    df = pd.read_csv(buffer, sep=";", skiprows=6, names=["locus", "allele", "group"])
     df = df[df.locus.str.endswith("*")]
     df = df[df.group.notna()]
-    return df.apply(
-        lambda row: "HLA-" + row["locus"] + row["group"], axis=1
-    ).unique()
+    return df.apply(lambda row: "HLA-" + row["locus"] + row["group"], axis=1).unique()
 
 
 def get_p_groups_data() -> ndarray:
-    response = requests.get("https://raw.githubusercontent.com/ANHIG/IMGTHLA/Latest/wmda/hla_nom_p.txt", stream=True)
-    buffer = StringIO(response.text)
-    df = pd.read_csv(
-        buffer,
-        sep=";",
-        skiprows=6,
-        names=[
-            "locus",
-            "allele",
-            "group"
-        ]
+    response = requests.get(
+        "https://raw.githubusercontent.com/ANHIG/IMGTHLA/Latest/wmda/hla_nom_p.txt",
+        stream=True,
     )
+    buffer = StringIO(response.text)
+    df = pd.read_csv(buffer, sep=";", skiprows=6, names=["locus", "allele", "group"])
     df = df[df.locus.str.endswith("*")]
     df = df[df.group.notna()]
-    return df.apply(
-        lambda row: "HLA-" + row["locus"] + row["group"], axis=1
-    ).unique()
+    return df.apply(lambda row: "HLA-" + row["locus"] + row["group"], axis=1).unique()
 
 
 def decompose_hla(gene_str: str, max_spec_field_depth: int = 2):
@@ -169,7 +154,9 @@ def get_synonyms_data(valid_alleles: Iterable[str]) -> dict:
     # Remove ambiguous synonyms
     mh_synonyms = mh_synonyms.groupby("Synonym").aggregate(lambda x: x.tolist())
     mh_synonyms = mh_synonyms[mh_synonyms["Approved symbol"].map(len) == 1].copy()
-    mh_synonyms["Approved symbol"] = mh_synonyms["Approved symbol"].map(lambda x: x.pop())
+    mh_synonyms["Approved symbol"] = mh_synonyms["Approved symbol"].map(
+        lambda x: x.pop()
+    )
 
     # Remove redundant items
     mh_synonyms = mh_synonyms[mh_synonyms.index != mh_synonyms["Approved symbol"]]

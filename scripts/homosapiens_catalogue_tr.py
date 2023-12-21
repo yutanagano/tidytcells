@@ -34,7 +34,9 @@ def get_synonyms_data(valid_alleles: Iterable[str]) -> dict:
     )
 
     # Only keep genes whose 'approved symbols' are in our IMGT list
-    tr_genes = tr_genes[tr_genes["Approved symbol"].map(lambda x: x in valid_alleles)].copy()
+    tr_genes = tr_genes[
+        tr_genes["Approved symbol"].map(lambda x: x in valid_alleles)
+    ].copy()
 
     # Get TR genes with "alias symbols"
     tr_genes_with_aliases = tr_genes[tr_genes["Alias symbols"].notna()][
@@ -65,7 +67,9 @@ def get_synonyms_data(valid_alleles: Iterable[str]) -> dict:
     # Remove ambiguous synonyms
     tr_synonyms = tr_synonyms.groupby("Synonym").aggregate(lambda x: x.tolist())
     tr_synonyms = tr_synonyms[tr_synonyms["Approved symbol"].map(len) == 1].copy()
-    tr_synonyms["Approved symbol"] = tr_synonyms["Approved symbol"].map(lambda x: x.pop())
+    tr_synonyms["Approved symbol"] = tr_synonyms["Approved symbol"].map(
+        lambda x: x.pop()
+    )
     tr_synonyms.index = tr_synonyms.index.str.upper()
 
     # Remove any synonyms that are also names of other valid genes
@@ -82,23 +86,28 @@ def get_sequence_data() -> dict:
 def get_v_gene_sequence_data() -> dict:
     labels = ("FR1-IMGT", "CDR1-IMGT", "FR2-IMGT", "CDR2-IMGT", "FR3-IMGT", "V-REGION")
     gene_groups = ("TRAV", "TRBV", "TRGV", "TRDV")
-    data_per_gene_group_per_label = [get_sequence_data_for_label_for_gene_group(label, gene_group) for label, gene_group in itertools.product(labels, gene_groups)]
+    data_per_gene_group_per_label = [
+        get_sequence_data_for_label_for_gene_group(label, gene_group)
+        for label, gene_group in itertools.product(labels, gene_groups)
+    ]
 
     combined = collections.defaultdict(dict)
     for alleles_dict in data_per_gene_group_per_label:
         for allele, data in alleles_dict.items():
             combined[allele].update(data)
-    
+
     return combined
 
 
 def get_sequence_data_for_label_for_gene_group(label: str, gene_group: str) -> dict:
     aa_seqs = collections.defaultdict(dict)
 
-    response = requests.get(f"https://www.imgt.org/genedb/GENElect?query=8.2+{gene_group}&species=Homo+sapiens&IMGTlabel={label}")
+    response = requests.get(
+        f"https://www.imgt.org/genedb/GENElect?query=8.2+{gene_group}&species=Homo+sapiens&IMGTlabel={label}"
+    )
     parser = BeautifulSoup(response.text, features="html.parser")
     fasta = parser.find_all("pre")[1].string
-    
+
     current_allele = None
     for line in fasta.splitlines():
         if line.startswith(">"):
@@ -120,7 +129,7 @@ def get_sequence_data_for_label_for_gene_group(label: str, gene_group: str) -> d
             aa_seqs[current_allele][label] = line.strip()
         else:
             aa_seqs[current_allele][label] += line.strip()
-    
+
     return aa_seqs
 
 
