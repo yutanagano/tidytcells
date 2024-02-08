@@ -1,8 +1,7 @@
 name: publish to PyPI
 on:
-  push:
-    branches:
-      - 'main'
+  release:
+    types: [published]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -10,7 +9,7 @@ jobs:
       - name: check out branch
         uses: actions/checkout@v4
       - name: set up python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - name: install build
@@ -18,12 +17,11 @@ jobs:
       - name: build wheel and source tarball
         run: python3 -m build
       - name: store distribution packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: python-package-distributions
           path: dist/
   publish:
-    if: startsWith(github.ref, 'refs/tags/')
     needs:
       - build
     runs-on: ubuntu-latest
@@ -34,43 +32,9 @@ jobs:
       id-token: write
     steps:
       - name: download dists
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-package-distributions
           path: dist/
       - name: publish
         uses: pypa/gh-action-pypi-publish@release/v1
-  github-release:
-    needs:
-      - publish
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
-    steps:
-      - name: download dists
-        uses: actions/download-artifact@v3
-        with:
-          name: python-package-distributions
-          path: dist/
-      - name: sign dists
-        uses: sigstore/gh-action-sigstore-python@v1.2.3
-        with:
-          inputs: >-
-            ./dist/*.tar.gz
-            ./dist/*.whl
-      - name: create release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: >-
-          gh release create
-          '${{ github.ref_name }}'
-          --repo '${{ github.repository }}'
-          --notes ""
-      - name: upload release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: >-
-          gh release upload
-          '${{ github.ref_name }}' dist/**
-          --repo '${{ github.repository }}'
