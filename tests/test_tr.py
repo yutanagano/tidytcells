@@ -152,7 +152,7 @@ class TestQuery:
         (
             ("homosapiens", "allele", 457, "TRAJ8*02", "TRAJ8"),
             ("homosapiens", "gene", 250, "TRAJ8", "TRAJ8*02"),
-            ("musmusculus", "allele", 552, "TRAJ4*01", "TRAJ4"),
+            ("musmusculus", "allele", 556, "TRAJ4*01", "TRAJ4"),
             ("musmusculus", "gene", 273, "TRAJ4", "TRAJ4*01"),
         ),
     )

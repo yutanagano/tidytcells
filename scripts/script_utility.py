@@ -76,4 +76,4 @@ def fetch_hgnc_data() -> DataFrame:
         stream=True,
     )
     buffer = StringIO(response.text)
-    return pd.read_csv(buffer, sep="\t")
+    return pd.read_csv(buffer, sep="\t", on_bad_lines="warn")

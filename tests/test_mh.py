@@ -152,7 +152,7 @@ class TestQuery:
     @pytest.mark.parametrize(
         ("species", "precision", "expected_len", "expected_in", "expected_not_in"),
         (
-            ("homosapiens", "allele", 23437, "HLA-DRB3*03:04", "HLA-DRB3*03:04P"),
+            ("homosapiens", "allele", 23746, "HLA-DRB3*03:04", "HLA-DRB3*03:04P"),
             ("homosapiens", "gene", 45, "HLA-B", "HLA-FOO"),
             ("musmusculus", "allele", 70, "MH1-M10-1", "HLA-A"),
             ("musmusculus", "gene", 70, "MH1-Q8", "H2-Aa"),

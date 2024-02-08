@@ -11,3 +11,4 @@ __pycache__
 /docs/generated
 /ignore
 /notebooks
+/.ropeproject
