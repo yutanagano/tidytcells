@@ -228,21 +228,11 @@ class TestQuery:
 
 class TestGetAaSequence:
     @pytest.mark.parametrize(
-        ("gene", "expected"),
+        ("gene", "species", "expected"),
         (
             (
-                "TRBV2*01",
-                {
-                    "CDR1-IMGT": "SNHLY",
-                    "CDR2-IMGT": "FYNNEI",
-                    "FR1-IMGT": "EPEVTQTPSHQVTQMGQEVILRCVPI",
-                    "FR2-IMGT": "FYWYRQILGQKVEFLVS",
-                    "FR3-IMGT": "SEKSEIFDDQFSVERPDGSNFTLKIRSTKLEDSAMYFC",
-                    "V-REGION": "EPEVTQTPSHQVTQMGQEVILRCVPISNHLYFYWYRQILGQKVEFLVSFYNNEISEKSEIFDDQFSVERPDGSNFTLKIRSTKLEDSAMYFCASSE",
-                },
-            ),
-            (
                 "TRAV10*02",
+                "homosapiens",
                 {
                     "CDR1-IMGT": "VSPFSN",
                     "CDR2-IMGT": "MTFSENT",
@@ -252,9 +242,36 @@ class TestGetAaSequence:
                     "V-REGION": "KNQVEQSPQSLIILEGKNCTLQCNYTVSPFSNLRWYKQDTGRGPVSLTIMTFSENTKSNGRYTATLDADTKQSSLHITASQLSDSASYICVVS",
                 },
             ),
+            (
+                "TRBD1*01",
+                "homosapiens",
+                {
+                    "D-REGION": "GTGG",
+                },
+            ),
+            (
+                "TRAJ47*02",
+                "homosapiens",
+                {
+                    "FR4-IMGT": "FGAGTILRVKS",
+                    "J-REGION": "EYGNKLVFGAGTILRVKS",
+                },
+            ),
+            (
+                "TRAV1*01",
+                "musmusculus",
+                {
+                    "CDR1-IMGT": "TSGFNG",
+                    "CDR2-IMGT": "VVLDGL",
+                    "FR1-IMGT": "GQGVEQPDNLMSVEGTFARVNCTYS",
+                    "FR2-IMGT": "LSWYQQREGHAPVFLSY",
+                    "FR3-IMGT": "KDSGHFSTFLSRSNGYSYLLLTELQIKDSASYLC",
+                    "V-REGION": "GQGVEQPDNLMSVEGTFARVNCTYSTSGFNGLSWYQQREGHAPVFLSYVVLDGLKDSGHFSTFLSRSNGYSYLLLTELQIKDSASYLCAVR",
+                },
+            ),
         ),
     )
-    def test_get_aa_sequence(self, gene, expected):
-        result = tr.get_aa_sequence(gene=gene)
+    def test_get_aa_sequence(self, gene, species, expected):
+        result = tr.get_aa_sequence(gene=gene, species=species)
 
         assert result == expected
