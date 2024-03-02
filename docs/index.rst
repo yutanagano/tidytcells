@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to tidytcells's documentation!
-======================================
+tidytcells: Standardise TCR/MHC data
+====================================
 
 .. figure:: figure.png
    :alt: Cartoon of a T cell receptor binding to a peptide MH complex (left), and a cartoon demonstrating how messy data can be cleaned using tidytcells (right).

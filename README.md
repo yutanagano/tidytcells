@@ -1,8 +1,10 @@
-# tidytcells
+<h1 align="center">
+    <img src="tidytcells.png">
+</h1>
 
 ![Tests](https://github.com/yutanagano/tidytcells/actions/workflows/tests.yaml/badge.svg)
 [![Docs](https://readthedocs.org/projects/tidytcells/badge/?version=latest)](https://tidytcells.readthedocs.io)
-![License](https://img.shields.io/badge/license-MIT-blue)
+[![License](https://img.shields.io/badge/license-MIT-blue)](https://github.com/yutanagano/tidytcells?tab=MIT-1-ov-file#readme)
 
 `tidytcells` is a lightweight python package that cleans and standardizes T cell receptor (TR) and Major Histocompatibility (MH) data to be [IMGT](https://www.imgt.org/)-compliant.
 The main purpose of the package is to solve the problem of parsing and collating together non-standardized TR datasets.
