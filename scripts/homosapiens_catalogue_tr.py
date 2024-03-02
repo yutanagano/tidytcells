@@ -1,9 +1,4 @@
-from bs4 import BeautifulSoup
-import collections
-import itertools
-from io import StringIO
 import pandas as pd
-import requests
 from typing import Iterable
 import script_utility
 
@@ -18,7 +13,7 @@ def main() -> None:
     script_utility.save_as_json(synonyms_data, "homosapiens_tr_synonyms.json")
 
     print("Fetching TR gene sequence data from IMGT...")
-    sequence_data = get_sequence_data()
+    sequence_data = script_utility.get_tr_aa_sequence_data("Homo+sapiens")
     script_utility.save_as_json(sequence_data, "homosapiens_tr_aa_sequences.json")
 
 
@@ -76,61 +71,6 @@ def get_synonyms_data(valid_alleles: Iterable[str]) -> dict:
     tr_synonyms = tr_synonyms[tr_synonyms.index.map(lambda x: x not in valid_alleles)]
 
     return tr_synonyms["Approved symbol"].to_dict()
-
-
-def get_sequence_data() -> dict:
-    v_gene_sequence_data = get_v_gene_sequence_data()
-    return v_gene_sequence_data
-
-
-def get_v_gene_sequence_data() -> dict:
-    labels = ("FR1-IMGT", "CDR1-IMGT", "FR2-IMGT", "CDR2-IMGT", "FR3-IMGT", "V-REGION")
-    gene_groups = ("TRAV", "TRBV", "TRGV", "TRDV")
-    data_per_gene_group_per_label = [
-        get_sequence_data_for_label_for_gene_group(label, gene_group)
-        for label, gene_group in itertools.product(labels, gene_groups)
-    ]
-
-    combined = collections.defaultdict(dict)
-    for alleles_dict in data_per_gene_group_per_label:
-        for allele, data in alleles_dict.items():
-            combined[allele].update(data)
-
-    return combined
-
-
-def get_sequence_data_for_label_for_gene_group(label: str, gene_group: str) -> dict:
-    aa_seqs = collections.defaultdict(dict)
-
-    response = requests.get(
-        f"https://www.imgt.org/genedb/GENElect?query=8.2+{gene_group}&species=Homo+sapiens&IMGTlabel={label}"
-    )
-    parser = BeautifulSoup(response.text, features="html.parser")
-    fasta = parser.find_all("pre")[1].string
-
-    current_allele = None
-    for line in fasta.splitlines():
-        if line.startswith(">"):
-            fields = line.split("|")
-            allele = fields[1]
-            functionality = fields[3]
-
-            if "F" in functionality:
-                current_allele = allele
-            else:
-                current_allele = None
-
-            continue
-
-        if current_allele is None:
-            continue
-
-        if not label in aa_seqs[current_allele]:
-            aa_seqs[current_allele][label] = line.strip()
-        else:
-            aa_seqs[current_allele][label] += line.strip()
-
-    return aa_seqs
 
 
 if __name__ == "__main__":
