@@ -10,11 +10,13 @@ VERSION = (HERE / "VERSION.txt").read_text(encoding="utf-8")
 setup(
     name="tidytcells",
     version=VERSION,
-    description="Standardise TR/MH data.",
+    description="Standardise TR/MH data",
     long_description=README,
     long_description_content_type="text/markdown",
     author="Yuta Nagano",
     author_email="yutanagano51@proton.me",
+    url="https://tidytcells.readthedocs.io",
+    download_url="https://github.com/yutanagano/tidytcells",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Science/Research",
