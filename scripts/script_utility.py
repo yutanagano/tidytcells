@@ -1,11 +1,13 @@
 from bs4 import BeautifulSoup
 import collections
+import itertools
 from io import StringIO
 import json
 import pandas as pd
 from pandas import DataFrame
 from pathlib import Path
 import requests
+from typing import Tuple
 
 
 def get_tr_alleles_list(species: str) -> dict:
@@ -55,7 +57,86 @@ def get_tr_alleles_for_gene_group_for_species(gene_group: str, species: str) -> 
     return alleles
 
 
-def parse_fasta_header(line: str) -> (str, str, str):
+def get_tr_aa_sequence_data(species: str) -> dict:
+    v_gene_sequence_data = get_v_gene_sequence_data(species)
+    d_gene_sequence_data = get_d_gene_sequence_data(species)
+    j_gene_sequence_data = get_j_gene_sequence_data(species)
+    return {**v_gene_sequence_data, **d_gene_sequence_data, **j_gene_sequence_data}
+
+
+def get_v_gene_sequence_data(species: str) -> dict:
+    labels = ("FR1-IMGT", "CDR1-IMGT", "FR2-IMGT", "CDR2-IMGT", "FR3-IMGT", "V-REGION")
+    gene_groups = ("TRAV", "TRBV", "TRGV", "TRDV")
+    return get_gene_sequence_data(labels, gene_groups, species)
+
+
+def get_d_gene_sequence_data(species: str) -> dict:
+    labels = ("D-REGION",)
+    gene_groups = ("TRBD", "TRDD")
+    return get_gene_sequence_data(labels, gene_groups, species)
+
+
+def get_j_gene_sequence_data(species: str) -> dict:
+    labels = ("FR4-IMGT", "J-REGION")
+    gene_groups = ("TRAJ", "TRBJ", "TRGJ", "TRDJ")
+    return get_gene_sequence_data(labels, gene_groups, species)
+
+
+def get_gene_sequence_data(
+    labels: Tuple[str], gene_groups: Tuple[str], species: str
+) -> dict:
+    data_per_gene_group_per_label = [
+        get_sequence_data_for_label_for_gene_group_for_species(
+            label, gene_group, species
+        )
+        for label, gene_group in itertools.product(labels, gene_groups)
+    ]
+
+    combined = collections.defaultdict(dict)
+    for alleles_dict in data_per_gene_group_per_label:
+        for allele, data in alleles_dict.items():
+            combined[allele].update(data)
+
+    return combined
+
+
+def get_sequence_data_for_label_for_gene_group_for_species(
+    label: str, gene_group: str, species: str
+) -> dict:
+    aa_seqs = collections.defaultdict(dict)
+
+    response = requests.get(
+        f"https://www.imgt.org/genedb/GENElect?query=8.2+{gene_group}&species={species}&IMGTlabel={label}"
+    )
+    parser = BeautifulSoup(response.text, features="html.parser")
+    fasta = parser.find_all("pre")[1].string
+
+    current_allele = None
+    for line in fasta.splitlines():
+        if line.startswith(">"):
+            fields = line.split("|")
+            allele = fields[1]
+            functionality = fields[3]
+
+            if "F" in functionality:
+                current_allele = allele
+            else:
+                current_allele = None
+
+            continue
+
+        if current_allele is None:
+            continue
+
+        if not label in aa_seqs[current_allele]:
+            aa_seqs[current_allele][label] = line.strip()
+        else:
+            aa_seqs[current_allele][label] += line.strip()
+
+    return aa_seqs
+
+
+def parse_fasta_header(line: str) -> Tuple[str]:
     fields = line.split("|")
     allele_name = fields[1]
     gene, allele_designation = allele_name.split("*")

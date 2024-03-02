@@ -2097,5 +2097,303 @@
         "CDR2-IMGT": "FQNEAQ",
         "FR3-IMGT": "LEKSRLLSDRFSAERPKGSFSTLEIQRTEEGDSAMYLC",
         "V-REGION": "HNRLYWYRQTLGQGPEFLTYFQNEAQLEKSRLLSDRFSAERPKGSFSTLEIQRTEEGDSAMYLCASS"
+    },
+    "TRBD1*01": {
+        "D-REGION": "GTGG"
+    },
+    "TRBD2*01": {
+        "D-REGION": "GTSGG"
+    },
+    "TRBD2*02": {
+        "D-REGION": "GTSGR"
+    },
+    "TRDD1*01": {
+        "D-REGION": "EI"
+    },
+    "TRDD2*01": {
+        "D-REGION": "PSY"
+    },
+    "TRDD3*01": {
+        "D-REGION": "TGGY"
+    },
+    "TRAJ47*02": {
+        "FR4-IMGT": "FGAGTILRVKS",
+        "J-REGION": "EYGNKLVFGAGTILRVKS"
+    },
+    "TRAJ1*01": {
+        "J-REGION": "YESITSQLQFGKGTRVSTSP"
+    },
+    "TRAJ10*01": {
+        "J-REGION": "ILTGGGNKLTFGTGTQLKVEL"
+    },
+    "TRAJ11*01": {
+        "J-REGION": "NSGYSTLTFGKGTMLLVSP"
+    },
+    "TRAJ12*01": {
+        "J-REGION": "MDSSYKLIFGSGTRLLVRP"
+    },
+    "TRAJ13*01": {
+        "J-REGION": "NSGGYQKVTFGIGTKLQVIP"
+    },
+    "TRAJ13*02": {
+        "J-REGION": "NSGGYQKVTFGTGTKLQVIP"
+    },
+    "TRAJ14*01": {
+        "J-REGION": "IYSTFIFGSGTRLSVKP"
+    },
+    "TRAJ15*01": {
+        "J-REGION": "NQAGTALIFGKGTTLSVSS"
+    },
+    "TRAJ15*02": {
+        "J-REGION": "NQAGTALIFGKGTHLSVSS"
+    },
+    "TRAJ16*01": {
+        "J-REGION": "FSDGQKLLFARGTMLKVDL"
+    },
+    "TRAJ16*02": {
+        "J-REGION": "FSDGQKLLFARGTMLKVDL"
+    },
+    "TRAJ17*01": {
+        "J-REGION": "IKAAGNKLTFGGGTRVLVKP"
+    },
+    "TRAJ18*01": {
+        "J-REGION": "DRGSTLGRLYFGRGTQLTVWP"
+    },
+    "TRAJ19*01": {
+        "J-REGION": "YQRFYNFTFGKGSKHNVTP"
+    },
+    "TRAJ2*01": {
+        "J-REGION": "NTGGTIDKLTFGKGTHVFIIS"
+    },
+    "TRAJ20*01": {
+        "J-REGION": "SNDYKLSFGAGTTVTVRA"
+    },
+    "TRAJ21*01": {
+        "J-REGION": "YNFNKFYFGSGTKLNVKP"
+    },
+    "TRAJ22*01": {
+        "J-REGION": "SSGSARQLTFGSGTQLTVLP"
+    },
+    "TRAJ23*01": {
+        "J-REGION": "IYNQGGKLIFGQGTELSVKP"
+    },
+    "TRAJ23*02": {
+        "J-REGION": "IYNQGGKLIFGQGTELSVKP"
+    },
+    "TRAJ24*01": {
+        "J-REGION": "TTDSWGKFEFGAGTQVVVTP"
+    },
+    "TRAJ24*02": {
+        "J-REGION": "TTDSWGKLQFGAGTQVVVTP"
+    },
+    "TRAJ24*03": {
+        "J-REGION": "TTDSWGKFQFGAGTQVVVTP"
+    },
+    "TRAJ25*01": {
+        "J-REGION": "EGQGFSFIFGKGTRLLVKP"
+    },
+    "TRAJ26*01": {
+        "J-REGION": "DNYGQNFVFGPGTRLSVLP"
+    },
+    "TRAJ27*01": {
+        "J-REGION": "NTNAGKSTFGDGTTLTVKP"
+    },
+    "TRAJ28*01": {
+        "J-REGION": "YSGAGSYQLTFGKGTKLSVIP"
+    },
+    "TRAJ29*01": {
+        "J-REGION": "NSGNTPLVFGKGTRLSVIA"
+    },
+    "TRAJ3*01": {
+        "J-REGION": "GYSSASKIIFGSGTRLSIRP"
+    },
+    "TRAJ30*01": {
+        "J-REGION": "NRDDKIIFGKGTRLHILP"
+    },
+    "TRAJ31*01": {
+        "J-REGION": "NNNARLMFGDGTQLVVKP"
+    },
+    "TRAJ32*01": {
+        "J-REGION": "NYGGATNKLIFGTGTLLAVQP"
+    },
+    "TRAJ32*02": {
+        "J-REGION": "NYGGATNKLIFGTGTLLAVQP"
+    },
+    "TRAJ33*01": {
+        "J-REGION": "DSNYQLIWGAGTKLIIKP"
+    },
+    "TRAJ34*01": {
+        "J-REGION": "SYNTDKLIFGTGTRLQVFP"
+    },
+    "TRAJ35*01": {
+        "J-REGION": "IGFGNVLHCGSGTQVIVLP"
+    },
+    "TRAJ36*01": {
+        "J-REGION": "QTGANNLFFGTGTRLTVIP"
+    },
+    "TRAJ37*01": {
+        "J-REGION": "GSGNTGKLIFGQGTTLQVKP"
+    },
+    "TRAJ37*02": {
+        "J-REGION": "GSSNTGKLIFGQGTTLQVKP"
+    },
+    "TRAJ38*01": {
+        "J-REGION": "NAGNNRKLIWGLGTSLAVNP"
+    },
+    "TRAJ39*01": {
+        "J-REGION": "NNNAGNMLTFGGGTRLMVKP"
+    },
+    "TRAJ4*01": {
+        "J-REGION": "FSGGYNKLIFGAGTRLAVHP"
+    },
+    "TRAJ40*01": {
+        "J-REGION": "TTSGTYKYIFGTGTRLKVLA"
+    },
+    "TRAJ41*01": {
+        "J-REGION": "NSNSGYALNFGKGTSLLVTP"
+    },
+    "TRAJ42*01": {
+        "J-REGION": "NYGGSQGNLIFGKGTKLSVKP"
+    },
+    "TRAJ43*01": {
+        "J-REGION": "NNNDMRFGAGTRLTVKP"
+    },
+    "TRAJ44*01": {
+        "J-REGION": "NTGTASKLTFGTGTRLQVTL"
+    },
+    "TRAJ45*01": {
+        "J-REGION": "YSGGGADGLTFGKGTHLIIQP"
+    },
+    "TRAJ46*01": {
+        "J-REGION": "KKSSGDKLTFGTGTRLAVRP"
+    },
+    "TRAJ47*01": {
+        "J-REGION": "EYGNKLVFGAGTILRVKS"
+    },
+    "TRAJ48*01": {
+        "J-REGION": "SNFGNEKLTFGTGTRLTIIP"
+    },
+    "TRAJ49*01": {
+        "J-REGION": "NTGNQFYFGTGTSLTVIP"
+    },
+    "TRAJ5*01": {
+        "J-REGION": "DTGRRALTFGSGTRLQVQP"
+    },
+    "TRAJ50*01": {
+        "J-REGION": "KTSYDKVIFGPGTSLSVIP"
+    },
+    "TRAJ52*01": {
+        "J-REGION": "NAGGTSYGKLTFGQGTILTVHP"
+    },
+    "TRAJ53*01": {
+        "J-REGION": "NSGGSNYKLTFGKGTLLTVNP"
+    },
+    "TRAJ54*01": {
+        "J-REGION": "IQGAQKLVFGQGTRLTINP"
+    },
+    "TRAJ56*01": {
+        "J-REGION": "YTGANSKLTFGKGITLSVRP"
+    },
+    "TRAJ57*01": {
+        "J-REGION": "TQGGSEKLVFGKGTKLTVNP"
+    },
+    "TRAJ58*01": {
+        "J-REGION": "*ETSGSRLTFGEGTQLTVNP"
+    },
+    "TRAJ59*01": {
+        "J-REGION": "KEGNRKFTFGMGTQVRVKL"
+    },
+    "TRAJ6*01": {
+        "J-REGION": "ASGGSYIPTFGRGTSLIVHP"
+    },
+    "TRAJ61*01": {
+        "J-REGION": "YRVNRKLTFGANTRGIMKL"
+    },
+    "TRAJ7*01": {
+        "J-REGION": "DYGNNRLAFGKGNQVVVIP"
+    },
+    "TRAJ8*01": {
+        "J-REGION": "NTGFQKLVFGTGTRLLVSP"
+    },
+    "TRAJ9*01": {
+        "J-REGION": "GNTGGFKTIFGAGTRLFVKA"
+    },
+    "TRBJ1-1*01": {
+        "J-REGION": "NTEAFFGQGTRLTVV"
+    },
+    "TRBJ1-2*01": {
+        "J-REGION": "NYGYTFGSGTRLTVV"
+    },
+    "TRBJ1-3*01": {
+        "J-REGION": "SGNTIYFGEGSWLTVV"
+    },
+    "TRBJ1-4*01": {
+        "J-REGION": "TNEKLFFGSGTQLSVL"
+    },
+    "TRBJ1-5*01": {
+        "J-REGION": "SNQPQHFGDGTRLSIL"
+    },
+    "TRBJ1-6*01": {
+        "J-REGION": "SYNSPLHFGNGTRLTVT"
+    },
+    "TRBJ1-6*02": {
+        "J-REGION": "SYNSPLHFGNGTRLTVT"
+    },
+    "TRBJ2-1*01": {
+        "J-REGION": "SYNEQFFGPGTRLTVL"
+    },
+    "TRBJ2-2*01": {
+        "J-REGION": "NTGELFFGEGSRLTVL"
+    },
+    "TRBJ2-2P*01": {
+        "J-REGION": "LRGAAGRLGGGLLVL"
+    },
+    "TRBJ2-3*01": {
+        "J-REGION": "STDTQYFGPGTRLTVL"
+    },
+    "TRBJ2-4*01": {
+        "J-REGION": "AKNIQYFGAGTRLSVL"
+    },
+    "TRBJ2-5*01": {
+        "J-REGION": "QETQYFGPGTRLLVL"
+    },
+    "TRBJ2-6*01": {
+        "J-REGION": "SGANVLTFGAGSRLTVL"
+    },
+    "TRBJ2-7*01": {
+        "J-REGION": "SYEQYFGPGTRLTVT"
+    },
+    "TRBJ2-7*02": {
+        "J-REGION": "SYEQYVGPGTRLTVT"
+    },
+    "TRGJ1*01": {
+        "J-REGION": "NYYKKLFGSGTTLVVT"
+    },
+    "TRGJ1*02": {
+        "J-REGION": "NYYKKLFGSGTTLVVT"
+    },
+    "TRGJ2*01": {
+        "J-REGION": "NYYKKLFGSGTTLVVT"
+    },
+    "TRGJP*01": {
+        "J-REGION": "GQELGKKIKVFGPGTKLIIT"
+    },
+    "TRGJP1*01": {
+        "J-REGION": "TTGWFKIFAEGTKLIVTSP"
+    },
+    "TRGJP2*01": {
+        "J-REGION": "SSDWIKTFAKGTRLIVTSP"
+    },
+    "TRDJ1*01": {
+        "J-REGION": "TDKLIFGKGTRVTVEP"
+    },
+    "TRDJ2*01": {
+        "J-REGION": "LTAQLFFGKGTQLIVEP"
+    },
+    "TRDJ3*01": {
+        "J-REGION": "SWDTRQMFFGTGIKLFVEP"
+    },
+    "TRDJ4*01": {
+        "J-REGION": "RPLIFGKGTYLEVQQ"
     }
 }
