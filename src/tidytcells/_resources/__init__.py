@@ -23,6 +23,7 @@ HOMOSAPIENS_MH_SYNONYMS = get_json_resource("homosapiens_mh_synonyms.json")
 
 
 VALID_MUSMUSCULUS_TR = get_json_resource("valid_musmusculus_tr.json")
+MUSMUSCULUS_TR_AA_SEQUENCES = get_json_resource("musmusculus_tr_aa_sequences.json")
 VALID_MUSMUSCULUS_MH = get_json_resource("valid_musmusculus_mh.json")
 MUSMUSCULUS_MH_SYNONYMS = get_json_resource("musmusculus_mh_synonyms.json")
 

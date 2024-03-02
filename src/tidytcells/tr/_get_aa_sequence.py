@@ -1,8 +1,17 @@
 from typing import Dict
 
-from tidytcells._resources import HOMOSAPIENS_TR_AA_SEQUENCES
+from tidytcells._resources import (
+    HOMOSAPIENS_TR_AA_SEQUENCES,
+    MUSMUSCULUS_TR_AA_SEQUENCES,
+)
 from tidytcells import _utils
 from tidytcells._utils import Parameter
+
+
+SUPPORTED_SPECIES_AND_THEIR_AA_SEQUENCES = {
+    "homosapiens": HOMOSAPIENS_TR_AA_SEQUENCES,
+    "musmusculus": MUSMUSCULUS_TR_AA_SEQUENCES,
+}
 
 
 def get_aa_sequence(gene: str, species: str = "homosapiens") -> Dict[str, str]:
@@ -12,11 +21,7 @@ def get_aa_sequence(gene: str, species: str = "homosapiens") -> Dict[str, str]:
     .. topic:: Supported species
 
         - ``"homosapiens"``
-
-    .. note::
-
-        This function currently only supports V genes.
-        Support for J genes is planned for the future.
+        - ``"musmusculus"``
 
     :param gene:
         Standardized gene name.
@@ -41,17 +46,24 @@ def get_aa_sequence(gene: str, species: str = "homosapiens") -> Dict[str, str]:
 
         >>> tt.tr.get_aa_sequence(gene="TRBV2*01", species="homosapiens")
         {'CDR1-IMGT': 'SNHLY', 'CDR2-IMGT': 'FYNNEI', 'FR1-IMGT': 'EPEVTQTPSHQVTQMGQEVILRCVPI', 'FR2-IMGT': 'FYWYRQILGQKVEFLVS', 'FR3-IMGT': 'SEKSEIFDDQFSVERPDGSNFTLKIRSTKLEDSAMYFC', 'V-REGION': 'EPEVTQTPSHQVTQMGQEVILRCVPISNHLYFYWYRQILGQKVEFLVSFYNNEISEKSEIFDDQFSVERPDGSNFTLKIRSTKLEDSAMYFCASSE'}
+
+        Get amino acid sequence information about the *Mus musculus* J gene TRAJ32*02.
+
+        >>> tt.tr.get_aa_sequence(gene="TRAJ32*02", species="musmusculus")
+        {'FR4-IMGT': 'FGTGTLLSVKP', 'J-REGION': 'NYGGSGNKLIFGTGTLLSVKP'}
     """
     Parameter(gene, "gene").throw_error_if_not_of_type(str)
     Parameter(species, "species").throw_error_if_not_of_type(str)
 
     species = _utils.clean_and_lowercase(species)
 
-    # Currently only supports homosapiens
-    if species != "homosapiens":
+    species_is_supported = species in SUPPORTED_SPECIES_AND_THEIR_AA_SEQUENCES
+    if not species_is_supported:
         raise ValueError(f"Unsupported species: {species}. No data available.")
 
-    if gene in HOMOSAPIENS_TR_AA_SEQUENCES:
-        return HOMOSAPIENS_TR_AA_SEQUENCES[gene]
+    aa_sequence_dict = SUPPORTED_SPECIES_AND_THEIR_AA_SEQUENCES[species]
+
+    if gene in aa_sequence_dict:
+        return aa_sequence_dict[gene]
 
     raise ValueError(f"No data found for TR gene {gene} for species {species}.")
