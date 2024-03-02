@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="tidytcells.png" width=700>
+    <img src="https://raw.githubusercontent.com/yutanagano/tidytcells/main/tidytcells.png" width=700>
 </h1>
 
 ![Tests](https://github.com/yutanagano/tidytcells/actions/workflows/tests.yaml/badge.svg)
