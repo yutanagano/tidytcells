@@ -99,6 +99,17 @@ Querying from `IMGT TR/MH genes or alleles <https://www.imgt.org/IMGTrepertoire/
 :py:mod:`tidytcells` also provides the nifty functions :py:func:`tidytcells.tr.query` and :py:func:`tidytcells.mh.query` that allows users to obtain a list (actually a ``FrozenSet``) of `IMGT gene/allele names <https://www.imgt.org/IMGTrepertoire/>`_ from the respective categories.
 The functions allow the user to provide various constraints relating to the genes/alleles' functionalities and names to filter the query results as well.
 The ``query`` functions can be useful when checking if a particular dataset covers all the TR or MH genes, or counting how many genes fulfill a particular set of constraints.
+Since :py:mod:`tidytcells` has a local copy of all relevant data pulled directly from `IMGT's GENE-DB <https://www.imgt.org/genedb/>`_ (and updated with every new release), queries are blazingly fast and do not require an internet connection.
+
+
+Querying TR gene amino acid sequence data from `IMGT GENE-DB <https://www.imgt.org/genedb/>`_
+---------------------------------------------------------------------------------------------
+
+Sometimes, you have a T cell receptor represented as its V and J gene usages and its junction sequences, but you want to represent it in terms of its amino acid sequence.
+In such situations, the :py:func:`tidytcells.tr.get_aa_sequence` function can help.
+This function allows you to query amino acid sequence data for any functional TR gene.
+The function provides sequence data for the whole gene exome, as well as certain important regions (e.g. CDR1 and CDR2 in the V genes).
+The data is pulled from IMGT's `GENE-DB <https://www.imgt.org/genedb/>`_, and as is with the case with the :py:func:`tidytcells.tr.query` and :py:func:`tidytcells.mh.query`, all relevant data exists locally within :py:mod:`tidytcells` (and updated with every new release), so the queries are blazingly fast and requires no internet connection.
 
 Other MH utilities
 ------------------
