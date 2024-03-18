@@ -29,6 +29,7 @@ Contents
    installation
    usage
    api
+   citing
    contribute
 
 Indices and tables
