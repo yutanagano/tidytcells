@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tidytcells"
+requires-python = ">=3.7"
+authors = [
+    {name = "Yuta Nagano", email = "yutanagano51@proton.me"}
+]
+maintainers = [
+    {name = "Yuta Nagano", email = "yutanagano51@proton.me"}
+]
+description = "Standardise TR/MH data"
+readme = "README.md"
+keywords = ["immunology", "bioinformatics", "TCR", "TR", "MHC", "MH", "HLA", "T cell", "IMGT"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://tidytcells.readthedocs.io"
+Documentation = "https://tidytcells.readthedocs.io"
+Repository = "https://github.com/yutanagano/tidytcells"
+Issues = "https://github.com/yutanagano/tidytcells/issues"
+
+[project.optional-dependencies]
+dev = [
+    "beautifulsoup4",
+    "build",
+    "odfpy",
+    "pandas",
+    "pip",
+    "pytest",
+    "pytest-cov",
+    "requests",
+    "setuptools",
+    "sphinx-book-theme",
+    "tox",
+    "twine",
+    "wheel",
+]
+docs = ["sphinx-book-theme"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {attr = "tidytcells.VERSION"}

@@ -1,1 +1,1 @@
-include VERSION.txt
+include src/tidytcells/_resources/*
