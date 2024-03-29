@@ -52,4 +52,4 @@ docs = ["sphinx-book-theme"]
 include-package-data = true
 
 [tool.setuptools.dynamic]
-version = {attr = "sceptr.VERSION"}
+version = {attr = "tidytcells.VERSION"}
