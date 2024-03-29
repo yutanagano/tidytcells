@@ -1,6 +1,5 @@
-from pathlib import Path
+import tidytcells
 
-HERE = Path(__file__).parents[1].resolve()
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -13,7 +12,7 @@ HERE = Path(__file__).parents[1].resolve()
 project = "tidytcells"
 copyright = "2022, Yuta Nagano"
 author = "Yuta Nagano"
-release = (HERE / "VERSION.txt").read_text(encoding="utf-8")
+release = tidytcells.VERSION
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
