@@ -1,6 +1,7 @@
 <div align="center">
 
 <img src="https://raw.githubusercontent.com/yutanagano/tidytcells/main/tidytcells.png" width=700>
+<br><br>
 
 ![Tests](https://github.com/yutanagano/tidytcells/actions/workflows/tests.yaml/badge.svg)
 [![Docs](https://readthedocs.org/projects/tidytcells/badge/?version=latest)](https://tidytcells.readthedocs.io)
@@ -17,7 +18,6 @@
 The main purpose of the package is to solve the problem of parsing and collating together non-standardized TR datasets.
 It is often difficult to compile TR data from multiple sources because the formats/nomenclature of how each dataset encodes TR and MH gene names are slightly different, or even inconsistent within themselves.
 `tidytcells` can ameliorate this issue by auto-correcting and auto-standardizing your data.
-Check out the [documentation page](https://tidytcells.readthedocs.io).
 
 ## Installation
 
