@@ -1,6 +1,5 @@
 import pytest
 from tidytcells import junction
-import warnings
 
 
 class TestStandardise:
@@ -21,10 +20,9 @@ class TestStandardise:
         assert result == seq
 
     @pytest.mark.parametrize("seq", ("123456", "ASDFGHJKL", "A?AAAA", "AAAXAA"))
-    def test_various_rejections(self, seq):
-        with pytest.warns(UserWarning, match="not a valid amino acid sequence"):
-            result = junction.standardise(seq=seq)
-
+    def test_various_rejections(self, seq, caplog):
+        result = junction.standardise(seq=seq)
+        assert "not a valid amino acid sequence" in caplog.text
         assert result is None
 
     @pytest.mark.parametrize(
@@ -47,10 +45,9 @@ class TestStandardise:
             junction.standardise(seq=seq)
 
     @pytest.mark.parametrize("seq", ("ASQY", "CASQY", "ASQYF", "ASQYW"))
-    def test_strict(self, seq):
-        with pytest.warns(UserWarning, match="not a valid junction"):
-            result = junction.standardise(seq=seq, strict=True)
-
+    def test_strict(self, seq, caplog):
+        result = junction.standardise(seq=seq, strict=True)
+        assert "not a valid junction" in caplog.text
         assert result is None
 
     def test_standardize(self):
@@ -58,13 +55,11 @@ class TestStandardise:
 
         assert result == "CASSPGGADRRIDGYTF"
 
-    def test_suppress_warnings(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-            junction.standardise(seq="123456", suppress_warnings=True)
+    def test_suppress_warnings(self, caplog):
+        junction.standardise(seq="123456", suppress_warnings=True)
+        assert len(caplog.records) == 0
 
-    def test_on_fail(self):
-        with pytest.warns(UserWarning):
-            result = junction.standardize("foobarbaz", on_fail="keep")
-
+    def test_on_fail(self, caplog):
+        result = junction.standardize("foobarbaz", on_fail="keep")
+        assert "Failed to standardize foobarbaz" in caplog.text
         assert result == "foobarbaz"

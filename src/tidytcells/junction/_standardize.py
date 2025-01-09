@@ -1,7 +1,9 @@
+import logging
 import re
-import warnings
-
 from tidytcells import aa
+
+
+logger = logging.getLogger(__name__)
 
 
 JUNCTION_MATCHING_REGEX = re.compile(f"^C[A-Z]*[FW]$")
@@ -112,7 +114,7 @@ def standardize(
     if not JUNCTION_MATCHING_REGEX.match(seq):
         if strict:
             if not suppress_warnings:
-                warnings.warn(
+                logger.warning(
                     f"Failed to standardize {original_input}: not a valid junction sequence."
                 )
             if on_fail == "reject":

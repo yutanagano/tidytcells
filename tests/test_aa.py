@@ -1,6 +1,5 @@
 import pytest
 from tidytcells import aa
-import warnings
 
 
 class TestStandardise:
@@ -11,10 +10,9 @@ class TestStandardise:
         assert result == seq
 
     @pytest.mark.parametrize("seq", ("123456", "ASDFGHJKL", "A?AAAA", "AAAXAA"))
-    def test_various_rejections(self, seq):
-        with pytest.warns(UserWarning, match="not a valid amino acid"):
-            result = aa.standardize(seq=seq)
-
+    def test_various_rejections(self, seq, caplog):
+        result = aa.standardize(seq=seq)
+        assert "not a valid amino acid" in caplog.text
         assert result == None
 
     @pytest.mark.parametrize(("seq", "expected"), (("klgak", "KLGAK"),))
@@ -33,13 +31,11 @@ class TestStandardise:
 
         assert result == "KLGAK"
 
-    def test_suppress_warnings(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-            aa.standardize(seq="123456", suppress_warnings=True)
+    def test_suppress_warnings(self, caplog):
+        aa.standardize(seq="123456", suppress_warnings=True)
+        assert len(caplog.records) == 0
 
-    def test_on_fail(self):
-        with pytest.warns(UserWarning):
-            result = aa.standardize("foobarbaz", on_fail="keep")
-
+    def test_on_fail(self, caplog):
+        result = aa.standardize("foobarbaz", on_fail="keep")
+        assert "Failed to standardize" in caplog.text
         assert result == "foobarbaz"

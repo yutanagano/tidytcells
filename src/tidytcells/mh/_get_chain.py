@@ -1,9 +1,11 @@
+import logging
 import re
 from typing import Optional
-import warnings
-
 from tidytcells._resources import VALID_HOMOSAPIENS_MH
 from tidytcells._utils import Parameter
+
+
+logger = logging.getLogger(__name__)
 
 
 ALPHA_MATCHING_REGEX = re.compile(r"HLA-([ABCEFG]|D[PQR]A)")
@@ -51,7 +53,7 @@ def get_chain(
 
     if not gene in (*VALID_HOMOSAPIENS_MH, "B2M"):
         if not suppress_warnings:
-            warnings.warn(f"Unrecognised gene {gene}. Is this standardized?")
+            logger.warning(f"Unrecognized gene {gene}. Is this standardized?")
         return None
 
     if ALPHA_MATCHING_REGEX.match(gene):
@@ -61,5 +63,5 @@ def get_chain(
         return "beta"
 
     if not suppress_warnings:
-        warnings.warn(f"Chain for {gene} unknown.")
+        logger.warning(f"Chain for {gene} unknown.")
     return None

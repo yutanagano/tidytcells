@@ -1,16 +1,13 @@
 import pytest
 from tidytcells import mh
 from tidytcells._resources import *
-from typing import FrozenSet
-import warnings
 
 
 class TestStandardize:
     @pytest.mark.parametrize("species", ("foobar", "yoinkdoink", ""))
-    def test_unsupported_species(self, species):
-        with pytest.warns(UserWarning, match="Unsupported"):
-            result = mh.standardize(gene="HLA-A*01:01:01:01", species=species)
-
+    def test_unsupported_species(self, species, caplog):
+        result = mh.standardize(gene="HLA-A*01:01:01:01", species=species)
+        assert "Unsupported" in caplog.text
         assert result == "HLA-A*01:01:01:01"
 
     @pytest.mark.parametrize("gene", (1234, None))
@@ -41,15 +38,13 @@ class TestStandardize:
 
         assert result == "HLA-B*07"
 
-    def test_suppress_warnings(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-            mh.standardize("foobarbaz", suppress_warnings=True)
+    def test_suppress_warnings(self, caplog):
+        mh.standardize("foobarbaz", suppress_warnings=True)
+        assert len(caplog.records) == 0
 
-    def test_on_fail(self):
-        with pytest.warns(UserWarning):
-            result = mh.standardize("foobarbaz", on_fail="keep")
-
+    def test_on_fail(self, caplog):
+        result = mh.standardize("foobarbaz", on_fail="keep")
+        assert "Failed to standardize" in caplog.text
         assert result == "foobarbaz"
 
 
@@ -63,17 +58,15 @@ class TestStandardizeHomoSapiens:
     @pytest.mark.parametrize(
         "gene", ("foobar", "yoinkdoink", "HLA-FOOBAR123456", "=======")
     )
-    def test_invalid_mh(self, gene):
-        with pytest.warns(UserWarning, match="Failed to standardize"):
-            result = mh.standardize(gene=gene, species="homosapiens")
-
+    def test_invalid_mh(self, gene, caplog):
+        result = mh.standardize(gene=gene, species="homosapiens")
+        assert "Failed to standardize" in caplog.text
         assert result == None
 
     @pytest.mark.parametrize("gene", ("HLA-A*01:01:1:1:1:1:1:1",))
-    def test_bad_allele_designation(self, gene):
-        with pytest.warns(UserWarning, match="Failed to standardize"):
-            result = mh.standardize(gene=gene, species="homosapiens")
-
+    def test_bad_allele_designation(self, gene, caplog):
+        result = mh.standardize(gene=gene, species="homosapiens")
+        assert "Failed to standardize" in caplog.text
         assert result == None
 
     @pytest.mark.parametrize(
@@ -132,10 +125,9 @@ class TestStandardizeMusMusculus:
         assert result == gene
 
     @pytest.mark.parametrize("gene", ("foobar", "yoinkdoink", "MH1-ABC", "======="))
-    def test_invalid_mh(self, gene):
-        with pytest.warns(UserWarning, match="Failed to standardize"):
-            result = mh.standardize(gene=gene, species="musmusculus")
-
+    def test_invalid_mh(self, gene, caplog):
+        result = mh.standardize(gene=gene, species="musmusculus")
+        assert "Failed to standardize" in caplog.text
         assert result == None
 
     @pytest.mark.parametrize(
@@ -219,10 +211,9 @@ class TestGetChain:
         assert result == expected
 
     @pytest.mark.parametrize("gene", ("foo", "HLA", "0"))
-    def test_unrecognised_gene_names(self, gene):
-        with pytest.warns(UserWarning):
-            result = mh.get_chain(gene=gene)
-
+    def test_unrecognised_gene_names(self, gene, caplog):
+        result = mh.get_chain(gene=gene)
+        assert "Unrecognized gene" in caplog.text
         assert result == None
 
     @pytest.mark.parametrize("gene", (1234, None))
@@ -230,10 +221,9 @@ class TestGetChain:
         with pytest.raises(TypeError):
             mh.get_chain(gene)
 
-    def test_suppress_warnings(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-            mh.get_chain("foobarbaz", suppress_warnings=True)
+    def test_suppress_warnings(self, caplog):
+        mh.get_chain("foobarbaz", suppress_warnings=True)
+        assert len(caplog.records) == 0
 
 
 class TestGetClass:
@@ -261,10 +251,9 @@ class TestGetClass:
         assert result == expected
 
     @pytest.mark.parametrize("gene", ("foo", "HLA", "0"))
-    def test_unrecognised_gene_names(self, gene):
-        with pytest.warns(UserWarning):
-            result = mh.get_class(gene=gene)
-
+    def test_unrecognised_gene_names(self, gene, caplog):
+        result = mh.get_class(gene=gene)
+        assert "Unrecognized gene" in caplog.text
         assert result == None
 
     @pytest.mark.parametrize("gene", (1234, None))
@@ -272,7 +261,6 @@ class TestGetClass:
         with pytest.raises(TypeError):
             mh.get_class(gene)
 
-    def test_suppress_warnings(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-            mh.get_class("foobarbaz", suppress_warnings=True)
+    def test_suppress_warnings(self, caplog):
+        mh.get_class("foobarbaz", suppress_warnings=True)
+        assert len(caplog.records) == 0

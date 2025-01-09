@@ -1,15 +1,13 @@
 import pytest
 from tidytcells import tr
 from tidytcells._resources import VALID_HOMOSAPIENS_TR, VALID_MUSMUSCULUS_TR
-import warnings
 
 
 class TestStandardize:
     @pytest.mark.parametrize("species", ("foobar", "yoinkdoink", ""))
-    def test_unsupported_species(self, species):
-        with pytest.warns(UserWarning, match="Unsupported"):
-            result = tr.standardize(gene="foobarbaz", species=species)
-
+    def test_unsupported_species(self, species, caplog):
+        result = tr.standardize(gene="foobarbaz", species=species)
+        assert "Unsupported" in caplog.text
         assert result == "foobarbaz"
 
     @pytest.mark.parametrize("gene", (1234, None))
@@ -67,15 +65,13 @@ class TestStandardize:
 
         assert result == "TRBV20/OR9-2*01"
 
-    def test_suppress_warnings(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-            tr.standardize("foobarbaz", suppress_warnings=True)
+    def test_suppress_warnings(self, caplog):
+        tr.standardize("foobarbaz", suppress_warnings=True)
+        assert len(caplog.records) == 0
 
-    def test_on_fail(self):
-        with pytest.warns(UserWarning):
-            result = tr.standardize("foobarbaz", on_fail="keep")
-
+    def test_on_fail(self, caplog):
+        result = tr.standardize("foobarbaz", on_fail="keep")
+        assert "Failed to standardize" in caplog.text
         assert result == "foobarbaz"
 
 
@@ -87,10 +83,9 @@ class TestStandardizeHomoSapiens:
         assert result == gene
 
     @pytest.mark.parametrize("gene", ("foobar", "TRAV3D-3*01"))
-    def test_invalid_tr(self, gene):
-        with pytest.warns(UserWarning, match="Failed to standardize"):
-            result = tr.standardize(gene=gene, species="homosapiens")
-
+    def test_invalid_tr(self, gene, caplog):
+        result = tr.standardize(gene=gene, species="homosapiens")
+        assert "Failed to standardize" in caplog.text
         assert result == None
 
     @pytest.mark.parametrize(
@@ -139,10 +134,9 @@ class TestStandardizeMusMusculus:
         assert result == gene
 
     @pytest.mark.parametrize("gene", ("foobar", "noice"))
-    def test_inivalid_tr(self, gene):
-        with pytest.warns(UserWarning, match="Failed to standardize"):
-            result = tr.standardize(gene=gene, species="musmusculus")
-
+    def test_inivalid_tr(self, gene, caplog):
+        result = tr.standardize(gene=gene, species="musmusculus")
+        assert "Failed to standardize" in caplog.text
         assert result == None
 
 

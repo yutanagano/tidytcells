@@ -126,7 +126,7 @@ class StandardizedTrSymbol(StandardizedGeneSymbol):
 
     def get_reason_why_invalid(self, enforce_functional: bool = False) -> Optional[str]:
         if not self._gene_name in self._valid_tr_dictionary:
-            return "unrecognised gene name"
+            return "unrecognized gene name"
 
         if self._allele_designation:
             allele_valid = (
@@ -134,7 +134,7 @@ class StandardizedTrSymbol(StandardizedGeneSymbol):
             )
 
             if not allele_valid:
-                return "nonexistent allele for recognised gene"
+                return "nonexistent allele for recognized gene"
 
             if (
                 enforce_functional
