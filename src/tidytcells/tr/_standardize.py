@@ -184,7 +184,7 @@ def standardize(
                 original_input=gene,
                 attempted_fix=standardized_tr_symbol.compile("allele"),
                 species=species,
-                logger=logger
+                logger=logger,
             )
         if on_fail == "reject":
             return None

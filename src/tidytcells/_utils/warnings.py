@@ -1,7 +1,12 @@
 from logging import Logger
 
+
 def warn_failure(
-        reason_for_failure: str, original_input: str, attempted_fix: str, species: str, logger: Logger
+    reason_for_failure: str,
+    original_input: str,
+    attempted_fix: str,
+    species: str,
+    logger: Logger,
 ):
     warning_message = f'Failed to standardize "{original_input}" for species {species}: {reason_for_failure}.'
 
@@ -12,4 +17,6 @@ def warn_failure(
 
 
 def warn_unsupported_species(species: str, gene_type: str, logger: Logger):
-    logger.warning(f'Unsupported species: "{species}". ' f"Skipping {gene_type} standardisation.")
+    logger.warning(
+        f'Unsupported species: "{species}". ' f"Skipping {gene_type} standardisation."
+    )
