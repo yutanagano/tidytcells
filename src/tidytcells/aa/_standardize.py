@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def standardize(
-    seq: Optional[str],
+    seq: str,
     on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,

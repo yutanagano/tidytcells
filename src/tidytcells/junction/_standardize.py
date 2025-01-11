@@ -13,7 +13,7 @@ JUNCTION_MATCHING_REGEX = re.compile(f"^C[A-Z]*[FW]$")
 
 
 def standardize(
-    seq: Optional[str] = None,
+    seq: str,
     strict: Optional[bool] = None,
     on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[bool] = None,
@@ -78,7 +78,7 @@ def standardize(
         However, setting ``strict`` to ``True`` will cause these cases to be rejected.
 
         >>> result = tt.junction.standardize("sadaf", strict=True)
-        UserWarning: Input sadaf was rejected as it is not a valid junction sequence.
+        Input sadaf was rejected as it is not a valid junction sequence.
         >>> print(result)
         None
 

@@ -74,7 +74,7 @@ For use cases that require more flexibility, one could even define a wrapper fun
 >>> cleaned = df.copy()
 >>> cleaned[["v", "j"]] = df[["v", "j"]].map(
 ...     lambda x: tt.tr.standardize(
-...         gene=x,
+...         symbol=x,
 ...         species="homosapiens",
 ...         precision="gene"
 ...     )

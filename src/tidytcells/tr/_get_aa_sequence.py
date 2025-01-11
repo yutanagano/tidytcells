@@ -15,7 +15,7 @@ SUPPORTED_SPECIES_AND_THEIR_AA_SEQUENCES = {
 
 def get_aa_sequence(
     symbol: Optional[str] = None,
-    species: str = "homosapiens",
+    species: Optional[str] = None,
     gene: Optional[str] = None,
 ) -> Dict[str, str]:
     """
