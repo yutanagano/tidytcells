@@ -2,13 +2,13 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 
-class StandardizedGeneSymbol(ABC):
+class StandardizedSymbol(ABC):
     """
     Abstract base standardizer class.
     """
 
     @abstractmethod
-    def __init__(self, gene_symbol: str) -> None:
+    def __init__(self, symbol: str) -> None:
         pass
 
     @abstractmethod

@@ -2,7 +2,7 @@ import logging
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
-    StandardizedGeneSymbol,
+    StandardizedSymbol,
     StandardizedHlaSymbol,
     StandardizedMusMusculusMhSymbol,
 )
@@ -12,7 +12,7 @@ from typing import Dict, Optional, Type, Literal
 logger = logging.getLogger(__name__)
 
 
-SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[StandardizedGeneSymbol]] = {
+SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[StandardizedSymbol]] = {
     "homosapiens": StandardizedHlaSymbol,
     "musmusculus": StandardizedMusMusculusMhSymbol,
 }

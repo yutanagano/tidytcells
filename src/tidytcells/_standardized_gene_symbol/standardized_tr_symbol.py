@@ -1,9 +1,9 @@
 from abc import abstractmethod
+import itertools
 import re
-from typing import Dict, Optional
-
+from typing import Dict, Optional, List
 from tidytcells import _utils
-from tidytcells._standardized_gene_symbol import StandardizedGeneSymbol
+from tidytcells._standardized_gene_symbol import StandardizedSymbol
 
 
 class TrSymbolParser:
@@ -25,7 +25,7 @@ class TrSymbolParser:
             self.allele_designation = None
 
 
-class StandardizedTrSymbol(StandardizedGeneSymbol):
+class StandardizedTrSymbol(StandardizedSymbol):
     @property
     @abstractmethod
     def _synonym_dictionary(self) -> Dict[str, str]:
@@ -36,8 +36,8 @@ class StandardizedTrSymbol(StandardizedGeneSymbol):
     def _valid_tr_dictionary(self) -> Dict[str, Dict[int, str]]:
         pass
 
-    def __init__(self, gene_symbol: str) -> None:
-        self._parse_tr_symbol(gene_symbol)
+    def __init__(self, symbol: str) -> None:
+        self._parse_tr_symbol(symbol)
         self._resolve_gene_name()
 
     def _parse_tr_symbol(self, tr_symbol: str) -> None:
@@ -75,10 +75,11 @@ class StandardizedTrSymbol(StandardizedGeneSymbol):
 
         if not skip_dash1_section:
             original = self._gene_name
-            self._try_adding_or_removing_dash1_to_gene_name()
-            self._resolve_gene_name(skip_dash1_section=True)
-            if self._has_valid_gene_name():
-                return
+            for variant in self._generate_dash1_variatns():
+                self._gene_name = variant
+                self._resolve_gene_name(skip_dash1_section=True)
+                if self._has_valid_gene_name():
+                    return
             self._gene_name = original
 
     def _has_valid_gene_name(self) -> bool:
@@ -91,9 +92,9 @@ class StandardizedTrSymbol(StandardizedGeneSymbol):
         self._gene_name = self._gene_name.replace("TCR", "TR")
         self._gene_name = self._gene_name.replace("S", "-")
         self._gene_name = self._gene_name.replace(".", "-")
-        self._gene_name = re.sub(r"(?<!TR)(?<!\/)DV", "/DV", self._gene_name)
-        self._gene_name = re.sub(r"(?<!\/)OR", "/OR", self._gene_name)
-        self._gene_name = re.sub(r"(?<!\d)0", "", self._gene_name)
+        self._gene_name = re.sub(r"(?<!TR)(?<!\/)-?DV", "/DV", self._gene_name)
+        self._gene_name = re.sub(r"(?<!\/)-?OR", "/OR", self._gene_name)
+        self._gene_name = re.sub(r"(?<!\d)0+", "", self._gene_name)
 
     def _try_resolving_trdv_designation_from_trav_info(self) -> None:
         if "/" in self._gene_name:
@@ -118,11 +119,41 @@ class StandardizedTrSymbol(StandardizedGeneSymbol):
                     f"TRAV{parse_attempt.group(1)}/{parse_attempt.group(2)}"
                 )
 
-    def _try_adding_or_removing_dash1_to_gene_name(self) -> None:
-        if "-1" in self._gene_name:
-            self._gene_name = self._gene_name.replace("-1", "")
-        else:
-            self._gene_name += "-1"
+    def _generate_dash1_variatns(self) -> List[str]:
+        all_gene_nums = [
+            (m.group(0), m.start(0), m.end(0))
+            for m in re.finditer(r"\d+(-\d+)?", self._gene_name)
+        ]
+
+        dash1_candidates = []
+        for (numstr, start_idx, end_idx) in all_gene_nums:
+            fm = re.fullmatch(r"(\d+)(-1)?", numstr)
+            if not fm:
+                continue
+            dash1_candidates.append((fm.group(1), start_idx, end_idx))
+        
+        dash1_variants = []
+        for comb in itertools.product(("dash", "nodash"), repeat=len(dash1_candidates)):
+            num_comb_zip = zip(dash1_candidates, comb)
+            current_str_idx = 0
+            working_variant = ""
+
+            for ((numstr, start_idx, end_idx), status) in num_comb_zip:
+                working_variant += self._gene_name[current_str_idx:start_idx]
+
+                if status == "dash":
+                    working_variant += f"{numstr}-1"
+                else:
+                    working_variant += numstr
+
+                current_str_idx = end_idx
+
+            working_variant += self._gene_name[current_str_idx:]
+
+            if working_variant != self._gene_name:
+                dash1_variants.append(working_variant)
+
+        return dash1_variants
 
     def get_reason_why_invalid(self, enforce_functional: bool = False) -> Optional[str]:
         if not self._gene_name in self._valid_tr_dictionary:
