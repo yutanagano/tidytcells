@@ -3,7 +3,7 @@ from typing import Optional
 
 from tidytcells import _utils
 from tidytcells._resources import VALID_MUSMUSCULUS_MH, MUSMUSCULUS_MH_SYNONYMS
-from tidytcells._standardized_gene_symbol import StandardizedGeneSymbol
+from tidytcells._standardized_gene_symbol import StandardizedSymbol
 
 
 class MhSymbolParser:
@@ -25,9 +25,9 @@ class MhSymbolParser:
             self.allele_designation = None
 
 
-class StandardizedMusMusculusMhSymbol(StandardizedGeneSymbol):
-    def __init__(self, gene_symbol: str) -> None:
-        self._parse_mh_symbol(gene_symbol)
+class StandardizedMusMusculusMhSymbol(StandardizedSymbol):
+    def __init__(self, symbol: str) -> None:
+        self._parse_mh_symbol(symbol)
         self._resolve_errors()
 
     def _parse_mh_symbol(self, mh_symbol: str) -> None:

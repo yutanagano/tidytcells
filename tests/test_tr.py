@@ -142,6 +142,19 @@ class TestStandardizeMusMusculus:
         assert result == None
 
 
+    @pytest.mark.parametrize(
+        ("symbol", "expected"),
+        (
+            ("TRAV15-1-DV6-1", "TRAV15-1/DV6-1"),
+            ("TRAV15/DV6", "TRAV15-1/DV6-1"),
+        ),
+    )
+    def test_corrections(self, symbol, expected):
+        result = tr.standardize(symbol=symbol, species="musmusculus")
+
+        assert result == expected
+
+
 class TestQuery:
     @pytest.mark.parametrize(
         ("species", "precision", "expected_len", "expected_in", "expected_not_in"),

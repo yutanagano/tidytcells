@@ -3,7 +3,7 @@ import re
 from typing import List, Optional
 
 from tidytcells import _utils
-from tidytcells._standardized_gene_symbol import StandardizedGeneSymbol
+from tidytcells._standardized_gene_symbol import StandardizedSymbol
 from tidytcells._resources import VALID_HOMOSAPIENS_MH, HOMOSAPIENS_MH_SYNONYMS
 
 
@@ -56,9 +56,9 @@ class HlaSymbolParser:
         ]
 
 
-class StandardizedHlaSymbol(StandardizedGeneSymbol):
-    def __init__(self, gene_symbol: str) -> None:
-        self._parse_hla_symbol(gene_symbol)
+class StandardizedHlaSymbol(StandardizedSymbol):
+    def __init__(self, symbol: str) -> None:
+        self._parse_hla_symbol(symbol)
         self._resolve_errors()
 
     def _parse_hla_symbol(self, hla_symbol: str) -> None:
