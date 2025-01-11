@@ -20,11 +20,12 @@ SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[StandardizedGeneSymbol
 
 def standardize(
     symbol: Optional[str] = None,
-    species: str = "homosapiens",
-    precision: str = "allele",
-    on_fail: str = "reject",
-    suppress_warnings: bool = False,
+    species: Optional[str] = None,
+    precision: Optional[str] = None,
+    on_fail: Optional[str] = None,
+    log_failures: Optional[bool] = None,
     gene: Optional[str] = None,
+    suppress_warnings: Optional[bool] = None,
 ) -> tuple:
     """
     Attempt to standardize an MH gene / allele symbol to be IMGT-compliant.
@@ -63,15 +64,20 @@ def standardize(
         Defaults to ``"reject"``.
     :type on_fail:
         str
-    :param suppress_warnings:
-        Disable warnings that are usually emitted when standardisation fails.
-        Defaults to ``False``.
-    :type suppress_warnings:
+    :param log_failures:
+        Report standardisation failures through logging (at level ``WARNING``).
+        Defaults to ``True``.
+    :type log_failures:
         bool
     :param gene:
         Alias for `symbol`.
     :type gene:
         str
+    :param suppress_warnings:
+        Disable warnings that are usually logged when standardisation fails.
+        Deprecated in favour of `log_failures`.
+    :type suppress_warnings:
+        bool
 
     :return:
         If the specified `species` is supported, and `symbol` could be standardized, then return the standardized symbol.
@@ -169,9 +175,13 @@ def standardize(
         .throw_error_if_not_one_of("reject", "keep")
         .value
     )
-    suppress_warnings = (
-        Parameter(suppress_warnings, "suppress_warnings")
-        .set_default(False)
+    suppress_warnings_inverted = (
+        not suppress_warnings if suppress_warnings is not None else None
+    )
+    log_failures = (
+        Parameter(log_failures, "log_failures")
+        .set_default(True)
+        .resolve_with_alias(suppress_warnings_inverted, "suppress_warnings")
         .throw_error_if_not_of_type(bool)
         .value
     )
@@ -180,7 +190,7 @@ def standardize(
 
     species_is_supported = species in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS
     if not species_is_supported:
-        if not suppress_warnings:
+        if log_failures:
             _utils.warn_unsupported_species(species, "MH", logger)
         return symbol
 
@@ -189,7 +199,7 @@ def standardize(
 
     invalid_reason = standardized_mh_symbol.get_reason_why_invalid()
     if invalid_reason is not None:
-        if not suppress_warnings:
+        if log_failures:
             _utils.warn_failure(
                 reason_for_failure=invalid_reason,
                 original_input=symbol,

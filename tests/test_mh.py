@@ -38,8 +38,8 @@ class TestStandardize:
 
         assert result == "HLA-B*07"
 
-    def test_suppress_warnings(self, caplog):
-        mh.standardize("foobarbaz", suppress_warnings=True)
+    def test_log_failures(self, caplog):
+        mh.standardize("foobarbaz", log_failures=False)
         assert len(caplog.records) == 0
 
     def test_on_fail(self, caplog):
