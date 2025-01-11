@@ -2,7 +2,7 @@ import pytest
 from tidytcells import junction
 
 
-class TestStandardise:
+class Teststandardize:
     @pytest.mark.parametrize(
         "seq",
         (
@@ -15,13 +15,13 @@ class TestStandardise:
         ),
     )
     def test_already_correct(self, seq):
-        result = junction.standardise(seq=seq)
+        result = junction.standardize(seq=seq)
 
         assert result == seq
 
     @pytest.mark.parametrize("seq", ("123456", "ASDFGHJKL", "A?AAAA", "AAAXAA"))
     def test_various_rejections(self, seq, caplog):
-        result = junction.standardise(seq=seq)
+        result = junction.standardize(seq=seq)
         assert "not a valid amino acid sequence" in caplog.text
         assert result is None
 
@@ -35,18 +35,18 @@ class TestStandardise:
         ),
     )
     def test_various_corrections(self, seq, expected):
-        result = junction.standardise(seq=seq)
+        result = junction.standardize(seq=seq)
 
         assert result == expected
 
     @pytest.mark.parametrize("seq", (None, 1, True, 5.4))
     def test_bad_input_type(self, seq):
         with pytest.raises(TypeError):
-            junction.standardise(seq=seq)
+            junction.standardize(seq=seq)
 
     @pytest.mark.parametrize("seq", ("ASQY", "CASQY", "ASQYF", "ASQYW"))
     def test_strict(self, seq, caplog):
-        result = junction.standardise(seq=seq, strict=True)
+        result = junction.standardize(seq=seq, strict=True)
         assert "not a valid junction" in caplog.text
         assert result is None
 
@@ -55,8 +55,8 @@ class TestStandardise:
 
         assert result == "CASSPGGADRRIDGYTF"
 
-    def test_suppress_warnings(self, caplog):
-        junction.standardise(seq="123456", suppress_warnings=True)
+    def test_log_failures(self, caplog):
+        junction.standardize(seq="123456", log_failures=False)
         assert len(caplog.records) == 0
 
     def test_on_fail(self, caplog):
