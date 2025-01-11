@@ -13,23 +13,34 @@ CLASS_2_MATCHING_REGEX = re.compile(r"HLA-D[PQR][AB]")
 
 
 def get_class(
+    symbol: Optional[str] = None,
+    log_failures: Optional[bool] = None,
     gene: Optional[str] = None,
-    suppress_warnings: bool = False,
+    suppress_warnings: Optional[bool] = None,
 ) -> int:
     """
-    Given a standardized MH gene name, detect whether it comprises a class I (MH1) or II (MH2) receptor.
+    Given a standardized MH gene / allele symbol, detect whether it comprises a class I (MH1) or II (MH2) receptor.
 
     .. note::
 
         This function currently only recognises HLA (human leucocyte antigen or *Homo sapiens* MH), and not MH from other species.
 
+    :param symbol:
+        Standardized MH gene / allele symbol
+    :type symbol:
+        str
+    :param log_failures:
+        Report standardisation failures through logging (at level ``WARNING``).
+        Defaults to ``True``.
+    :type log_failures:
+        bool
     :param gene:
-        Standardized MH gene name
+        Alias for `symbol`.
     :type gene:
         str
     :param suppress_warnings:
-        Disable warnings that are usually emitted when classification fails.
-        Defaults to ``False``.
+        Disable warnings that are usually logged when standardisation fails.
+        Deprecated in favour of `log_failures`.
     :type suppress_warnings:
         bool
 
@@ -47,21 +58,37 @@ def get_class(
         >>> tt.mh.get_class("B2M")
         1
     """
-    Parameter(gene, "gene").throw_error_if_not_of_type(str)
+    symbol = (
+        Parameter(symbol, "symbol")
+        .resolve_with_alias(gene, "gene")
+        .throw_error_if_not_of_type(str)
+        .value
+    )
+    suppress_warnings_inverted = (
+        not suppress_warnings if suppress_warnings is not None else None
+    )
+    log_failures = (
+        Parameter(log_failures, "log_failures")
+        .set_default(True)
+        .resolve_with_alias(suppress_warnings_inverted, "suppress_warnings")
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
 
-    gene = gene.split("*")[0]
+    symbol = symbol.split("*")[0]
 
-    if not gene in (*VALID_HOMOSAPIENS_MH, "B2M"):
-        if not suppress_warnings:
-            logger.warning(f"Unrecognized gene {gene}. Is this standardized?")
+    if not symbol in (*VALID_HOMOSAPIENS_MH, "B2M"):
+        if log_failures:
+            logger.warning(f"Unrecognized gene {symbol}. Is this standardized?")
         return None
 
-    if CLASS_1_MATCHING_REGEX.match(gene):
+    if CLASS_1_MATCHING_REGEX.match(symbol):
         return 1
 
-    if CLASS_2_MATCHING_REGEX.match(gene):
+    if CLASS_2_MATCHING_REGEX.match(symbol):
         return 2
 
-    if not suppress_warnings:
-        logger.warning(f"Class for {gene} unknown.")
+    if log_failures:
+        logger.warning(f"Class for {symbol} unknown.")
+
     return None

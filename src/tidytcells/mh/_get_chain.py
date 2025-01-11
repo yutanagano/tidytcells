@@ -58,11 +58,22 @@ def get_chain(
         >>> tt.mh.get_chain("B2M")
         'beta'
     """
-    symbol = Parameter(symbol, "symbol").resolve_with_alias(gene, "gene").throw_error_if_not_of_type(str).value
+    symbol = (
+        Parameter(symbol, "symbol")
+        .resolve_with_alias(gene, "gene")
+        .throw_error_if_not_of_type(str)
+        .value
+    )
     suppress_warnings_inverted = (
         not suppress_warnings if suppress_warnings is not None else None
     )
-    log_failures = Parameter(log_failures, "log_failures").set_default(True).resolve_with_alias(suppress_warnings_inverted, "suppress_warnings").throw_error_if_not_of_type(bool).value
+    log_failures = (
+        Parameter(log_failures, "log_failures")
+        .set_default(True)
+        .resolve_with_alias(suppress_warnings_inverted, "suppress_warnings")
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
 
     symbol = symbol.split("*")[0]
 
