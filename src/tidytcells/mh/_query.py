@@ -1,6 +1,4 @@
 import re
-from typing import Dict, FrozenSet, Optional, Type
-
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 from tidytcells._query_engine import (
@@ -8,6 +6,7 @@ from tidytcells._query_engine import (
     HlaQueryEngine,
     MusMusculusMhQueryEngine,
 )
+from typing import Dict, FrozenSet, Optional, Type, Literal
 
 
 QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
@@ -18,7 +17,7 @@ QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
 
 def query(
     species: Optional[str] = None,
-    precision: Optional[str] = None,
+    precision: Optional[Literal["allele", "gene"]] = None,
     contains_pattern: Optional[str] = None,
 ) -> FrozenSet[str]:
     """
@@ -102,4 +101,5 @@ def query(
         return result
 
     results_containing_substring = [i for i in result if re.search(contains_pattern, i)]
+
     return frozenset(results_containing_substring)

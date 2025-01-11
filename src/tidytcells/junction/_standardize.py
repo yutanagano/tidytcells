@@ -103,7 +103,7 @@ def standardize(
     """
     original_input = seq
 
-    seq = aa.standardize(seq=seq, on_fail="reject", suppress_warnings=suppress_warnings)
+    seq = aa.standardize(seq=seq, on_fail="reject", log_failures=not suppress_warnings)
 
     not_valid_amino_acid_sequence = seq is None
     if not_valid_amino_acid_sequence:

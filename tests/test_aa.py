@@ -4,7 +4,7 @@ from tidytcells import aa
 
 class TestStandardise:
     @pytest.mark.parametrize("seq", ("KLGGALQAK", "LLQTGIHVRVSQPSL", "SQLLNAKYL"))
-    def test_alreadY_correct(self, seq):
+    def test_already_correct(self, seq):
         result = aa.standardize(seq=seq)
 
         assert result == seq
@@ -31,8 +31,8 @@ class TestStandardise:
 
         assert result == "KLGAK"
 
-    def test_suppress_warnings(self, caplog):
-        aa.standardize(seq="123456", suppress_warnings=True)
+    def test_log_failures(self, caplog):
+        aa.standardize(seq="123456", log_failures=False)
         assert len(caplog.records) == 0
 
     def test_on_fail(self, caplog):

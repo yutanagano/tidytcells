@@ -1,5 +1,4 @@
 import logging
-from typing import Dict, Optional, Type
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
@@ -7,6 +6,7 @@ from tidytcells._standardized_gene_symbol import (
     StandardizedHlaSymbol,
     StandardizedMusMusculusMhSymbol,
 )
+from typing import Dict, Optional, Type, Literal
 
 
 logger = logging.getLogger(__name__)
@@ -21,8 +21,8 @@ SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[StandardizedGeneSymbol
 def standardize(
     symbol: Optional[str] = None,
     species: Optional[str] = None,
-    precision: Optional[str] = None,
-    on_fail: Optional[str] = None,
+    precision: Optional[Literal["allele", "protein", "gene"]] = None,
+    on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[bool] = None,
     gene: Optional[str] = None,
     suppress_warnings: Optional[bool] = None,

@@ -29,7 +29,9 @@ class TestStandardize:
         ),
     )
     def test_precision(self, symbol, expected, precision):
-        result = mh.standardize(symbol=symbol, species="homosapiens", precision=precision)
+        result = mh.standardize(
+            symbol=symbol, species="homosapiens", precision=precision
+        )
 
         assert result == expected
 
