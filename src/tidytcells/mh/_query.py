@@ -71,11 +71,23 @@ def query(
         >>> tt.mh.query(species="musmusculus", precision="gene", contains_pattern="MH1-Q")
         frozenset({'MH1-Q3', 'MH1-Q9', 'MH1-Q1', 'MH1-Q2', 'MH1-Q6', 'MH1-Q10', 'MH1-Q5', 'MH1-Q8', 'MH1-Q7', 'MH1-Q4'})
     """
-    species = Parameter(species, "species").set_default("homosapiens").throw_error_if_not_of_type(str).value
-    precision = Parameter(precision, "precision").set_default("allele").throw_error_if_not_one_of("allele", "gene").value
-    contains_pattern = Parameter(contains_pattern, "contains_pattern").throw_error_if_not_of_type(
-        str, optional=True
-    ).value
+    species = (
+        Parameter(species, "species")
+        .set_default("homosapiens")
+        .throw_error_if_not_of_type(str)
+        .value
+    )
+    precision = (
+        Parameter(precision, "precision")
+        .set_default("allele")
+        .throw_error_if_not_one_of("allele", "gene")
+        .value
+    )
+    contains_pattern = (
+        Parameter(contains_pattern, "contains_pattern")
+        .throw_error_if_not_of_type(str, optional=True)
+        .value
+    )
 
     species = _utils.clean_and_lowercase(species)
 
