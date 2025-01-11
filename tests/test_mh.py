@@ -206,13 +206,13 @@ class TestGetChain:
         ),
     )
     def test_get_chain(self, gene, expected):
-        result = mh.get_chain(gene=gene)
+        result = mh.get_chain(symbol=gene)
 
         assert result == expected
 
     @pytest.mark.parametrize("gene", ("foo", "HLA", "0"))
     def test_unrecognised_gene_names(self, gene, caplog):
-        result = mh.get_chain(gene=gene)
+        result = mh.get_chain(symbol=gene)
         assert "Unrecognized gene" in caplog.text
         assert result == None
 
@@ -221,8 +221,8 @@ class TestGetChain:
         with pytest.raises(TypeError):
             mh.get_chain(gene)
 
-    def test_suppress_warnings(self, caplog):
-        mh.get_chain("foobarbaz", suppress_warnings=True)
+    def test_log_failures(self, caplog):
+        mh.get_chain("foobarbaz", log_failures=False)
         assert len(caplog.records) == 0
 
 
