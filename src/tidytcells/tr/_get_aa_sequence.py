@@ -13,9 +13,13 @@ SUPPORTED_SPECIES_AND_THEIR_AA_SEQUENCES = {
 }
 
 
-def get_aa_sequence(symbol: Optional[str] = None, species: str = "homosapiens", gene: Optional[str] = None) -> Dict[str, str]:
+def get_aa_sequence(
+    symbol: Optional[str] = None,
+    species: str = "homosapiens",
+    gene: Optional[str] = None,
+) -> Dict[str, str]:
     """
-    Look up the amino acid sequence of a given TR gene.
+    Look up the amino acid sequence of a given TR allele.
 
     .. topic:: Supported species
 
@@ -23,8 +27,8 @@ def get_aa_sequence(symbol: Optional[str] = None, species: str = "homosapiens", 
         - ``"musmusculus"``
 
     :param symbol:
-        Standardized gene / allele symbol.
-        The symbol must be specified to the level of the allele.
+        Standardized allele symbol.
+        Note that the symbol must be specified to the level of the allele.
         Note that some alleles, notably those of non-functional genes, will not have resolvable amino acid sequences.
     :type symbol:
         str
@@ -55,8 +59,18 @@ def get_aa_sequence(symbol: Optional[str] = None, species: str = "homosapiens", 
         >>> tt.tr.get_aa_sequence(gene="TRAJ32*02", species="musmusculus")
         {'FR4-IMGT': 'FGTGTLLSVKP', 'J-REGION': 'NYGGSGNKLIFGTGTLLSVKP'}
     """
-    symbol = Parameter(symbol, "symbol").resolve_with_alias(gene, "gene").throw_error_if_not_of_type(str).value
-    species = Parameter(species, "species").set_default("homosapiens").throw_error_if_not_of_type(str).value
+    symbol = (
+        Parameter(symbol, "symbol")
+        .resolve_with_alias(gene, "gene")
+        .throw_error_if_not_of_type(str)
+        .value
+    )
+    species = (
+        Parameter(species, "species")
+        .set_default("homosapiens")
+        .throw_error_if_not_of_type(str)
+        .value
+    )
 
     species = _utils.clean_and_lowercase(species)
 
