@@ -67,7 +67,7 @@ class StandardizedHlaSymbol(StandardizedSymbol):
         self._gene_name = parsed_hla_symbol.gene_name
         self._allele_designation = parsed_hla_symbol.allele_designation
 
-    def _resolve_errors(self) -> None:
+    def _resolve_errors(self, skip_add1_section: bool = False) -> None:
         if self.get_reason_why_invalid() is None:
             return
 
@@ -90,6 +90,16 @@ class StandardizedHlaSymbol(StandardizedSymbol):
 
         self._try_different_amounts_of_leading_zeros_in_first_2_allele_designators()
 
+        if not skip_add1_section:
+            original = self._gene_name
+            if original.endswith("1"):
+                self._gene_name = original[:-1]
+            else:
+                self._gene_name = original + "1"
+            if self.get_reason_why_invalid() is None:
+                return
+            self._gene_name = original
+
     def _is_synonym(self) -> bool:
         return self._gene_name in HOMOSAPIENS_MH_SYNONYMS
 
@@ -108,11 +118,23 @@ class StandardizedHlaSymbol(StandardizedSymbol):
     def _handle_forgotten_colon_between_first_and_second_allele_designator(
         self,
     ) -> None:
-        if self._allele_designation and len(self._allele_designation[0]) == 4:
+        if len(self._allele_designation) == 0:
+            return
+
+        original = self._allele_designation
+
+        def format_ad(d):
+            return f"{int(d):02}"
+
+        for split_idx in range(1, len(original[0])):
             self._allele_designation = [
-                self._allele_designation[0][:2],
-                self._allele_designation[0][2:],
-            ] + self._allele_designation[1:]
+                format_ad(original[0][:split_idx]),
+                format_ad(original[0][split_idx:]),
+            ] + original[1:]
+            if self.get_reason_why_invalid() is None:
+                return
+
+        self._allele_designation = original
 
     def _try_different_amounts_of_leading_zeros_in_first_2_allele_designators(
         self,
