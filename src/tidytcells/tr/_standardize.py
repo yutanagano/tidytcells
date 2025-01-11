@@ -199,10 +199,13 @@ def standardize(
         .throw_error_if_not_one_of("reject", "keep")
         .value
     )
+    suppress_warnings_inverted = (
+        not suppress_warnings if suppress_warnings is not None else None
+    )
     log_failures = (
         Parameter(log_failures, "log_failures")
         .set_default(True)
-        .resolve_with_alias(not suppress_warnings, "suppress_warnings")
+        .resolve_with_alias(suppress_warnings_inverted, "suppress_warnings")
         .throw_error_if_not_of_type(bool)
         .value
     )
