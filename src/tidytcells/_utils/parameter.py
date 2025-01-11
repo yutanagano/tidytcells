@@ -10,6 +10,12 @@ class Parameter:
     def is_specified(self) -> bool:
         return self.value is not None
 
+    def set_default(self, default_value: any) -> "Parameter":
+        if not self.is_specified:
+            self.value = default_value
+
+        return self
+
     def resolve_with_alias(self, alias_value: any, alias_name: str) -> "Parameter":
         if alias_value is not None:
             if self.is_specified:
@@ -18,7 +24,7 @@ class Parameter:
                     "The latter will be deprecated in the near future, and replaced by the former. "
                     "Both parameters were passed values, so disregarding that of the latter. "
                     f'Please exclusively use "{self.name}" in the future.',
-                    FutureWarning
+                    FutureWarning,
                 )
             else:
                 warnings.warn(
@@ -31,17 +37,21 @@ class Parameter:
 
     def throw_error_if_not_of_type(
         self, object_type: type, optional: bool = False
-    ) -> None:
+    ) -> "Parameter":
         if optional and self.value is None:
-            return
+            return self
 
         if not isinstance(self.value, object_type):
             raise TypeError(
                 f'"{self.name}" must be of type {object_type}, got {self.value} ({type(self.value)}).'
             )
 
-    def throw_error_if_not_one_of(self, *allowed_values) -> None:
+        return self
+
+    def throw_error_if_not_one_of(self, *allowed_values) -> "Parameter":
         if not self.value in allowed_values:
             raise ValueError(
                 f'"{self.name}" must be one of ({allowed_values}), got {self.value}.'
             )
+
+        return self
