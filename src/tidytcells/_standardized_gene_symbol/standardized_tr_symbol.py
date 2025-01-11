@@ -126,19 +126,19 @@ class StandardizedTrSymbol(StandardizedSymbol):
         ]
 
         dash1_candidates = []
-        for (numstr, start_idx, end_idx) in all_gene_nums:
+        for numstr, start_idx, end_idx in all_gene_nums:
             fm = re.fullmatch(r"(\d+)(-1)?", numstr)
             if not fm:
                 continue
             dash1_candidates.append((fm.group(1), start_idx, end_idx))
-        
+
         dash1_variants = []
         for comb in itertools.product(("dash", "nodash"), repeat=len(dash1_candidates)):
             num_comb_zip = zip(dash1_candidates, comb)
             current_str_idx = 0
             working_variant = ""
 
-            for ((numstr, start_idx, end_idx), status) in num_comb_zip:
+            for (numstr, start_idx, end_idx), status in num_comb_zip:
                 working_variant += self._gene_name[current_str_idx:start_idx]
 
                 if status == "dash":

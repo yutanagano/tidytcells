@@ -108,9 +108,11 @@ class TestStandardizeHomoSapiens:
             ("A*01:01", "HLA-A*01:01"),
             ("A1", "HLA-A*01"),
             ("HLA-B*5701", "HLA-B*57:01"),
+            ("HLA-DQA1*0501", "HLA-DQA1*05:01"),
             ("B35.3", "HLA-B*35:03"),
             ("HLA-DQB103:01", "HLA-DQB1*03:01"),
             ("HLA-A*01:01:1:1", "HLA-A*01:01:01:01"),
+            ("HLA-DRB*07:01", "HLA-DRB1*07:01"),
         ),
     )
     def test_various_typos(self, symbol, expected):

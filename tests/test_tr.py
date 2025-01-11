@@ -141,7 +141,6 @@ class TestStandardizeMusMusculus:
         assert "Failed to standardize" in caplog.text
         assert result == None
 
-
     @pytest.mark.parametrize(
         ("symbol", "expected"),
         (
