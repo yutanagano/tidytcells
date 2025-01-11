@@ -10,18 +10,24 @@ class Parameter:
     def is_specified(self) -> bool:
         return self.value is not None
 
-    def resolve_with_alias_and_return_value(self, alias: "Parameter") -> any:
-        if self.is_specified:
-            return self.value
+    def resolve_with_alias(self, alias_value: any, alias_name: str) -> "Parameter":
+        if alias_value is not None:
+            if self.is_specified:
+                warnings.warn(
+                    f'The parameters "{self.name}" and "{alias_name}" are mutually exclusive. '
+                    "The latter will be deprecated in the near future, and replaced by the former. "
+                    "Both parameters were passed values, so disregarding that of the latter. "
+                    f'Please exclusively use "{self.name}" in the future.',
+                    FutureWarning
+                )
+            else:
+                warnings.warn(
+                    f'The parameter "{alias_name}" will be deprecated in the near future. Please use "{self.name}" instead.',
+                    FutureWarning,
+                )
+            self.value = alias_value
 
-        if alias.is_specified:
-            warnings.warn(
-                f'The parameter "{alias.name}" will be deprecated in the near future. Please use "{self.name}" instead.',
-                FutureWarning,
-            )
-            return alias.value
-
-        return None
+        return self
 
     def throw_error_if_not_of_type(
         self, object_type: type, optional: bool = False
