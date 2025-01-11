@@ -6,14 +6,14 @@ from tidytcells._resources import VALID_HOMOSAPIENS_TR, VALID_MUSMUSCULUS_TR
 class TestStandardize:
     @pytest.mark.parametrize("species", ("foobar", "yoinkdoink", ""))
     def test_unsupported_species(self, species, caplog):
-        result = tr.standardize(gene="foobarbaz", species=species)
+        result = tr.standardize(symbol="foobarbaz", species=species)
         assert "Unsupported" in caplog.text
         assert result == "foobarbaz"
 
-    @pytest.mark.parametrize("gene", (1234, None))
-    def test_bad_type(self, gene):
+    @pytest.mark.parametrize("symbol", (1234, None))
+    def test_bad_type(self, symbol):
         with pytest.raises(TypeError):
-            tr.standardize(gene=gene)
+            tr.standardize(symbol=symbol)
 
     def test_default_homosapiens(self):
         result = tr.standardize("TRBV20/OR9-2*01")
@@ -21,17 +21,17 @@ class TestStandardize:
         assert result == "TRBV20/OR9-2*01"
 
     @pytest.mark.parametrize(
-        ("gene", "expected"),
+        ("symbol", "expected"),
         (("TRAV3*01&nbsp;", "TRAV3*01"), (" TRAV3 * 01 ", "TRAV3*01")),
     )
-    def test_remove_pollutants(self, gene, expected):
-        result = tr.standardize(gene=gene, species="homosapiens")
+    def test_remove_pollutants(self, symbol, expected):
+        result = tr.standardize(symbol=symbol, species="homosapiens")
 
         assert result == expected
 
     @pytest.mark.filterwarnings("ignore:Failed to standardize")
     @pytest.mark.parametrize(
-        ("gene", "expected", "enforce_functional"),
+        ("symbol", "expected", "enforce_functional"),
         (
             ("TRAV35*01", "TRAV35*01", True),
             ("TRAV35*03", None, True),
@@ -41,22 +41,24 @@ class TestStandardize:
             ("TRAV8-7", "TRAV8-7", False),
         ),
     )
-    def test_enforce_functional(self, gene, expected, enforce_functional):
+    def test_enforce_functional(self, symbol, expected, enforce_functional):
         result = tr.standardize(
-            gene=gene, species="homosapiens", enforce_functional=enforce_functional
+            symbol=symbol, species="homosapiens", enforce_functional=enforce_functional
         )
 
         assert result == expected
 
     @pytest.mark.parametrize(
-        ("gene", "expected", "precision"),
+        ("symbol", "expected", "precision"),
         (
             ("TRBV24/OR9-2*01", "TRBV24/OR9-2*01", "allele"),
             ("TRAV16*01", "TRAV16", "gene"),
         ),
     )
-    def test_precision(self, gene, expected, precision):
-        result = tr.standardize(gene=gene, species="homosapiens", precision=precision)
+    def test_precision(self, symbol, expected, precision):
+        result = tr.standardize(
+            symbol=symbol, species="homosapiens", precision=precision
+        )
 
         assert result == expected
 
@@ -65,8 +67,8 @@ class TestStandardize:
 
         assert result == "TRBV20/OR9-2*01"
 
-    def test_suppress_warnings(self, caplog):
-        tr.standardize("foobarbaz", suppress_warnings=True)
+    def test_log_failures(self, caplog):
+        tr.standardize("foobarbaz", log_failures=False)
         assert len(caplog.records) == 0
 
     def test_on_fail(self, caplog):
@@ -76,33 +78,33 @@ class TestStandardize:
 
 
 class TestStandardizeHomoSapiens:
-    @pytest.mark.parametrize("gene", VALID_HOMOSAPIENS_TR)
-    def test_already_correctly_formatted(self, gene):
-        result = tr.standardize(gene=gene, species="homosapiens")
+    @pytest.mark.parametrize("symbol", VALID_HOMOSAPIENS_TR)
+    def test_already_correctly_formatted(self, symbol):
+        result = tr.standardize(symbol=symbol, species="homosapiens")
 
-        assert result == gene
+        assert result == symbol
 
-    @pytest.mark.parametrize("gene", ("foobar", "TRAV3D-3*01"))
-    def test_invalid_tr(self, gene, caplog):
-        result = tr.standardize(gene=gene, species="homosapiens")
+    @pytest.mark.parametrize("symbol", ("foobar", "TRAV3D-3*01"))
+    def test_invalid_tr(self, symbol, caplog):
+        result = tr.standardize(symbol=symbol, species="homosapiens")
         assert "Failed to standardize" in caplog.text
         assert result == None
 
     @pytest.mark.parametrize(
-        ("gene", "expected"),
+        ("symbol", "expected"),
         (
             ("TCRAV32S1", "TRAV25"),
             ("TCRAV14S2", "TRAV38-1"),
             ("TCRBV21S1*01", "TRBV11-1*01"),
         ),
     )
-    def test_resolve_alternate_tr_names(self, gene, expected):
-        result = tr.standardize(gene=gene, species="homosapiens")
+    def test_resolve_alternate_tr_names(self, symbol, expected):
+        result = tr.standardize(symbol=symbol, species="homosapiens")
 
         assert result == expected
 
     @pytest.mark.parametrize(
-        ("gene", "expected"),
+        ("symbol", "expected"),
         (
             ("TRAV14DV4", "TRAV14/DV4"),
             ("TRBV20OR9-2", "TRBV20/OR9-2"),
@@ -120,22 +122,22 @@ class TestStandardizeHomoSapiens:
             ("TCRBJ2.7", "TRBJ2-7"),
         ),
     )
-    def test_various_typos(self, gene, expected):
-        result = tr.standardize(gene=gene, species="homosapiens")
+    def test_various_typos(self, symbol, expected):
+        result = tr.standardize(symbol=symbol, species="homosapiens")
 
         assert result == expected
 
 
 class TestStandardizeMusMusculus:
-    @pytest.mark.parametrize("gene", VALID_MUSMUSCULUS_TR)
-    def test_already_correctly_formatted(self, gene):
-        result = tr.standardize(gene=gene, species="musmusculus")
+    @pytest.mark.parametrize("symbol", VALID_MUSMUSCULUS_TR)
+    def test_already_correctly_formatted(self, symbol):
+        result = tr.standardize(symbol=symbol, species="musmusculus")
 
-        assert result == gene
+        assert result == symbol
 
-    @pytest.mark.parametrize("gene", ("foobar", "noice"))
-    def test_inivalid_tr(self, gene, caplog):
-        result = tr.standardize(gene=gene, species="musmusculus")
+    @pytest.mark.parametrize("symbol", ("foobar", "noice"))
+    def test_inivalid_tr(self, symbol, caplog):
+        result = tr.standardize(symbol=symbol, species="musmusculus")
         assert "Failed to standardize" in caplog.text
         assert result == None
 
@@ -222,7 +224,7 @@ class TestQuery:
 
 class TestGetAaSequence:
     @pytest.mark.parametrize(
-        ("gene", "species", "expected"),
+        ("symbol", "species", "expected"),
         (
             (
                 "TRAV10*02",
@@ -265,7 +267,7 @@ class TestGetAaSequence:
             ),
         ),
     )
-    def test_get_aa_sequence(self, gene, species, expected):
-        result = tr.get_aa_sequence(gene=gene, species=species)
+    def test_get_aa_sequence(self, symbol, species, expected):
+        result = tr.get_aa_sequence(symbol=symbol, species=species)
 
         assert result == expected

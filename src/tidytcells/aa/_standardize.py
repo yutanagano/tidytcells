@@ -1,12 +1,18 @@
 import logging
 from tidytcells._resources import AMINO_ACIDS
 from tidytcells._utils import Parameter
+from typing import Optional, Literal
 
 
 logger = logging.getLogger(__name__)
 
 
-def standardize(seq: str, on_fail: str = "reject", suppress_warnings: bool = False):
+def standardize(
+    seq: Optional[str],
+    on_fail: Optional[Literal["reject", "keep"]] = None,
+    log_failures: Optional[bool] = None,
+    suppress_warnings: Optional[bool] = None,
+):
     """
     Ensures that a string value looks like a valid amino acid sequence.
 
@@ -21,15 +27,20 @@ def standardize(seq: str, on_fail: str = "reject", suppress_warnings: bool = Fal
         Defaults to ``"reject"``.
     :type on_fail:
         str
+    :param log_failures:
+        Report standardisation failures through logging (at level ``WARNING``).
+        Defaults to ``True``.
+    :type log_failures:
+        bool
     :param suppress_warnings:
-        Disable warnings that are usually emitted when standardisation fails.
-        Defaults to ``False``.
+        Disable warnings that are usually logged when standardisation fails.
+        Deprecated in favour of `log_failures`.
     :type suppress_warnings:
         bool
 
     :return:
-        Capitalised version of ``seq``, if seq is a valid amino acid sequence.
-        Otherwise follow behaviour set by ``on_fail``.
+        Capitalised version of `seq`, if seq is a valid amino acid sequence.
+        Otherwise follow behaviour set by `on_fail`.
     :rtype:
         Union[str, None]
 
@@ -43,7 +54,7 @@ def standardize(seq: str, on_fail: str = "reject", suppress_warnings: bool = Fal
         Any strings that contain characters that cannot be recognised as amino acids will be rejected, and the function will return ``None``.
 
         >>> result = tt.aa.standardize("sqll?akyl")
-        UserWarning: Input sqll?akyl was rejected as it is not a valid amino acid sequence.
+        Input sqll?akyl was rejected as it is not a valid amino acid sequence.
         >>> print(result)
         None
 
@@ -68,9 +79,20 @@ def standardize(seq: str, on_fail: str = "reject", suppress_warnings: bool = Fal
                 IF on_fail is set to "keep":
                     RETURN original sequence
     """
-    Parameter(seq, "seq").throw_error_if_not_of_type(str)
-    Parameter(on_fail, "on_fail").throw_error_if_not_one_of("reject", "keep")
-    Parameter(suppress_warnings, "suppress_warnings").throw_error_if_not_of_type(bool)
+    seq = Parameter(seq, "seq").throw_error_if_not_of_type(str).value
+    on_fail = (
+        Parameter(on_fail, "on_fail")
+        .set_default("reject")
+        .throw_error_if_not_one_of("reject", "keep")
+        .value
+    )
+    log_failures = (
+        Parameter(log_failures, "suppress_warnings")
+        .set_default(True)
+        .resolve_with_alias(suppress_warnings, "suppress_warnings")
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
 
     original_input = seq
 
@@ -78,7 +100,7 @@ def standardize(seq: str, on_fail: str = "reject", suppress_warnings: bool = Fal
 
     for char in seq:
         if not char in AMINO_ACIDS:
-            if not suppress_warnings:
+            if log_failures:
                 logger.warning(
                     f"Failed to standardize {original_input}: not a valid amino acid sequence."
                 )

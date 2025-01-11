@@ -1,6 +1,9 @@
 import logging
 import re
 from tidytcells import aa
+from typing import Literal, Optional
+
+from tidytcells._utils.parameter import Parameter
 
 
 logger = logging.getLogger(__name__)
@@ -10,10 +13,11 @@ JUNCTION_MATCHING_REGEX = re.compile(f"^C[A-Z]*[FW]$")
 
 
 def standardize(
-    seq: str,
-    strict: bool = False,
-    on_fail: str = "reject",
-    suppress_warnings: bool = False,
+    seq: Optional[str] = None,
+    strict: Optional[bool] = None,
+    on_fail: Optional[Literal["reject", "keep"]] = None,
+    log_failures: Optional[bool] = None,
+    suppress_warnings: Optional[bool] = None,
 ):
     """
     Ensures that a string value looks like a valid junction (CDR3) amino acid sequence.
@@ -42,9 +46,14 @@ def standardize(
         Defaults to ``"reject"``.
     :type on_fail:
         str
+    :param log_failures:
+        Report standardisation failures through logging (at level ``WARNING``).
+        Defaults to ``True``.
+    :type log_failures:
+        bool
     :param suppress_warnings:
-        Disable warnings that are usually emitted when standardisation fails.
-        Defaults to ``False``.
+        Disable warnings that are usually logged when standardisation fails.
+        Deprecated in favour of `log_failures`.
     :type suppress_warnings:
         bool
 
@@ -101,9 +110,33 @@ def standardize(
                 IF on_fail is set to "keep":
                     RETURN original sequence
     """
+    seq = Parameter(seq, "seq").throw_error_if_not_of_type(str).value
+    strict = (
+        Parameter(strict, "strict")
+        .set_default(False)
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
+    on_fail = (
+        Parameter(on_fail, "on_fail")
+        .set_default("reject")
+        .throw_error_if_not_of_type(str)
+        .value
+    )
+    suppress_warnings_inverted = (
+        not suppress_warnings if suppress_warnings is not None else None
+    )
+    log_failures = (
+        Parameter(log_failures, "log_failures")
+        .set_default(True)
+        .resolve_with_alias(suppress_warnings_inverted, "suppress_warnings")
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
+
     original_input = seq
 
-    seq = aa.standardize(seq=seq, on_fail="reject", suppress_warnings=suppress_warnings)
+    seq = aa.standardize(seq=seq, on_fail="reject", log_failures=log_failures)
 
     not_valid_amino_acid_sequence = seq is None
     if not_valid_amino_acid_sequence:
@@ -113,7 +146,7 @@ def standardize(
 
     if not JUNCTION_MATCHING_REGEX.match(seq):
         if strict:
-            if not suppress_warnings:
+            if log_failures:
                 logger.warning(
                     f"Failed to standardize {original_input}: not a valid junction sequence."
                 )

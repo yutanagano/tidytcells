@@ -6,14 +6,14 @@ from tidytcells._resources import *
 class TestStandardize:
     @pytest.mark.parametrize("species", ("foobar", "yoinkdoink", ""))
     def test_unsupported_species(self, species, caplog):
-        result = mh.standardize(gene="HLA-A*01:01:01:01", species=species)
+        result = mh.standardize(symbol="HLA-A*01:01:01:01", species=species)
         assert "Unsupported" in caplog.text
         assert result == "HLA-A*01:01:01:01"
 
-    @pytest.mark.parametrize("gene", (1234, None))
-    def test_bad_type(self, gene):
+    @pytest.mark.parametrize("symbol", (1234, None))
+    def test_bad_type(self, symbol):
         with pytest.raises(TypeError):
-            mh.standardize(gene=gene)
+            mh.standardize(symbol=symbol)
 
     def test_default_homosapiens(self):
         result = mh.standardize("HLA-B*07")
@@ -21,15 +21,17 @@ class TestStandardize:
         assert result == "HLA-B*07"
 
     @pytest.mark.parametrize(
-        ("gene", "expected", "precision"),
+        ("symbol", "expected", "precision"),
         (
             ("HLA-DRB3*01:01:02:01", "HLA-DRB3*01:01:02:01", "allele"),
             ("HLA-DRB3*01:01:02:01", "HLA-DRB3*01:01", "protein"),
             ("HLA-DRB3*01:01:02:01", "HLA-DRB3", "gene"),
         ),
     )
-    def test_precision(self, gene, expected, precision):
-        result = mh.standardize(gene=gene, species="homosapiens", precision=precision)
+    def test_precision(self, symbol, expected, precision):
+        result = mh.standardize(
+            symbol=symbol, species="homosapiens", precision=precision
+        )
 
         assert result == expected
 
@@ -38,8 +40,8 @@ class TestStandardize:
 
         assert result == "HLA-B*07"
 
-    def test_suppress_warnings(self, caplog):
-        mh.standardize("foobarbaz", suppress_warnings=True)
+    def test_log_failures(self, caplog):
+        mh.standardize("foobarbaz", log_failures=False)
         assert len(caplog.records) == 0
 
     def test_on_fail(self, caplog):
@@ -49,28 +51,28 @@ class TestStandardize:
 
 
 class TestStandardizeHomoSapiens:
-    @pytest.mark.parametrize("gene", [*VALID_HOMOSAPIENS_MH, "B2M"])
-    def test_already_correctly_formatted(self, gene):
-        result = mh.standardize(gene=gene, species="homosapiens")
+    @pytest.mark.parametrize("symbol", [*VALID_HOMOSAPIENS_MH, "B2M"])
+    def test_already_correctly_formatted(self, symbol):
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
-        assert result == gene
+        assert result == symbol
 
     @pytest.mark.parametrize(
-        "gene", ("foobar", "yoinkdoink", "HLA-FOOBAR123456", "=======")
+        "symbol", ("foobar", "yoinkdoink", "HLA-FOOBAR123456", "=======")
     )
-    def test_invalid_mh(self, gene, caplog):
-        result = mh.standardize(gene=gene, species="homosapiens")
+    def test_invalid_mh(self, symbol, caplog):
+        result = mh.standardize(symbol=symbol, species="homosapiens")
         assert "Failed to standardize" in caplog.text
         assert result == None
 
-    @pytest.mark.parametrize("gene", ("HLA-A*01:01:1:1:1:1:1:1",))
-    def test_bad_allele_designation(self, gene, caplog):
-        result = mh.standardize(gene=gene, species="homosapiens")
+    @pytest.mark.parametrize("symbol", ("HLA-A*01:01:1:1:1:1:1:1",))
+    def test_bad_allele_designation(self, symbol, caplog):
+        result = mh.standardize(symbol=symbol, species="homosapiens")
         assert "Failed to standardize" in caplog.text
         assert result == None
 
     @pytest.mark.parametrize(
-        ("gene", "expected"),
+        ("symbol", "expected"),
         (
             ("D6S204", "HLA-C"),
             ("HLA-DQA*01:01", "HLA-DQA1*01:01"),
@@ -78,13 +80,13 @@ class TestStandardizeHomoSapiens:
             ("HLA-DRA1*01:01", "HLA-DRA*01:01"),
         ),
     )
-    def test_fix_deprecated_names(self, gene, expected):
-        result = mh.standardize(gene=gene, species="homosapiens")
+    def test_fix_deprecated_names(self, symbol, expected):
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result == expected
 
     @pytest.mark.parametrize(
-        "gene",
+        "symbol",
         (
             "HLA-A*01:01:01:01N",
             "HLA-A*01:01:01:01L",
@@ -94,13 +96,13 @@ class TestStandardizeHomoSapiens:
             "HLA-A*01:01:01:01Q",
         ),
     )
-    def test_remove_expression_qualifier(self, gene):
-        result = mh.standardize(gene=gene, species="homosapiens")
+    def test_remove_expression_qualifier(self, symbol):
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result == "HLA-A*01:01:01:01"
 
     @pytest.mark.parametrize(
-        ("gene", "expected"),
+        ("symbol", "expected"),
         (
             ("HLA-B8", "HLA-B*08"),
             ("A*01:01", "HLA-A*01:01"),
@@ -111,30 +113,30 @@ class TestStandardizeHomoSapiens:
             ("HLA-A*01:01:1:1", "HLA-A*01:01:01:01"),
         ),
     )
-    def test_various_typos(self, gene, expected):
-        result = mh.standardize(gene=gene, species="homosapiens")
+    def test_various_typos(self, symbol, expected):
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result == expected
 
 
 class TestStandardizeMusMusculus:
-    @pytest.mark.parametrize("gene", VALID_MUSMUSCULUS_MH)
-    def test_already_correctly_formatted(self, gene):
-        result = mh.standardize(gene=gene, species="musmusculus")
+    @pytest.mark.parametrize("symbol", VALID_MUSMUSCULUS_MH)
+    def test_already_correctly_formatted(self, symbol):
+        result = mh.standardize(symbol=symbol, species="musmusculus")
 
-        assert result == gene
+        assert result == symbol
 
-    @pytest.mark.parametrize("gene", ("foobar", "yoinkdoink", "MH1-ABC", "======="))
-    def test_invalid_mh(self, gene, caplog):
-        result = mh.standardize(gene=gene, species="musmusculus")
+    @pytest.mark.parametrize("symbol", ("foobar", "yoinkdoink", "MH1-ABC", "======="))
+    def test_invalid_mh(self, symbol, caplog):
+        result = mh.standardize(symbol=symbol, species="musmusculus")
         assert "Failed to standardize" in caplog.text
         assert result == None
 
     @pytest.mark.parametrize(
-        ("gene", "expected"), (("H-2Eb1", "MH2-EB1"), ("H-2Aa", "MH2-AA"))
+        ("symbol", "expected"), (("H-2Eb1", "MH2-EB1"), ("H-2Aa", "MH2-AA"))
     )
-    def test_fix_deprecated_names(self, gene, expected):
-        result = mh.standardize(gene=gene, species="musmusculus")
+    def test_fix_deprecated_names(self, symbol, expected):
+        result = mh.standardize(symbol=symbol, species="musmusculus")
 
         assert result == expected
 
@@ -188,7 +190,7 @@ class TestQuery:
 
 class TestGetChain:
     @pytest.mark.parametrize(
-        ("gene", "expected"),
+        ("symbol", "expected"),
         (
             ("HLA-A", "alpha"),
             ("HLA-B", "alpha"),
@@ -205,30 +207,30 @@ class TestGetChain:
             ("B2M", "beta"),
         ),
     )
-    def test_get_chain(self, gene, expected):
-        result = mh.get_chain(gene=gene)
+    def test_get_chain(self, symbol, expected):
+        result = mh.get_chain(symbol=symbol)
 
         assert result == expected
 
-    @pytest.mark.parametrize("gene", ("foo", "HLA", "0"))
-    def test_unrecognised_gene_names(self, gene, caplog):
-        result = mh.get_chain(gene=gene)
+    @pytest.mark.parametrize("symbol", ("foo", "HLA", "0"))
+    def test_unrecognised_gene_names(self, symbol, caplog):
+        result = mh.get_chain(symbol=symbol)
         assert "Unrecognized gene" in caplog.text
         assert result == None
 
-    @pytest.mark.parametrize("gene", (1234, None))
-    def test_bad_type(self, gene):
+    @pytest.mark.parametrize("symbol", (1234, None))
+    def test_bad_type(self, symbol):
         with pytest.raises(TypeError):
-            mh.get_chain(gene)
+            mh.get_chain(symbol)
 
-    def test_suppress_warnings(self, caplog):
-        mh.get_chain("foobarbaz", suppress_warnings=True)
+    def test_log_failures(self, caplog):
+        mh.get_chain("foobarbaz", log_failures=False)
         assert len(caplog.records) == 0
 
 
 class TestGetClass:
     @pytest.mark.parametrize(
-        ("gene", "expected"),
+        ("symbol", "expected"),
         (
             ("HLA-A", 1),
             ("HLA-B", 1),
@@ -245,22 +247,22 @@ class TestGetClass:
             ("B2M", 1),
         ),
     )
-    def test_get_class(self, gene, expected):
-        result = mh.get_class(gene=gene)
+    def test_get_class(self, symbol, expected):
+        result = mh.get_class(symbol=symbol)
 
         assert result == expected
 
-    @pytest.mark.parametrize("gene", ("foo", "HLA", "0"))
-    def test_unrecognised_gene_names(self, gene, caplog):
-        result = mh.get_class(gene=gene)
+    @pytest.mark.parametrize("symbol", ("foo", "HLA", "0"))
+    def test_unrecognised_gene_names(self, symbol, caplog):
+        result = mh.get_class(symbol=symbol)
         assert "Unrecognized gene" in caplog.text
         assert result == None
 
-    @pytest.mark.parametrize("gene", (1234, None))
-    def test_bad_type(self, gene):
+    @pytest.mark.parametrize("symbol", (1234, None))
+    def test_bad_type(self, symbol):
         with pytest.raises(TypeError):
-            mh.get_class(gene)
+            mh.get_class(symbol)
 
-    def test_suppress_warnings(self, caplog):
-        mh.get_class("foobarbaz", suppress_warnings=True)
+    def test_log_failures(self, caplog):
+        mh.get_class("foobarbaz", log_failures=False)
         assert len(caplog.records) == 0

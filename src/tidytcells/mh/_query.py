@@ -1,6 +1,4 @@
 import re
-from typing import Dict, FrozenSet, Optional, Type
-
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 from tidytcells._query_engine import (
@@ -8,6 +6,7 @@ from tidytcells._query_engine import (
     HlaQueryEngine,
     MusMusculusMhQueryEngine,
 )
+from typing import Dict, FrozenSet, Optional, Type, Literal
 
 
 QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
@@ -17,12 +16,12 @@ QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
 
 
 def query(
-    species: str = "homosapiens",
-    precision: str = "allele",
+    species: Optional[str] = None,
+    precision: Optional[Literal["allele", "gene"]] = None,
     contains_pattern: Optional[str] = None,
 ) -> FrozenSet[str]:
     """
-    Query the list of all known MH genes/alleles.
+    Query the list of all known MH genes / alleles.
 
     .. topic:: Supported species
 
@@ -49,13 +48,13 @@ def query(
         str
     :param contains_pattern:
         An optional **regular expression** string which will be used to filter the query result.
-        If supplied, only genes/alleles which contain the regular expression will be returned.
+        If supplied, only genes / alleles which contain the regular expression will be returned.
         Defaults to ``None``.
     :type contains_pattern:
         str
 
     :return:
-        The set of all genes/alleles that satisfy the given constraints.
+        The set of all genes / alleles that satisfy the given constraints.
     :rtype:
         FrozenSet[str]
 
@@ -71,10 +70,22 @@ def query(
         >>> tt.mh.query(species="musmusculus", precision="gene", contains_pattern="MH1-Q")
         frozenset({'MH1-Q3', 'MH1-Q9', 'MH1-Q1', 'MH1-Q2', 'MH1-Q6', 'MH1-Q10', 'MH1-Q5', 'MH1-Q8', 'MH1-Q7', 'MH1-Q4'})
     """
-    Parameter(species, "species").throw_error_if_not_of_type(str)
-    Parameter(precision, "precision").throw_error_if_not_one_of("allele", "gene")
-    Parameter(contains_pattern, "contains_pattern").throw_error_if_not_of_type(
-        str, optional=True
+    species = (
+        Parameter(species, "species")
+        .set_default("homosapiens")
+        .throw_error_if_not_of_type(str)
+        .value
+    )
+    precision = (
+        Parameter(precision, "precision")
+        .set_default("allele")
+        .throw_error_if_not_one_of("allele", "gene")
+        .value
+    )
+    contains_pattern = (
+        Parameter(contains_pattern, "contains_pattern")
+        .throw_error_if_not_of_type(str, optional=True)
+        .value
     )
 
     species = _utils.clean_and_lowercase(species)
@@ -90,4 +101,5 @@ def query(
         return result
 
     results_containing_substring = [i for i in result if re.search(contains_pattern, i)]
+
     return frozenset(results_containing_substring)

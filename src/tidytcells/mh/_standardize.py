@@ -1,5 +1,4 @@
 import logging
-from typing import Dict, Optional, Type
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
@@ -7,6 +6,7 @@ from tidytcells._standardized_gene_symbol import (
     StandardizedHlaSymbol,
     StandardizedMusMusculusMhSymbol,
 )
+from typing import Dict, Optional, Type, Literal
 
 
 logger = logging.getLogger(__name__)
@@ -19,14 +19,16 @@ SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[StandardizedGeneSymbol
 
 
 def standardize(
+    symbol: Optional[str] = None,
+    species: Optional[str] = None,
+    precision: Optional[Literal["allele", "protein", "gene"]] = None,
+    on_fail: Optional[Literal["reject", "keep"]] = None,
+    log_failures: Optional[bool] = None,
     gene: Optional[str] = None,
-    species: str = "homosapiens",
-    precision: str = "allele",
-    on_fail: str = "reject",
-    suppress_warnings: bool = False,
+    suppress_warnings: Optional[bool] = None,
 ) -> tuple:
     """
-    Attempt to standardize an MH gene name to be IMGT-compliant.
+    Attempt to standardize an MH gene / allele symbol to be IMGT-compliant.
 
     .. topic:: Supported species
 
@@ -38,9 +40,9 @@ def standardize(
         Any further precise allele designations will not be verified, apart from the requirement that the format (colon-separated numbers) look valid.
         The reasons for this is firstly because new alleles at that level are added to the IMGT list quite often and so accurate verification is difficult, secondly because people rarely need verification to such a precise level, and finally because such verification costs more computational effort with diminishing returns.
 
-    :param gene:
-        Potentially non-standardized MH gene name.
-    :type gene:
+    :param symbol:
+        Potentially non-standardized MH gene / allele symbol.
+    :type symbol:
         str
     :param species:
         Species to which the MH gene belongs (see above for supported species).
@@ -62,27 +64,36 @@ def standardize(
         Defaults to ``"reject"``.
     :type on_fail:
         str
+    :param log_failures:
+        Report standardisation failures through logging (at level ``WARNING``).
+        Defaults to ``True``.
+    :type log_failures:
+        bool
+    :param gene:
+        Alias for `symbol`.
+    :type gene:
+        str
     :param suppress_warnings:
-        Disable warnings that are usually emitted when standardisation fails.
-        Defaults to ``False``.
+        Disable warnings that are usually logged when standardisation fails.
+        Deprecated in favour of `log_failures`.
     :type suppress_warnings:
         bool
 
     :return:
-        If the specified ``species`` is supported, and ``gene`` could be standardized, then return the standardized gene name.
-        If ``species`` is unsupported, then the function does not attempt to standardize, and returns the unaltered ``gene`` string.
-        Else follows the behvaiour as set by ``on_fail``.
+        If the specified `species` is supported, and `symbol` could be standardized, then return the standardized symbol.
+        If `species` is unsupported, then the function does not attempt to standardize, and returns the unaltered `symbol` string.
+        Else follows the behvaiour as set by `on_fail`.
     :rtype:
         Union[str, None]
 
     .. topic:: Example usage
 
-        Input strings will intelligently be corrected to IMGT-compliant gene symbols.
+        Input strings will intelligently be corrected to IMGT-compliant symbols.
 
         >>> tt.mh.standardize("A1")
         'HLA-A*01'
 
-        The ``precision`` setting can truncate unnecessary information.
+        The `precision` setting can truncate unnecessary information.
 
         >>> tt.mh.standardize("HLA-A*01", precision="gene")
         'HLA-A'
@@ -100,31 +111,31 @@ def standardize(
         .. code-block:: none
 
             IF the specified species is not supported for standardization:
-                RETURN original gene symbol without modification
+                RETURN original symbol without modification
 
             ELSE:
                 // attempt standardization
                 {
-                    IF gene symbol is already in IMGT-compliant form:
+                    IF symbol is already in IMGT-compliant form:
                         set standardization status as successful
                         skip rest of standardization
 
-                    IF gene symbol is a known deprecated symbol:
-                        overwrite gene symbol with current IMGT-compliant symbol
+                    IF symbol is a known deprecated symbol:
+                        overwrite symbol with current IMGT-compliant symbol
                         set standardization status as successful
                         skip rest of standardization
 
                     // the rest is only applicable when species is set to homo sapiens
-                    add "HLA-" to the beginning of the gene symbol if necessary             //e.g. A -> HLA-A
+                    add "HLA-" to the beginning of the symbol if necessary                  //e.g. A -> HLA-A
                     replace "Cw" with "C"                                                   //e.g. HLA-Cw -> HLA-C
                     add back forgotten asterisks if necessary                               //e.g. HLA-A01 -> HLA-A*01
                     add back forgotten colons if necessary                                  //e.g. HLA-A*0101 -> HLA-A*01:01
-                    If gene symbol is now in IMGT-compliant form:
+                    If symbol is now in IMGT-compliant form:
                         set standardization status as successful
                         skip rest of standardization
 
                     try adding or subtracting leading zeros from allele designation numbers //e.g. HLA-A*001 -> HLA-A*01
-                    If gene symbol is now in IMGT-compliant form:
+                    If symbol is now in IMGT-compliant form:
                         set standardization status as successful
                         skip rest of standardization
 
@@ -132,46 +143,73 @@ def standardize(
                 }
 
                 IF standardization status is set to successful:
-                    RETURN standardized gene symbol
+                    RETURN standardized symbol
 
                 ELSE:
                     IF on_fail is set to "reject":
                         RETURN None
                     IF on_fail is set to "keep":
-                        RETURN original gene symbol without modification
+                        RETURN original symbol without modification
     """
-    Parameter(gene, "gene").throw_error_if_not_of_type(str)
-    Parameter(species, "species").throw_error_if_not_of_type(str)
-    Parameter(precision, "precision").throw_error_if_not_one_of(
-        "allele", "protein", "gene"
+    symbol = (
+        Parameter(symbol, "symbol")
+        .resolve_with_alias(gene, "gene")
+        .throw_error_if_not_of_type(str)
+        .value
     )
-    Parameter(on_fail, "on_fail").throw_error_if_not_one_of("reject", "keep")
-    Parameter(suppress_warnings, "suppress_warnings").throw_error_if_not_of_type(bool)
+    species = (
+        Parameter(species, "species")
+        .set_default("homosapiens")
+        .throw_error_if_not_of_type(str)
+        .value
+    )
+    precision = (
+        Parameter(precision, "precision")
+        .set_default("allele")
+        .throw_error_if_not_one_of("allele", "protein", "gene")
+        .value
+    )
+    on_fail = (
+        Parameter(on_fail, "on_fail")
+        .set_default("reject")
+        .throw_error_if_not_one_of("reject", "keep")
+        .value
+    )
+    suppress_warnings_inverted = (
+        not suppress_warnings if suppress_warnings is not None else None
+    )
+    log_failures = (
+        Parameter(log_failures, "log_failures")
+        .set_default(True)
+        .resolve_with_alias(suppress_warnings_inverted, "suppress_warnings")
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
 
     species = _utils.clean_and_lowercase(species)
 
     species_is_supported = species in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS
     if not species_is_supported:
-        if not suppress_warnings:
+        if log_failures:
             _utils.warn_unsupported_species(species, "MH", logger)
-        return gene
+        return symbol
 
     StandardizedMhSymbolClass = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]
-    standardized_mh_symbol = StandardizedMhSymbolClass(gene)
+    standardized_mh_symbol = StandardizedMhSymbolClass(symbol)
 
     invalid_reason = standardized_mh_symbol.get_reason_why_invalid()
     if invalid_reason is not None:
-        if not suppress_warnings:
+        if log_failures:
             _utils.warn_failure(
                 reason_for_failure=invalid_reason,
-                original_input=gene,
+                original_input=symbol,
                 attempted_fix=standardized_mh_symbol.compile("allele"),
                 species=species,
                 logger=logger,
             )
         if on_fail == "reject":
             return None
-        return gene
+        return symbol
 
     return standardized_mh_symbol.compile(precision)
 

@@ -17,13 +17,13 @@ QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
 
 
 def query(
-    species: str = "homosapiens",
-    precision: str = "allele",
-    functionality: str = "any",
+    species: Optional[str] = None,
+    precision: Optional[str] = None,
+    functionality: Optional[str] = None,
     contains_pattern: Optional[str] = None,
 ) -> FrozenSet[str]:
     """
-    Query the list of all known TR genes/alleles.
+    Query the list of all known TR genes / alleles.
 
     .. topic:: Supported species
 
@@ -62,7 +62,7 @@ def query(
         str
 
     :return:
-        The set of all genes/alleles that satisfy the given constraints.
+        The set of all genes / alleles that satisfy the given constraints.
     :rtype:
         FrozenSet[str]
 
@@ -78,13 +78,28 @@ def query(
         >>> tt.tr.query(species="musmusculus", precision="gene", functionality="ORF", contains_pattern="TRAV")
         frozenset({'TRAV21/DV12', 'TRAV14D-1', 'TRAV13-3', 'TRAV9D-2', 'TRAV5D-4', 'TRAV12D-3', 'TRAV12-1', 'TRAV18', 'TRAV11D'})
     """
-    Parameter(species, "species").throw_error_if_not_of_type(str)
-    Parameter(precision, "precision").throw_error_if_not_one_of("allele", "gene")
-    Parameter(functionality, "functionality").throw_error_if_not_one_of(
-        "any", "F", "NF", "P", "ORF"
+    species = (
+        Parameter(species, "species")
+        .set_default("homosapiens")
+        .throw_error_if_not_of_type(str)
+        .value
     )
-    Parameter(contains_pattern, "contains_pattern").throw_error_if_not_of_type(
-        str, optional=True
+    precision = (
+        Parameter(precision, "precision")
+        .set_default("allele")
+        .throw_error_if_not_one_of("allele", "gene")
+        .value
+    )
+    functionality = (
+        Parameter(functionality, "functionality")
+        .set_default("any")
+        .throw_error_if_not_one_of("any", "F", "NF", "P", "ORF")
+        .value
+    )
+    contains_pattern = (
+        Parameter(contains_pattern, "contains_pattern")
+        .throw_error_if_not_of_type(str, optional=True)
+        .value
     )
 
     species = _utils.clean_and_lowercase(species)
