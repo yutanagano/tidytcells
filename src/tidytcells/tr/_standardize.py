@@ -1,5 +1,5 @@
+import logging
 from typing import Dict, Optional, Type
-
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
@@ -7,6 +7,9 @@ from tidytcells._standardized_gene_symbol import (
     StandardizedHomoSapiensTrSymbol,
     StandardizedMusMusculusTrSymbol,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[StandardizedGeneSymbol]] = {
@@ -167,7 +170,7 @@ def standardize(
     species_is_supported = species in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS
     if not species_is_supported:
         if not suppress_warnings:
-            _utils.warn_unsupported_species(species, "TR")
+            _utils.warn_unsupported_species(species, "TR", logger)
         return gene
 
     StandardizedTrSymbolClass = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]
@@ -181,6 +184,7 @@ def standardize(
                 original_input=gene,
                 attempted_fix=standardized_tr_symbol.compile("allele"),
                 species=species,
+                logger=logger,
             )
         if on_fail == "reject":
             return None

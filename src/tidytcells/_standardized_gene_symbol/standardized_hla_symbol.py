@@ -137,7 +137,7 @@ class StandardizedHlaSymbol(StandardizedGeneSymbol):
             return None
 
         if not self._gene_name in VALID_HOMOSAPIENS_MH:
-            return "unrecognised gene name"
+            return "unrecognized gene name"
 
         # Verify allele designators up to the level of the protein (or G/P)
         allele_designation = self._allele_designation.copy()
@@ -149,7 +149,7 @@ class StandardizedHlaSymbol(StandardizedGeneSymbol):
             try:
                 current_root = current_root[allele_designation.pop(0)]
             except KeyError:
-                return "nonexistent allele for recognised gene"
+                return "nonexistent allele for recognized gene"
 
         # If there are designator fields past the protein level, just make sure
         # they look like legitimate designator field values

@@ -50,7 +50,7 @@ class StandardizedMusMusculusMhSymbol(StandardizedGeneSymbol):
 
     def get_reason_why_invalid(self, enforce_functional: bool = False) -> Optional[str]:
         if not self._gene_name in VALID_MUSMUSCULUS_MH:
-            return "unrecognised gene name"
+            return "unrecognized gene name"
 
         return None
 

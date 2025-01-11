@@ -1,9 +1,11 @@
+import logging
 import re
 from typing import Optional
-import warnings
-
 from tidytcells._resources import VALID_HOMOSAPIENS_MH
 from tidytcells._utils import Parameter
+
+
+logger = logging.getLogger(__name__)
 
 
 CLASS_1_MATCHING_REGEX = re.compile(r"HLA-[ABCEFG]|B2M")
@@ -51,7 +53,7 @@ def get_class(
 
     if not gene in (*VALID_HOMOSAPIENS_MH, "B2M"):
         if not suppress_warnings:
-            warnings.warn(f"Unrecognised gene {gene}. Is this standardized?")
+            logger.warning(f"Unrecognized gene {gene}. Is this standardized?")
         return None
 
     if CLASS_1_MATCHING_REGEX.match(gene):
@@ -61,5 +63,5 @@ def get_class(
         return 2
 
     if not suppress_warnings:
-        warnings.warn(f"Class for {gene} unknown.")
+        logger.warning(f"Class for {gene} unknown.")
     return None

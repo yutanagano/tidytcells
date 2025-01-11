@@ -1,15 +1,17 @@
+import logging
 from typing import FrozenSet
-import warnings
-
 from tidytcells._query_engine import QueryEngine
 from tidytcells._resources import VALID_HOMOSAPIENS_MH
+
+
+logger = logging.getLogger(__name__)
 
 
 class HlaQueryEngine(QueryEngine):
     @classmethod
     def query(cls, precision: str, functionality: str) -> FrozenSet[str]:
         if precision == "allele":
-            warnings.warn(
+            logger.warning(
                 "tidytcells is not fully aware of all HLA alleles, and the "
                 "highest resolution it can provide is up to the level of the "
                 "protein (two allele designations)."

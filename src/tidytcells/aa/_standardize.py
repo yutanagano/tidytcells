@@ -1,7 +1,9 @@
-import warnings
-
+import logging
 from tidytcells._resources import AMINO_ACIDS
 from tidytcells._utils import Parameter
+
+
+logger = logging.getLogger(__name__)
 
 
 def standardize(seq: str, on_fail: str = "reject", suppress_warnings: bool = False):
@@ -77,7 +79,7 @@ def standardize(seq: str, on_fail: str = "reject", suppress_warnings: bool = Fal
     for char in seq:
         if not char in AMINO_ACIDS:
             if not suppress_warnings:
-                warnings.warn(
+                logger.warning(
                     f"Failed to standardize {original_input}: not a valid amino acid sequence."
                 )
             if on_fail == "reject":
