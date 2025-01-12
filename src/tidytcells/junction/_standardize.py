@@ -150,10 +150,17 @@ def standardize(
                 logger.warning(
                     f"Failed to standardize {original_input}: not a valid junction sequence."
                 )
+
             if on_fail == "reject":
                 return None
+
             return original_input
-        seq = "C" + seq + "F"
+
+        if not seq.startswith("C"):
+            seq = "C" + seq
+
+        if not JUNCTION_MATCHING_REGEX.match(seq):
+            seq = seq + "F"
 
     return seq
 

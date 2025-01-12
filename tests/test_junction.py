@@ -30,8 +30,8 @@ class Teststandardize:
         (
             ("casqyf", "CASQYF"),
             ("ASQY", "CASQYF"),
-            ("CASQY", "CCASQYF"),
-            ("ASQYF", "CASQYFF"),
+            ("CASQY", "CASQYF"),
+            ("ASQYF", "CASQYF"),
         ),
     )
     def test_various_corrections(self, seq, expected):
