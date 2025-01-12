@@ -16,7 +16,7 @@ QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
 
 
 def query(
-    species: Optional[str] = None,
+    species: str,
     precision: Optional[Literal["allele", "gene"]] = None,
     contains_pattern: Optional[str] = None,
 ) -> FrozenSet[str]:

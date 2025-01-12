@@ -17,7 +17,7 @@ QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
 
 
 def query(
-    species: Optional[str] = None,
+    species: str,
     precision: Optional[str] = None,
     functionality: Optional[str] = None,
     contains_pattern: Optional[str] = None,
@@ -115,4 +115,5 @@ def query(
         return result
 
     results_containing_substring = [i for i in result if re.search(contains_pattern, i)]
+
     return frozenset(results_containing_substring)
