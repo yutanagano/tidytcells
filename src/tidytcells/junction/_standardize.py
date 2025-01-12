@@ -59,7 +59,7 @@ def standardize(
 
     :return:
         If possible, a standardized version of the input string is returned.
-        If the input string cannot be standardized, the function follows the behaviour as set by ``on_fail``.
+        If the input string cannot be standardized, the function follows the behaviour as set by `on_fail`.
     :rtype:
         Union[str, None]
 
@@ -67,17 +67,17 @@ def standardize(
 
         Strings that look like junction sequences will be accepted, and returned in capitalised form.
 
-        >>> tt.junction.standardize("csadaff")
-        'CSADAFF'
+        >>> tt.junction.standardize("csadaf")
+        'CSADAF'
 
-        Strings that are valid amino acid sequences but do not stard and end with the appropriate residues will have a C and an F appended to its beginning and end respectively.
+        Strings that are valid amino acid sequences but do not stard and end with the appropriate residues will have a C and an F appended to its beginning and end as required.
 
-        >>> tt.junction.standardize("sadaf")
-        'CSADAFF'
+        >>> tt.junction.standardize("sada")
+        'CSADAF'
 
-        However, setting ``strict`` to ``True`` will cause these cases to be rejected.
+        However, setting `strict` to ``True`` will cause these cases to be rejected.
 
-        >>> result = tt.junction.standardize("sadaf", strict=True)
+        >>> result = tt.junction.standardize("sada", strict=True)
         Input sadaf was rejected as it is not a valid junction sequence.
         >>> print(result)
         None
@@ -92,11 +92,11 @@ def standardize(
             IF input sequence contains non-amino acid symbols:
                 set standardization status to failed
 
-            IF input sequence does not start with C and end with F:
+            IF input sequence does not start with C and end with W / F:
                 IF strict is set to True:
                     set standardization status to failed
                 ELSE:
-                    add C to the beginning and F to the end of the input sequence
+                    add C to the beginning and F to the end of the input sequence as required
                     set standardization status to successful
             ELSE:
                 set standardization status to successful
