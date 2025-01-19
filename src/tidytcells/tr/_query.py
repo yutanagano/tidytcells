@@ -17,7 +17,7 @@ QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
 
 
 def query(
-    species: str,
+    species: Optional[str] = None,
     precision: Optional[str] = None,
     functionality: Optional[str] = None,
     contains_pattern: Optional[str] = None,

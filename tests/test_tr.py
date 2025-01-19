@@ -233,6 +233,11 @@ class TestQuery:
         assert expected_in in result
         assert not expected_not_in in result
 
+    def test_query_default_species(self):
+        result = tr.query(precision="gene", contains_pattern="AJ")
+        assert len(result) == 61
+        assert "TRAJ11" in result
+
 
 class TestGetAaSequence:
     @pytest.mark.parametrize(

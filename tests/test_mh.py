@@ -189,6 +189,12 @@ class TestQuery:
         assert expected_in in result
         assert not expected_not_in in result
 
+    def test_query_default_species(self):
+        result = mh.query(precision="gene", contains_pattern="DR")
+
+        assert len(result) == 10
+        assert "HLA-DRA" in result
+
 
 class TestGetChain:
     @pytest.mark.parametrize(
