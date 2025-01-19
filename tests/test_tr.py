@@ -17,8 +17,20 @@ class TestStandardize:
 
     def test_default_homosapiens(self):
         result = tr.standardize("TRBV20/OR9-2*01")
-
         assert result == "TRBV20/OR9-2*01"
+
+    @pytest.mark.parametrize(
+        ("symbol", "expected"),
+        (
+            ("TRBV20/OR9-2*01", "TRBV20/OR9-2*01"),
+            ("TCRAV14/4", "TRAV14/DV4"),
+            ("TRAV15-1-DV6-1", "TRAV15-1/DV6-1"),
+            ("TRAV15/DV6", "TRAV15-1/DV6-1"),
+        )
+    )
+    def test_any_species(self, symbol, expected):
+        result = tr.standardize(symbol, species="any")
+        assert result == expected
 
     @pytest.mark.parametrize(
         ("symbol", "expected"),
