@@ -17,8 +17,20 @@ class TestStandardize:
 
     def test_default_homosapiens(self):
         result = mh.standardize("HLA-B*07")
-
         assert result == "HLA-B*07"
+
+    @pytest.mark.parametrize(
+        ("symbol", "expected"),
+        (
+            ("HLA-B8", "HLA-B*08"),
+            ("A1", "HLA-A*01"),
+            ("H-2Eb1", "MH2-EB1"),
+            ("H-2Aa", "MH2-AA")
+        )
+    )
+    def test_any_species(self, symbol, expected):
+        result = mh.standardize(symbol, species="any")
+        assert result == expected
 
     @pytest.mark.parametrize(
         ("symbol", "expected", "precision"),
