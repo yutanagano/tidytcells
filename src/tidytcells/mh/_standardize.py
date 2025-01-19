@@ -45,8 +45,13 @@ def standardize(
     :type symbol:
         str
     :param species:
-        Species to which the MH gene belongs (see above for supported species).
+        Can be specified to standardise to a TR symbol that is known to be valid for that species (see above for supported species).
+        If set to ``"any"``, then first attempts standardisation for *Homo sapiens*, then *Mus musculus*.
         Defaults to ``"homosapiens"``.
+
+        .. note::
+            From version 3, the default behaviour will change to ``"any"``.
+
     :type species:
         str
     :param precision:
@@ -188,8 +193,38 @@ def standardize(
 
     species = _utils.clean_and_lowercase(species)
 
-    species_is_supported = species in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS
-    if not species_is_supported:
+    if species == "any":
+        best_attempt_invalid_reason = None
+        best_attempt_standardised_symbol = None
+        best_attempt_species = None
+
+        for species, StandardizedMhSymbolClass in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
+            standardized_tr_symbol = StandardizedMhSymbolClass(symbol)
+            invalid_reason = standardized_tr_symbol.get_reason_why_invalid()
+
+            if invalid_reason is None:
+                return standardized_tr_symbol.compile(precision)
+
+            if species == "homosapiens":
+                best_attempt_invalid_reason = invalid_reason
+                best_attempt_standardised_symbol = standardized_tr_symbol
+                best_attempt_species = species
+
+        if log_failures:
+            _utils.warn_failure(
+                reason_for_failure=best_attempt_invalid_reason,
+                original_input=symbol,
+                attempted_fix=best_attempt_standardised_symbol.compile("allele"),
+                species=best_attempt_species,
+                logger=logger,
+            )
+
+        if on_fail == "reject":
+            return None
+
+        return symbol
+
+    if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
             _utils.warn_unsupported_species(species, "MH", logger)
         return symbol
@@ -198,20 +233,23 @@ def standardize(
     standardized_mh_symbol = StandardizedMhSymbolClass(symbol)
 
     invalid_reason = standardized_mh_symbol.get_reason_why_invalid()
-    if invalid_reason is not None:
-        if log_failures:
-            _utils.warn_failure(
-                reason_for_failure=invalid_reason,
-                original_input=symbol,
-                attempted_fix=standardized_mh_symbol.compile("allele"),
-                species=species,
-                logger=logger,
-            )
-        if on_fail == "reject":
-            return None
-        return symbol
 
-    return standardized_mh_symbol.compile(precision)
+    if invalid_reason is None:
+        return standardized_mh_symbol.compile(precision)
+
+    if log_failures:
+        _utils.warn_failure(
+            reason_for_failure=invalid_reason,
+            original_input=symbol,
+            attempted_fix=standardized_mh_symbol.compile("allele"),
+            species=species,
+            logger=logger,
+        )
+
+    if on_fail == "reject":
+        return None
+
+    return symbol
 
 
 def standardise(*args, **kwargs):
