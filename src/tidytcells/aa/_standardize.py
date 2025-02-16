@@ -12,7 +12,7 @@ def standardize(
     on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,
-):
+) -> Optional[str]:
     """
     Ensures that a string value looks like a valid amino acid sequence.
 
@@ -42,7 +42,7 @@ def standardize(
         Capitalised version of `seq`, if seq is a valid amino acid sequence.
         Otherwise follow behaviour set by `on_fail`.
     :rtype:
-        Union[str, None]
+        Optional[str]
 
     .. topic:: Example usage
 
@@ -99,7 +99,7 @@ def standardize(
     seq = seq.upper()
 
     for char in seq:
-        if not char in AMINO_ACIDS:
+        if char not in AMINO_ACIDS:
             if log_failures:
                 logger.warning(
                     f"Failed to standardize {original_input}: not a valid amino acid sequence."
@@ -111,7 +111,7 @@ def standardize(
     return seq
 
 
-def standardise(*args, **kwargs):
+def standardise(*args, **kwargs) -> Optional[str]:
     """
     Alias for :py:func:`tidytcells.aa.standardize`.
     """

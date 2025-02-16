@@ -17,7 +17,7 @@ def get_class(
     log_failures: Optional[bool] = None,
     gene: Optional[str] = None,
     suppress_warnings: Optional[bool] = None,
-) -> int:
+) -> Optional[int]:
     """
     Given a standardized MH gene / allele symbol, detect whether it comprises a class I (MH1) or II (MH2) receptor.
 
@@ -47,7 +47,7 @@ def get_class(
     :return:
         ``1`` or ``2`` if ``gene`` is recognised and its class is known, else ``None``.
     :rtype:
-        Union[int, None]
+        Optional[int]
 
     .. topic:: Example usage
 

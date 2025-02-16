@@ -17,7 +17,7 @@ def get_chain(
     log_failures: Optional[bool] = None,
     gene: Optional[str] = None,
     suppress_warnings: Optional[bool] = None,
-) -> str:
+) -> Optional[str]:
     """
     Given a standardized MH gene / allele symbol, detect whether it codes for an alpha chain, beta chain, or beta-2 microglobulin (B2M) molecule.
 
@@ -47,7 +47,7 @@ def get_chain(
     :return:
         ``'alpha'`` or ``'beta'`` if `symbol` is recognised and its chain is known, else ``None``.
     :rtype:
-        Union[str, None]
+        Optional[str]
 
     .. topic:: Example usage
 
@@ -77,7 +77,7 @@ def get_chain(
 
     symbol = symbol.split("*")[0]
 
-    if not symbol in (*VALID_HOMOSAPIENS_MH, "B2M"):
+    if symbol not in (*VALID_HOMOSAPIENS_MH, "B2M"):
         if log_failures:
             logger.warning(f"Unrecognized gene {symbol}. Is this standardized?")
         return None

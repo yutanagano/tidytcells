@@ -2,14 +2,13 @@ import logging
 import re
 from tidytcells import aa
 from typing import Literal, Optional
-
 from tidytcells._utils.parameter import Parameter
 
 
 logger = logging.getLogger(__name__)
 
 
-JUNCTION_MATCHING_REGEX = re.compile(f"^C[A-Z]*[FW]$")
+JUNCTION_MATCHING_REGEX = re.compile(r"^C[A-Z]*[FW]$")
 
 
 def standardize(
@@ -18,7 +17,7 @@ def standardize(
     on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,
-):
+) -> Optional[str]:
     """
     Ensures that a string value looks like a valid junction (CDR3) amino acid sequence.
     This function is a special variant of :py:func:`tidytcells.aa.standardize`.
@@ -61,7 +60,7 @@ def standardize(
         If possible, a standardized version of the input string is returned.
         If the input string cannot be standardized, the function follows the behaviour as set by `on_fail`.
     :rtype:
-        Union[str, None]
+        Optional[str]
 
     .. topic:: Example usage
 
@@ -165,7 +164,7 @@ def standardize(
     return seq
 
 
-def standardise(*args, **kwargs):
+def standardise(*args, **kwargs) -> Optional[str]:
     """
     Alias for :py:func:`tidytcells.junction.standardize`.
     """
