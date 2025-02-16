@@ -27,7 +27,7 @@ def standardize(
     log_failures: Optional[str] = None,
     gene: Optional[str] = None,
     suppress_warnings: Optional[bool] = None,
-) -> str:
+) -> Optional[str]:
     """
     Attempt to standardize a TR gene / allele symbol to be IMGT-compliant.
 
@@ -222,9 +222,14 @@ def standardize(
         best_attempt_standardised_symbol = None
         best_attempt_species = None
 
-        for species, StandardizedTrSymbolClass in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
+        for (
+            species,
+            StandardizedTrSymbolClass,
+        ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
             standardized_tr_symbol = StandardizedTrSymbolClass(symbol)
-            invalid_reason = standardized_tr_symbol.get_reason_why_invalid(enforce_functional)
+            invalid_reason = standardized_tr_symbol.get_reason_why_invalid(
+                enforce_functional
+            )
 
             if invalid_reason is None:
                 return standardized_tr_symbol.compile(precision)
@@ -246,7 +251,7 @@ def standardize(
             return None
         return symbol
 
-    if not species in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
+    if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
             _utils.warn_unsupported_species(species, "TR", logger)
         return symbol
@@ -274,7 +279,7 @@ def standardize(
     return symbol
 
 
-def standardise(*args, **kwargs):
+def standardise(*args, **kwargs) -> Optional[str]:
     """
     Alias for :py:func:`tidytcells.tr.standardize`.
     """
