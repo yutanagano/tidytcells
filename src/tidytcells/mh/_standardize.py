@@ -26,7 +26,7 @@ def standardize(
     log_failures: Optional[bool] = None,
     gene: Optional[str] = None,
     suppress_warnings: Optional[bool] = None,
-) -> tuple:
+) -> Optional[str]:
     """
     Attempt to standardize an MH gene / allele symbol to be IMGT-compliant.
 
@@ -89,7 +89,7 @@ def standardize(
         If `species` is unsupported, then the function does not attempt to standardize, and returns the unaltered `symbol` string.
         Else follows the behvaiour as set by `on_fail`.
     :rtype:
-        Union[str, None]
+        Optional[str]
 
     .. topic:: Example usage
 
@@ -198,7 +198,10 @@ def standardize(
         best_attempt_standardised_symbol = None
         best_attempt_species = None
 
-        for species, StandardizedMhSymbolClass in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
+        for (
+            species,
+            StandardizedMhSymbolClass,
+        ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
             standardized_tr_symbol = StandardizedMhSymbolClass(symbol)
             invalid_reason = standardized_tr_symbol.get_reason_why_invalid()
 
@@ -252,7 +255,7 @@ def standardize(
     return symbol
 
 
-def standardise(*args, **kwargs):
+def standardise(*args, **kwargs) -> Optional[str]:
     """
     Alias for :py:func:`tidytcells.mh.standardize`.
     """
