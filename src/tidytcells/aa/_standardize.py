@@ -42,7 +42,7 @@ def standardize(
         Capitalised version of `seq`, if seq is a valid amino acid sequence.
         Otherwise follow behaviour set by `on_fail`.
     :rtype:
-        Union[str, None]
+        Optional[str]
 
     .. topic:: Example usage
 

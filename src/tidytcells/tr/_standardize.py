@@ -89,7 +89,7 @@ def standardize(
         If `species` is unsupported, then the function does not attempt to standardize , and returns the unaltered `symbol` string.
         Else follows the behaviour as set by `on_fail`.
     :rtype:
-        Union[str, None]
+        Optional[str]
 
     .. topic:: Example usage
 

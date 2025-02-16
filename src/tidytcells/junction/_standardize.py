@@ -60,7 +60,7 @@ def standardize(
         If possible, a standardized version of the input string is returned.
         If the input string cannot be standardized, the function follows the behaviour as set by `on_fail`.
     :rtype:
-        Union[str, None]
+        Optional[str]
 
     .. topic:: Example usage
 
