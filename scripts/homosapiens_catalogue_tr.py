@@ -17,60 +17,62 @@ def main() -> None:
     script_utility.save_as_json(sequence_data, "homosapiens_tr_aa_sequences.json")
 
 
-def get_synonyms_data(valid_alleles: Iterable[str]) -> dict:
+def get_synonyms_data(valid_alleles: Iterable[str], is_tr=True) -> dict:
     hgnc = script_utility.fetch_hgnc_data()
 
-    tr_genes = hgnc[hgnc["Locus type"].str.contains("T cell receptor gene")].copy()
-    tr_genes["Approved symbol"] = tr_genes["Approved symbol"].str.replace(
+    field_name = "T cell receptor gene" if is_tr else "immunoglobulin gene"
+    genes = hgnc[hgnc["Locus type"].str.contains(field_name)].copy()
+
+    genes["Approved symbol"] = genes["Approved symbol"].str.replace(
         r"(?<!TR)DV", "/DV", regex=True
     )
-    tr_genes["Approved symbol"] = tr_genes["Approved symbol"].str.replace(
+    genes["Approved symbol"] = genes["Approved symbol"].str.replace(
         r"OR", "/OR", regex=True
     )
 
     # Only keep genes whose 'approved symbols' are in our IMGT list
-    tr_genes = tr_genes[
-        tr_genes["Approved symbol"].map(lambda x: x in valid_alleles)
+    genes = genes[
+        genes["Approved symbol"].map(lambda x: x in valid_alleles)
     ].copy()
 
     # Get TR genes with "alias symbols"
-    tr_genes_with_aliases = tr_genes[tr_genes["Alias symbols"].notna()][
+    genes_with_aliases = genes[genes["Alias symbols"].notna()][
         ["Approved symbol", "Alias symbols"]
     ]
-    tr_genes_with_aliases["Alias symbols"] = tr_genes_with_aliases["Alias symbols"].map(
+    genes_with_aliases["Alias symbols"] = genes_with_aliases["Alias symbols"].map(
         lambda x: [element.strip() for element in x.split(",")]
     )
-    tr_genes_with_aliases.columns = ["Approved symbol", "Synonym"]
-    tr_genes_with_aliases = tr_genes_with_aliases.explode("Synonym")
+    genes_with_aliases.columns = ["Approved symbol", "Synonym"]
+    genes_with_aliases = genes_with_aliases.explode("Synonym")
 
     # Get TR genes with "previous symbols" (deprecated symbols)
-    tr_genes_with_depnames = tr_genes[tr_genes["Previous symbols"].notna()][
+    genes_with_depnames = genes[genes["Previous symbols"].notna()][
         ["Approved symbol", "Previous symbols"]
     ]
-    tr_genes_with_depnames["Previous symbols"] = tr_genes_with_depnames[
+    genes_with_depnames["Previous symbols"] = genes_with_depnames[
         "Previous symbols"
     ].map(lambda x: [element.strip() for element in x.split(",")])
-    tr_genes_with_depnames.columns = ["Approved symbol", "Synonym"]
-    tr_genes_with_depnames = tr_genes_with_depnames.explode("Synonym")
+    genes_with_depnames.columns = ["Approved symbol", "Synonym"]
+    genes_with_depnames = genes_with_depnames.explode("Synonym")
 
     # Combine
-    tr_synonyms = pd.concat([tr_genes_with_aliases, tr_genes_with_depnames])
+    synonyms = pd.concat([genes_with_aliases, genes_with_depnames])
 
     # Remove redundant synonyms
-    tr_synonyms = tr_synonyms[tr_synonyms["Approved symbol"] != tr_synonyms["Synonym"]]
+    synonyms = synonyms[synonyms["Approved symbol"] != synonyms["Synonym"]]
 
     # Remove ambiguous synonyms
-    tr_synonyms = tr_synonyms.groupby("Synonym").aggregate(lambda x: x.tolist())
-    tr_synonyms = tr_synonyms[tr_synonyms["Approved symbol"].map(len) == 1].copy()
-    tr_synonyms["Approved symbol"] = tr_synonyms["Approved symbol"].map(
+    synonyms = synonyms.groupby("Synonym").aggregate(lambda x: x.tolist())
+    synonyms = synonyms[synonyms["Approved symbol"].map(len) == 1].copy()
+    synonyms["Approved symbol"] = synonyms["Approved symbol"].map(
         lambda x: x.pop()
     )
-    tr_synonyms.index = tr_synonyms.index.str.upper()
+    synonyms.index = synonyms.index.str.upper()
 
     # Remove any synonyms that are also names of other valid genes
-    tr_synonyms = tr_synonyms[tr_synonyms.index.map(lambda x: x not in valid_alleles)]
+    synonyms = synonyms[synonyms.index.map(lambda x: x not in valid_alleles)]
 
-    return tr_synonyms["Approved symbol"].to_dict()
+    return synonyms["Approved symbol"].to_dict()
 
 
 if __name__ == "__main__":
