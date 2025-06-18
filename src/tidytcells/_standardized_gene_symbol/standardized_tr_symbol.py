@@ -75,7 +75,7 @@ class StandardizedTrSymbol(StandardizedSymbol):
 
         if not skip_dash1_section:
             original = self._gene_name
-            for variant in self._generate_dash1_variatns():
+            for variant in self._generate_dash1_variants():
                 self._gene_name = variant
                 self._resolve_gene_name(skip_dash1_section=True)
                 if self._has_valid_gene_name():
@@ -119,7 +119,7 @@ class StandardizedTrSymbol(StandardizedSymbol):
                     f"TRAV{parse_attempt.group(1)}/{parse_attempt.group(2)}"
                 )
 
-    def _generate_dash1_variatns(self) -> List[str]:
+    def _generate_dash1_variants(self) -> List[str]:
         all_gene_nums = [
             (m.group(0), m.start(0), m.end(0))
             for m in re.finditer(r"\d+(-\d+)?", self._gene_name)
