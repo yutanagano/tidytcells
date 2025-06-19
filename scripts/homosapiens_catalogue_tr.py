@@ -17,7 +17,7 @@ def main() -> None:
     script_utility.save_as_json(sequence_data, "homosapiens_tr_aa_sequences.json")
 
 
-def get_synonyms_data(valid_alleles: Iterable[str], is_tr=True) -> dict:
+def get_synonyms_data(valid_alleles: Iterable[str], is_tr: bool = True) -> dict:
     hgnc = script_utility.fetch_hgnc_data()
 
     field_name = "T cell receptor gene" if is_tr else "immunoglobulin gene"
