@@ -4715,75 +4715,99 @@
         "D-REGION": "LTG"
     },
     "IGHJ1*01": {
-        "J-REGION": "AEYFQHWGQGTLVTVSS"
+        "J-REGION": "AEYFQHWGQGTLVTVSS",
+        "J-TRP": "W"
     },
     "IGHJ2*01": {
-        "J-REGION": "YWYFDLWGRGTLVTVSS"
+        "J-REGION": "YWYFDLWGRGTLVTVSS",
+        "J-TRP": "W"
     },
     "IGHJ3*01": {
-        "J-REGION": "DAFDVWGQGTMVTVSS"
+        "J-REGION": "DAFDVWGQGTMVTVSS",
+        "J-TRP": "W"
     },
     "IGHJ3*02": {
-        "J-REGION": "DAFDIWGQGTMVTVSS"
+        "J-REGION": "DAFDIWGQGTMVTVSS",
+        "J-TRP": "W"
     },
     "IGHJ4*01": {
-        "J-REGION": "YFDYWGQGTLVTVSS"
+        "J-REGION": "YFDYWGQGTLVTVSS",
+        "J-TRP": "W"
     },
     "IGHJ4*02": {
-        "J-REGION": "YFDYWGQGTLVTVSS"
+        "J-REGION": "YFDYWGQGTLVTVSS",
+        "J-TRP": "W"
     },
     "IGHJ4*03": {
-        "J-REGION": "YFDYWGQGTLVTVSS"
+        "J-REGION": "YFDYWGQGTLVTVSS",
+        "J-TRP": "W"
     },
     "IGHJ5*01": {
-        "J-REGION": "NWFDSWGQGTLVTVSS"
+        "J-REGION": "NWFDSWGQGTLVTVSS",
+        "J-TRP": "W"
     },
     "IGHJ5*02": {
-        "J-REGION": "NWFDPWGQGTLVTVSS"
+        "J-REGION": "NWFDPWGQGTLVTVSS",
+        "J-TRP": "W"
     },
     "IGHJ5*04": {
-        "J-REGION": "NWFDPWGQGTLVSVSS"
+        "J-REGION": "NWFDPWGQGTLVSVSS",
+        "J-TRP": "W"
     },
     "IGHJ6*01": {
-        "J-REGION": "YYYYYGMDVWGQGTTVTVSS"
+        "J-REGION": "YYYYYGMDVWGQGTTVTVSS",
+        "J-TRP": "W"
     },
     "IGHJ6*02": {
-        "J-REGION": "YYYYYGMDVWGQGTTVTVSS"
+        "J-REGION": "YYYYYGMDVWGQGTTVTVSS",
+        "J-TRP": "W"
     },
     "IGHJ6*03": {
-        "J-REGION": "YYYYYYMDVWGKGTTVTVSS"
+        "J-REGION": "YYYYYYMDVWGKGTTVTVSS",
+        "J-TRP": "W"
     },
     "IGHJ6*04": {
-        "J-REGION": "YYYYYGMDVWGKGTTVTVSS"
+        "J-REGION": "YYYYYGMDVWGKGTTVTVSS",
+        "J-TRP": "W"
     },
     "IGLJ1*01": {
-        "J-REGION": "YVFGTGTKVTVL"
+        "J-REGION": "YVFGTGTKVTVL",
+        "J-PHE": "F"
     },
     "IGLJ2*01": {
-        "J-REGION": "VVFGGGTKLTVL"
+        "J-REGION": "VVFGGGTKLTVL",
+        "J-PHE": "F"
     },
     "IGLJ3*01": {
-        "J-REGION": "VVFGGGTKLTVL"
+        "J-REGION": "VVFGGGTKLTVL",
+        "J-PHE": "F"
     },
     "IGLJ3*02": {
-        "J-REGION": "WVFGGGTKLTVL"
+        "J-REGION": "WVFGGGTKLTVL",
+        "J-PHE": "F"
     },
     "IGLJ4*01": {
-        "J-REGION": "FVFGGGTQLIIL"
+        "J-REGION": "FVFGGGTQLIIL",
+        "J-PHE": "F"
     },
     "IGLJ5*01": {
-        "J-REGION": "WVFGEGTELTVL"
+        "J-REGION": "WVFGEGTELTVL",
+        "J-PHE": "F"
     },
     "IGLJ5*02": {
-        "J-REGION": "WVFGEGTELTVL"
+        "J-REGION": "WVFGEGTELTVL",
+        "J-TRP": "F"
     },
     "IGLJ6*01": {
-        "J-REGION": "NVFGSGTKVTVL"
+        "J-REGION": "NVFGSGTKVTVL",
+        "J-PHE": "F"
     },
     "IGLJ7*01": {
-        "J-REGION": "AVFGGGTQLTVL"
+        "J-REGION": "AVFGGGTQLTVL",
+        "J-PHE": "F"
     },
     "IGLJ7*02": {
-        "J-REGION": "AVFGGGTQLTAL"
+        "J-REGION": "AVFGGGTQLTAL",
+        "J-TRP": "F"
     }
 }
