@@ -14,8 +14,16 @@ def _get_conserved_aa_exact_symbol(aa_dict, j_symbol):
         return aa_dict[j_symbol]["J-TRP"]
 
 
+def _is_valid_extension(original, extension):
+    if extension.startswith(original):
+        if original[-1].isnumeric() and extension[len(original):].isnumeric():
+            return False # cannot concatenate numbers if original ends with a number (e.g., TRAV1 to TRAV13 is not valid)
+        return True
+    return False
+
+
 def _get_all_extended_symbols(j_symbol, aa_dict):
-    return sorted(list({key for key in aa_dict.keys() if key.startswith(j_symbol)}))
+    return sorted(list({key for key in aa_dict.keys() if _is_valid_extension(j_symbol, key)}))
 
 
 def _resolve_conserved_aa_from_partial_j_symbol(j_symbol, aa_dict, log_failures):
@@ -70,7 +78,7 @@ def get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures):
             return _get_conserved_aa(j_symbol, aa_dict, log_failures)
         elif log_failures:
             logger.warning(
-                f"Failed determine the conserved trailing amino acid for J symbol {j_symbol}: this feature"
+                f"Failed determine the conserved trailing amino acid for J symbol {j_symbol}: this feature "
                 f"is not supported for {j_symbol[0:2]} genes for species {species}."
             )
     else:
