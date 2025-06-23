@@ -1,6 +1,6 @@
 import logging
 import re
-from tidytcells import aa
+from tidytcells import aa, _utils
 from typing import Literal, Optional
 from tidytcells._utils.parameter import Parameter
 from tidytcells._utils.conserved_aa_lookup import get_conserved_aa_for_j_symbol_for_species
@@ -182,6 +182,7 @@ def standardize(
     junction_matching_regex = re.compile(r"^C[A-Z]*[FW]$")
 
     if j_symbol:
+        species = _utils.clean_and_lowercase(species)
         conserved_aa = get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures=log_failures)
         if conserved_aa is None:
             if on_fail == "reject":
