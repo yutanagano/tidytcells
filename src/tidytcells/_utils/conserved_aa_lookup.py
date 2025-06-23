@@ -16,7 +16,7 @@ def _get_conserved_aa_exact_symbol(aa_dict, j_symbol):
 
 def _is_valid_extension(original, extension):
     if extension.startswith(original):
-        if original[-1].isnumeric() and extension[len(original):].isnumeric():
+        if original[-1].isnumeric() and extension[len(original)].isnumeric():
             return False # cannot concatenate numbers if original ends with a number (e.g., TRAV1 to TRAV13 is not valid)
         return True
     return False
