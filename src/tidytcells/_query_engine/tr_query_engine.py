@@ -4,17 +4,17 @@ from typing import Dict, FrozenSet
 from tidytcells._query_engine import QueryEngine
 
 
-class TrQueryEngine(QueryEngine):
+class TrIgQueryEngine(QueryEngine):
     @property
     @abstractmethod
-    def _valid_tr_dictionary(self) -> Dict[str, Dict[int, str]]:
+    def _valid_gene_dictionary(self) -> Dict[str, Dict[int, str]]:
         pass
 
     @classmethod
     def query(cls, precision: str, functionality: str) -> FrozenSet[str]:
         query_results = []
 
-        for gene_symbol, allele_dictionary in cls._valid_tr_dictionary.items():
+        for gene_symbol, allele_dictionary in cls._valid_gene_dictionary.items():
             if precision == "gene":
                 if cls._gene_matches_functionality_requirements(
                     allele_dictionary, functionality
