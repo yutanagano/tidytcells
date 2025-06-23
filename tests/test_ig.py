@@ -246,6 +246,7 @@ class TestGetAaSequence:
                 "homosapiens",
                 {
                     "J-REGION": "AEYFQHWGQGTLVTVSS",
+                    "J-TRP": "W"
                 },
             )
         ),
