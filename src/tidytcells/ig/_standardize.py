@@ -22,7 +22,7 @@ def standardize(
     enforce_functional: Optional[bool] = None,
     precision: Optional[Literal["allele", "gene"]] = None,
     on_fail: Optional[Literal["reject", "keep"]] = None,
-    log_failures: Optional[str] = None,
+    log_failures: Optional[bool] = None,
     gene: Optional[str] = None,
     suppress_warnings: Optional[bool] = None,
 ) -> Optional[str]:
