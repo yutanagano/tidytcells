@@ -8,7 +8,7 @@ from tidytcells._standardized_gene_symbol import StandardizedSymbol
 
 class IgSymbolParser:
     gene_name: str
-    allele_designation: int
+    allele_designation: Optional[str]
 
     def __init__(self, ig_symbol: str) -> None:
         parse_attempt = re.match(r"^([A-Z0-9\-\.\(\)\/ab]+)(\*(\d+))?", ig_symbol)
