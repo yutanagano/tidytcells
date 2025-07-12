@@ -113,7 +113,7 @@ Since :py:mod:`tidytcells` has a local copy of all relevant data pulled directly
 Querying TR/IG gene amino acid sequence data from `IMGT GENE-DB <https://www.imgt.org/genedb/>`_
 -------------------------------------------------------------------------------------------------
 
-Sometimes, you have a T cell receptor or immunoglobulin (IG) represented as its V and J gene usages and its junction sequences, but you want to represent it in terms of its amino acid sequence.
+Sometimes, you have a T cell receptor or immunoglobulin represented as its V and J gene usages and its junction sequences, but you want to represent it in terms of its amino acid sequence.
 In such situations, the :py:func:`tidytcells.tr.get_aa_sequence` and :py:func:`tidytcells.ig.get_aa_sequence` functions can help.
 These functions allow you to query amino acid sequence data for any functional TR or IG gene.
 The functions provide sequence data for the whole gene exome, as well as certain important regions (e.g. CDR1 and CDR2 in the V genes).
