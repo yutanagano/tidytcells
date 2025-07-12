@@ -14,7 +14,7 @@
 
 ---
 
-`tidytcells` is a lightweight python package that cleans and standardizes T cell receptor (TR) and Major Histocompatibility (MH) data to be [IMGT](https://www.imgt.org/)-compliant.
+`tidytcells` is a lightweight python package that cleans and standardizes T cell receptor (TR), Major Histocompatibility (MH), and Immunoglobulin (IG) data to be [IMGT](https://www.imgt.org/)-compliant.
 The main purpose of the package is to solve the problem of parsing and collating together non-standardized TR datasets.
 It is often difficult to compile TR data from multiple sources because the formats/nomenclature of how each dataset encodes TR and MH gene names are slightly different, or even inconsistent within themselves.
 `tidytcells` can ameliorate this issue by auto-correcting and auto-standardizing your data.
@@ -30,6 +30,7 @@ $ pip install tidytcells
 Please cite [our manuscript](https://www.frontiersin.org/journals/immunology/articles/10.3389/fimmu.2023.1276106).
 
 ### BibTex
+
 ```bibtex
 @ARTICLE{10.3389/fimmu.2023.1276106,
          AUTHOR={Nagano, Yuta  and Chain, Benjamin },
