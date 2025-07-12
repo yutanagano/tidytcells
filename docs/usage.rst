@@ -22,6 +22,10 @@ The submodules are:
 | :py:mod:`tidytcells.tr`       | TR gene/allele data                                      |
 +-------------------------------+----------------------------------------------------------+
 
+.. tip::
+   
+   The :py:mod:`tidytcells.ig` submodule is newly added! It provides functionality for standardizing, querying, and retrieving amino acid sequences for immunoglobulin genes/alleles, similar to the existing TR and MH modules.
+
 For ease of use, function APIs are standardized accross modules wherever possible- for example, each module has a function named ``standardize`` (see below) which standardizes data from each category to be IMGT-compliant (`IMGT/GENE-DB <https://www.imgt.org/genedb/>`_, `IMGT Repertoire <https://www.imgt.org/IMGTrepertoire/>`_).
 Refer to :ref:`here <api>` for a full review of :py:mod:`tidytcells`' API.
 
