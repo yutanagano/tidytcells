@@ -13,6 +13,8 @@ The submodules are:
 +===============================+==========================================================+
 | :py:mod:`tidytcells.aa`       | General amino acid sequence data (e.g. peptide epitopes) |
 +-------------------------------+----------------------------------------------------------+
+| :py:mod:`tidytcells.ig`       | IG gene/allele data                                      |
++-------------------------------+----------------------------------------------------------+
 | :py:mod:`tidytcells.junction` | TR JUNCTION or CDR3-IMGT amino acid sequence data        |
 +-------------------------------+----------------------------------------------------------+
 | :py:mod:`tidytcells.mh`       | MH gene/allele data                                      |
@@ -93,12 +95,12 @@ For use cases that require more flexibility, one could even define a wrapper fun
 
 For more complete documentations of the ``standardize`` functions, refer to :ref:`the api reference <api>`.
 
-Querying from `IMGT TR/MH genes or alleles <https://www.imgt.org/IMGTrepertoire/>`_
------------------------------------------------------------------------------------
+Querying from `IMGT TR/MH/IG genes or alleles <https://www.imgt.org/IMGTrepertoire/>`_
+--------------------------------------------------------------------------------------
 
-:py:mod:`tidytcells` also provides the nifty functions :py:func:`tidytcells.tr.query` and :py:func:`tidytcells.mh.query` that allows users to obtain a list (actually a ``FrozenSet``) of `IMGT gene/allele names <https://www.imgt.org/IMGTrepertoire/>`_ from the respective categories.
+:py:mod:`tidytcells` also provides the nifty functions :py:func:`tidytcells.tr.query`, :py:func:`tidytcells.mh.query`, and :py:func:`tidytcells.ig.query` that allows users to obtain a list (actually a ``FrozenSet``) of `IMGT gene/allele names <https://www.imgt.org/IMGTrepertoire/>`_ from the respective categories.
 The functions allow the user to provide various constraints relating to the genes/alleles' functionalities and names to filter the query results as well.
-The ``query`` functions can be useful when checking if a particular dataset covers all the TR or MH genes, or counting how many genes fulfill a particular set of constraints.
+The ``query`` functions can be useful when checking if a particular dataset covers all the TR, MH, or IG genes, or counting how many genes fulfill a particular set of constraints.
 Since :py:mod:`tidytcells` has a local copy of all relevant data pulled directly from `IMGT's GENE-DB <https://www.imgt.org/genedb/>`_ (and updated with every new release), queries are blazingly fast and do not require an internet connection.
 
 
@@ -109,7 +111,17 @@ Sometimes, you have a T cell receptor represented as its V and J gene usages and
 In such situations, the :py:func:`tidytcells.tr.get_aa_sequence` function can help.
 This function allows you to query amino acid sequence data for any functional TR gene.
 The function provides sequence data for the whole gene exome, as well as certain important regions (e.g. CDR1 and CDR2 in the V genes).
-The data is pulled from IMGT's `GENE-DB <https://www.imgt.org/genedb/>`_, and as is with the case with the :py:func:`tidytcells.tr.query` and :py:func:`tidytcells.mh.query`, all relevant data exists locally within :py:mod:`tidytcells` (and updated with every new release), so the queries are blazingly fast and requires no internet connection.
+The data is pulled from IMGT's `GENE-DB <https://www.imgt.org/genedb/>`_, and as is with the case with the :py:func:`tidytcells.tr.query`, :py:func:`tidytcells.mh.query`, and :py:func:`tidytcells.ig.query`, all relevant data exists locally within :py:mod:`tidytcells` (and updated with every new release), so the queries are blazingly fast and requires no internet connection.
+
+
+Querying IG gene amino acid sequence data from `IMGT GENE-DB <https://www.imgt.org/genedb/>`_
+---------------------------------------------------------------------------------------------
+
+Similar to T cell receptors, you may have immunoglobulin (IG) gene information and want to obtain the corresponding amino acid sequences.
+The :py:func:`tidytcells.ig.get_aa_sequence` function provides this functionality for IG genes.
+This function allows you to query amino acid sequence data for any functional IG gene.
+The function provides sequence data for important regions within IG genes (e.g. CDR1 and CDR2 in the V genes, or complete regions for J genes).
+Like the TR equivalent, all relevant data exists locally within :py:mod:`tidytcells` for fast, offline queries.
 
 Other MH utilities
 ------------------
