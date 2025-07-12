@@ -33,7 +33,7 @@ class StandardizedIgSymbol(StandardizedSymbol):
 
     @property
     @abstractmethod
-    def _valid_ig_dictionary(self) -> Dict[str, Dict[int, str]]:
+    def _valid_ig_dictionary(self) -> Dict[str, Dict[str, str]]:
         pass
 
     def __init__(self, symbol: str) -> None:
