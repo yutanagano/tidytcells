@@ -28,8 +28,27 @@ def get_tr_alleles_list(species: str) -> dict:
         "TRDJ",
     )
 
+    return get_alleles_list(species, gene_groups)
+
+def get_ig_alleles_list(species: str) -> dict:
+    gene_groups = (
+        "IGHC",
+        "IGHV",
+        "IGHD",
+        "IGHJ",
+        "IGLC",
+        "IGLV",
+        "IGLJ",
+        "IGKC",
+        "IGKV",
+        "IGKJ",
+    )
+
+    return get_alleles_list(species, gene_groups)
+
+def get_alleles_list(species: str, gene_groups: Tuple[str]) -> dict:
     alleles_per_gene_group = [
-        get_tr_alleles_for_gene_group_for_species(gene_group, species)
+        get_alleles_for_gene_group_for_species(gene_group, species)
         for gene_group in gene_groups
     ]
 
@@ -39,8 +58,7 @@ def get_tr_alleles_list(species: str) -> dict:
 
     return combined
 
-
-def get_tr_alleles_for_gene_group_for_species(gene_group: str, species: str) -> dict:
+def get_alleles_for_gene_group_for_species(gene_group: str, species: str) -> dict:
     alleles = collections.defaultdict(dict)
 
     response = requests.get(
@@ -58,27 +76,53 @@ def get_tr_alleles_for_gene_group_for_species(gene_group: str, species: str) -> 
 
 
 def get_tr_aa_sequence_data(species: str) -> dict:
-    v_gene_sequence_data = get_v_gene_sequence_data(species)
-    d_gene_sequence_data = get_d_gene_sequence_data(species)
-    j_gene_sequence_data = get_j_gene_sequence_data(species)
+    v_gene_sequence_data = get_tr_v_gene_sequence_data(species)
+    d_gene_sequence_data = get_tr_d_gene_sequence_data(species)
+    j_gene_sequence_data = get_tr_j_gene_sequence_data(species)
+    return {**v_gene_sequence_data, **d_gene_sequence_data, **j_gene_sequence_data}
+
+def get_ig_aa_sequence_data(species: str) -> dict:
+    v_gene_sequence_data = get_ig_v_gene_sequence_data(species)
+    d_gene_sequence_data = get_ig_d_gene_sequence_data(species)
+    j_gene_sequence_data = get_ig_j_gene_sequence_data(species)
     return {**v_gene_sequence_data, **d_gene_sequence_data, **j_gene_sequence_data}
 
 
-def get_v_gene_sequence_data(species: str) -> dict:
-    labels = ("FR1-IMGT", "CDR1-IMGT", "FR2-IMGT", "CDR2-IMGT", "FR3-IMGT", "V-REGION")
+def get_tr_v_gene_sequence_data(species: str) -> dict:
     gene_groups = ("TRAV", "TRBV", "TRGV", "TRDV")
-    return get_gene_sequence_data(labels, gene_groups, species)
+    return get_v_gene_sequence_data(species, gene_groups)
 
-
-def get_d_gene_sequence_data(species: str) -> dict:
-    labels = ("D-REGION",)
+def get_tr_d_gene_sequence_data(species: str) -> dict:
     gene_groups = ("TRBD", "TRDD")
+    return get_d_gene_sequence_data(species, gene_groups)
+
+def get_tr_j_gene_sequence_data(species: str) -> dict:
+    gene_groups = ("TRAJ", "TRBJ", "TRGJ", "TRDJ")
+    return get_j_gene_sequence_data(species, gene_groups)
+
+def get_ig_v_gene_sequence_data(species: str) -> dict:
+    gene_groups = ("IGHV", "IGLV", "IGKV")
+    return get_v_gene_sequence_data(species, gene_groups)
+
+def get_ig_d_gene_sequence_data(species: str) -> dict:
+    gene_groups = ("IGHD",)
+    return get_d_gene_sequence_data(species, gene_groups)
+
+def get_ig_j_gene_sequence_data(species: str) -> dict:
+    gene_groups = ("IGHJ", "IGLJ", "IGKV")
+    return get_j_gene_sequence_data(species, gene_groups)
+
+
+def get_v_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
+    labels = ("FR1-IMGT", "CDR1-IMGT", "FR2-IMGT", "CDR2-IMGT", "FR3-IMGT", "V-REGION")
     return get_gene_sequence_data(labels, gene_groups, species)
 
+def get_d_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
+    labels = ("D-REGION",)
+    return get_gene_sequence_data(labels, gene_groups, species)
 
-def get_j_gene_sequence_data(species: str) -> dict:
+def get_j_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
     labels = ("FR4-IMGT", "J-REGION")
-    gene_groups = ("TRAJ", "TRBJ", "TRGJ", "TRDJ")
     return get_gene_sequence_data(labels, gene_groups, species)
 
 

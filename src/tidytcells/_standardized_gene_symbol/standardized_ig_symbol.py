@@ -6,12 +6,12 @@ from tidytcells import _utils
 from tidytcells._standardized_gene_symbol import StandardizedSymbol
 
 
-class TrSymbolParser:
+class IgSymbolParser:
     gene_name: str
-    allele_designation: int
+    allele_designation: Optional[str]
 
-    def __init__(self, tr_symbol: str) -> None:
-        parse_attempt = re.match(r"^([A-Z0-9\-\.\(\)\/]+)(\*(\d+))?", tr_symbol)
+    def __init__(self, ig_symbol: str) -> None:
+        parse_attempt = re.match(r"^([A-Z0-9\-\.\(\)\/ab]+)(\*(\d+))?", ig_symbol)
 
         if parse_attempt:
             self.gene_name = parse_attempt.group(1)
@@ -21,11 +21,11 @@ class TrSymbolParser:
                 else f"{int(parse_attempt.group(3)):02}"
             )
         else:
-            self.gene_name = tr_symbol
+            self.gene_name = ig_symbol
             self.allele_designation = None
 
 
-class StandardizedTrSymbol(StandardizedSymbol):
+class StandardizedIgSymbol(StandardizedSymbol):
     @property
     @abstractmethod
     def _synonym_dictionary(self) -> Dict[str, str]:
@@ -33,18 +33,28 @@ class StandardizedTrSymbol(StandardizedSymbol):
 
     @property
     @abstractmethod
-    def _valid_tr_dictionary(self) -> Dict[str, Dict[int, str]]:
+    def _valid_ig_dictionary(self) -> Dict[str, Dict[str, str]]:
         pass
 
     def __init__(self, symbol: str) -> None:
-        self._parse_tr_symbol(symbol)
+        self._parse_ig_symbol(symbol)
         self._resolve_gene_name()
 
-    def _parse_tr_symbol(self, tr_symbol: str) -> None:
-        cleaned_tr_symbol = _utils.clean_and_uppercase(tr_symbol)
-        parsed_tr_symbol = TrSymbolParser(cleaned_tr_symbol)
-        self._gene_name = parsed_tr_symbol.gene_name
-        self._allele_designation = parsed_tr_symbol.allele_designation
+    def _parse_ig_symbol(self, ig_symbol: str) -> None:
+        cleaned_ig_symbol = self._safe_clean_ig_symbol(ig_symbol)
+        parsed_ig_symbol = IgSymbolParser(cleaned_ig_symbol)
+        self._gene_name = parsed_ig_symbol.gene_name
+        self._allele_designation = parsed_ig_symbol.allele_designation
+
+    def _safe_clean_ig_symbol(self, ig_symbol: str) -> str:
+        cleaned_ig_symbol = _utils.clean_and_uppercase(ig_symbol)
+
+        # Deal with lowercase a/b in genes like IGHD1/OR15-1a*01
+        match = re.search(r'(.*?OR15-\d)([AB])', cleaned_ig_symbol)
+        if match:
+            cleaned_ig_symbol = match.group(1) + match.group(2).lower() + cleaned_ig_symbol[match.end():]
+
+        return cleaned_ig_symbol
 
     def _resolve_gene_name(self, skip_dash1_section: bool = False) -> None:
         if self._has_valid_gene_name():
@@ -54,22 +64,12 @@ class StandardizedTrSymbol(StandardizedSymbol):
             self._gene_name = self._synonym_dictionary[self._gene_name]
             return
 
-        self._fix_common_errors_in_tr_gene_name()
+        self._fix_common_errors_in_ig_gene_name()
         if self._has_valid_gene_name():
             return
 
-        if not self._gene_name.startswith("TR"):
-            self._gene_name = "TR" + self._gene_name
-            if self._has_valid_gene_name():
-                return
-
-        if self._gene_name.startswith("TRAV") and "DV" not in self._gene_name:
-            self._try_resolving_trdv_designation_from_trav_info()
-            if self._has_valid_gene_name():
-                return
-
-        if "DV" in self._gene_name:
-            self._try_resolving_trav_designation_from_trdv_info()
+        if not self._gene_name.startswith("IG"):
+            self._gene_name = "IG" + self._gene_name
             if self._has_valid_gene_name():
                 return
 
@@ -83,41 +83,15 @@ class StandardizedTrSymbol(StandardizedSymbol):
             self._gene_name = original
 
     def _has_valid_gene_name(self) -> bool:
-        return self._gene_name in self._valid_tr_dictionary
+        return self._gene_name in self._valid_ig_dictionary
 
     def _is_synonym(self) -> bool:
         return self._gene_name in self._synonym_dictionary
 
-    def _fix_common_errors_in_tr_gene_name(self) -> None:
-        self._gene_name = self._gene_name.replace("TCR", "TR")
-        self._gene_name = self._gene_name.replace("S", "-")
+    def _fix_common_errors_in_ig_gene_name(self) -> None:
         self._gene_name = self._gene_name.replace(".", "-")
-        self._gene_name = re.sub(r"(?<!TR)(?<!\/)-?DV", "/DV", self._gene_name)
         self._gene_name = re.sub(r"(?<!\/)-?OR", "/OR", self._gene_name)
         self._gene_name = re.sub(r"(?<!\d)0+", "", self._gene_name)
-
-    def _try_resolving_trdv_designation_from_trav_info(self) -> None:
-        if "/" in self._gene_name:
-            split_gene_name = self._gene_name.split("/")
-            dv_segment = "DV" + split_gene_name.pop()
-            self._gene_name = "/".join([*split_gene_name, dv_segment])
-        else:
-            for valid_gene_name in self._valid_tr_dictionary:
-                if valid_gene_name.startswith(self._gene_name + "/DV"):
-                    self._gene_name = valid_gene_name
-
-    def _try_resolving_trav_designation_from_trdv_info(self) -> None:
-        if self._gene_name.startswith("TRDV"):
-            for valid_gene in self._valid_tr_dictionary:
-                dv_segment = self._gene_name[2:]
-                if re.match(rf"^TRAV\d+(-\d)?\/{dv_segment}$", valid_gene):
-                    self._gene_name = valid_gene
-        else:
-            parse_attempt = re.match(r"^TR([\d-]+)\/(DV[\d-]+)$", self._gene_name)
-            if parse_attempt:
-                self._gene_name = (
-                    f"TRAV{parse_attempt.group(1)}/{parse_attempt.group(2)}"
-                )
 
     def _generate_dash1_variants(self) -> List[str]:
         all_gene_nums = [
@@ -156,12 +130,12 @@ class StandardizedTrSymbol(StandardizedSymbol):
         return dash1_variants
 
     def get_reason_why_invalid(self, enforce_functional: bool = False) -> Optional[str]:
-        if not self._gene_name in self._valid_tr_dictionary:
+        if not self._gene_name in self._valid_ig_dictionary:
             return "unrecognized gene name"
 
         if self._allele_designation:
             allele_valid = (
-                self._allele_designation in self._valid_tr_dictionary[self._gene_name]
+                self._allele_designation in self._valid_ig_dictionary[self._gene_name]
             )
 
             if not allele_valid:
@@ -169,7 +143,7 @@ class StandardizedTrSymbol(StandardizedSymbol):
 
             if (
                 enforce_functional
-                and self._valid_tr_dictionary[self._gene_name][self._allele_designation]
+                and self._valid_ig_dictionary[self._gene_name][self._allele_designation]
                 != "F"
             ):
                 return "nonfunctional allele"
@@ -178,7 +152,7 @@ class StandardizedTrSymbol(StandardizedSymbol):
 
         if (
             enforce_functional
-            and not "F" in self._valid_tr_dictionary[self._gene_name].values()
+            and not "F" in self._valid_ig_dictionary[self._gene_name].values()
         ):
             return "gene has no functional alleles"
 
