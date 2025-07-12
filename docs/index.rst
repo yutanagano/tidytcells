@@ -22,7 +22,7 @@ It is often difficult to compile TR data from multiple sources because the forma
 
 .. tip::
   
-  The :py:mod:`tidytcells.ig` submodule is newly added! It provides functionality for standardizing, querying, and retrieving amino acid sequences for immunoglobulin genes/alleles, similar to the existing TR and MH modules.
+  The :py:mod:`tidytcells.ig` submodule is newly added! It provides functionality for standardizing, querying, and retrieving amino acid sequences for immunoglobulin genes/alleles, similar to the existing TR and MH modules. Thanks to `Lonneke <https://github.com/LonnekeScheffer>`_ for implementing this module!
 
 Contents
 --------
