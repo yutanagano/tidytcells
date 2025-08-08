@@ -172,6 +172,12 @@ def get_sequence_data_for_label_for_gene_group_for_species(
         if current_allele is None:
             continue
 
+        if label == "J-PHE" and line.strip() != "F":
+            continue
+
+        if label == "J-TRP" and line.strip() != "W":
+            continue
+
         if not label in aa_seqs[current_allele]:
             aa_seqs[current_allele][label] = line.strip()
         else:

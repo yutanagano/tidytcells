@@ -8,10 +8,10 @@ logger = logging.getLogger(__name__)
 
 
 def _get_conserved_aa_exact_symbol(aa_dict, j_symbol):
-    if "J-PHE" in aa_dict[j_symbol]:
-        return aa_dict[j_symbol]["J-PHE"]
-    elif "J-TRP" in aa_dict[j_symbol]:
-        return aa_dict[j_symbol]["J-TRP"]
+    if "J-PHE" in aa_dict[j_symbol] and aa_dict[j_symbol]["J-PHE"] == "F":
+        return "F"
+    elif "J-TRP" in aa_dict[j_symbol] and aa_dict[j_symbol]["J-TRP"] == "W":
+        return "W"
 
 
 def _is_valid_extension(original, extension):

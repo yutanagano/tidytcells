@@ -3004,8 +3004,7 @@
     },
     "TRAJ18*01": {
         "J-REGION": "DRGSALGRLHFGAGTQLIVIP",
-        "J-PHE": "F",
-        "J-TRP": "F"
+        "J-PHE": "F"
     },
     "TRAJ19*01": {
         "J-REGION": "IYRGFHKFSSGIESKHNVSP"
@@ -3031,8 +3030,7 @@
         "J-PHE": "F"
     },
     "TRAJ23*01": {
-        "J-REGION": "NYNQGKLIFGQGTKLSIKP",
-        "J-PHE": "VSIKFYPWIK*CLWITG*"
+        "J-REGION": "NYNQGKLIFGQGTKLSIKP"
     },
     "TRAJ24*01": {
         "J-REGION": "ELASLGKLQFGTGTQVVVTP",

@@ -4795,8 +4795,7 @@
         "J-PHE": "F"
     },
     "IGLJ5*02": {
-        "J-REGION": "WVFGEGTELTVL",
-        "J-TRP": "F"
+        "J-REGION": "WVFGEGTELTVL"
     },
     "IGLJ6*01": {
         "J-REGION": "NVFGSGTKVTVL",
@@ -4807,7 +4806,6 @@
         "J-PHE": "F"
     },
     "IGLJ7*02": {
-        "J-REGION": "AVFGGGTQLTAL",
-        "J-TRP": "F"
+        "J-REGION": "AVFGGGTQLTAL"
     }
 }
