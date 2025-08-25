@@ -90,7 +90,7 @@ class Teststandardize:
         assert "conserved amino acid was ambiguous" in caplog.text
         assert result == "AAAAAA"
 
-    def test_j_symbol_fail_species(self, caplog):
-        result = junction.standardize("AAAAAA", j_symbol="IGH", species="musmusculus", on_fail="keep")
-        assert "not supported for IG genes for species musmusculus" in caplog.text
-        assert result == "AAAAAA"
+    def test_j_symbol_fail_species(self):
+        with pytest.raises(ValueError, match="not supported for IG genes for species musmusculus"):
+            junction.standardize("AAAAAA", j_symbol="IGH", species="musmusculus", on_fail="keep")
+

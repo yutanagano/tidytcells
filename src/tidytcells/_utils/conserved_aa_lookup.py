@@ -76,14 +76,10 @@ def get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures):
 
         if aa_dict is not None:
             return _get_conserved_aa(j_symbol, aa_dict, log_failures)
-        elif log_failures:
-            logger.warning(
-                f"Failed to determine the conserved trailing amino acid for J symbol {j_symbol}: this feature "
-                f"is not supported for {j_symbol[0:2]} genes for species {species}."
-            )
+
+        else:
+            raise ValueError(f"Failed to determine the conserved trailing amino acid for J symbol {j_symbol}: this feature "
+                f"is not supported for {j_symbol[0:2]} genes for species {species}.")
     else:
-        if log_failures:
-            logger.warning(
-                f"Failed to determine the conserved trailing amino acid for J symbol {j_symbol}: symbol is not formatted correctly."
-                f"Please use tt.tr.standardize or tt.ig.standardize to correct the symbol."
-            )
+        raise ValueError(f"Failed to determine the conserved trailing amino acid for J symbol {j_symbol}: symbol is not formatted correctly."
+                         f"Please use tt.tr.standardize or tt.ig.standardize to correct the symbol.")
