@@ -22,7 +22,7 @@ def standardize(
     enforce_functional: Optional[bool] = None,
     precision: Optional[Literal["allele", "gene"]] = None,
     on_fail: Optional[Literal["reject", "keep"]] = None,
-    log_failures: Optional[str] = None,
+    log_failures: Optional[bool] = None,
     gene: Optional[str] = None,
     suppress_warnings: Optional[bool] = None,
 ) -> Optional[str]:
@@ -39,12 +39,8 @@ def standardize(
         str
     :param species:
         Can be specified to standardise to a IG symbol that is known to be valid for that species (see above for supported species).
-        If set to ``"any"``, then first attempts standardisation for *Homo sapiens*, then *Mus musculus*.
+        Currently, only *Homo sapiens* is supported, but this parameter has been kept to keep the interface compatible with that of its sister function in :py:mod:`tidytcells.tr`.
         Defaults to ``"homosapiens"``.
-
-        .. note::
-            From version 3, the default behaviour will change to ``"any"``.
-
     :type species:
         str
     :param enforce_functional:
