@@ -55,7 +55,24 @@ class TestStandardize:
     )
     def test_enforce_functional(self, symbol, expected, enforce_functional):
         result = tr.standardize(
-            symbol=symbol, species="homosapiens", enforce_functional=enforce_functional
+            symbol=symbol, species="homosapiens", enforce_functional=enforce_functional,
+        )
+
+        assert result == expected
+
+    @pytest.mark.filterwarnings("ignore:Failed to standardize")
+    @pytest.mark.parametrize(
+        ("symbol", "expected", "allow_subgroup"),
+        (
+            ("TRBJ2-7", "TRBJ2-7", True),
+            ("TRBJ2-7", "TRBJ2-7", False),
+            ("TRBJ2", "TRBJ2", True),
+            ("TRBJ2", "TRBJ2-1", False),
+        ),
+    )
+    def test_allow_subgroup(self, symbol, expected, allow_subgroup):
+        result = tr.standardize(
+            symbol=symbol, species="homosapiens", allow_subgroup=allow_subgroup,
         )
 
         assert result == expected
@@ -65,6 +82,7 @@ class TestStandardize:
         (
             ("TRBV24/OR9-2*01", "TRBV24/OR9-2*01", "allele"),
             ("TRAV16*01", "TRAV16", "gene"),
+            ("TRBV24/OR9", "TRBV24/OR9", "subgroup"),
         ),
     )
     def test_precision(self, symbol, expected, precision):

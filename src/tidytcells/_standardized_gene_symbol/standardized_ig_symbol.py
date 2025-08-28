@@ -36,7 +36,12 @@ class StandardizedIgSymbol(StandardizedSymbol):
     def _valid_ig_dictionary(self) -> Dict[str, Dict[str, str]]:
         pass
 
-    def __init__(self, symbol: str) -> None:
+    @property
+    def _valid_subgroups(self):
+        return {key.split("-")[0] for key in self._valid_ig_dictionary if "-" in key}
+
+    def __init__(self, symbol: str, allow_subgroup: bool = False) -> None:
+        self.allow_subgroup = allow_subgroup
         self._parse_ig_symbol(symbol)
         self._resolve_gene_name()
 
@@ -73,7 +78,7 @@ class StandardizedIgSymbol(StandardizedSymbol):
             if self._has_valid_gene_name():
                 return
 
-        if not skip_dash1_section:
+        if not skip_dash1_section and not self.allow_subgroup:
             original = self._gene_name
             for variant in self._generate_dash1_variants():
                 self._gene_name = variant
@@ -83,7 +88,13 @@ class StandardizedIgSymbol(StandardizedSymbol):
             self._gene_name = original
 
     def _has_valid_gene_name(self) -> bool:
-        return self._gene_name in self._valid_ig_dictionary
+        if self._gene_name in self._valid_ig_dictionary:
+            return True
+
+        if self.allow_subgroup and self._gene_name in self._valid_subgroups:
+            return True
+
+        return False
 
     def _is_synonym(self) -> bool:
         return self._gene_name in self._synonym_dictionary
@@ -131,6 +142,12 @@ class StandardizedIgSymbol(StandardizedSymbol):
 
     def get_reason_why_invalid(self, enforce_functional: bool = False) -> Optional[str]:
         if not self._gene_name in self._valid_ig_dictionary:
+            if self._gene_name in self._valid_subgroups:
+                if self.allow_subgroup:
+                    return None
+                else:
+                    return "is subgroup"
+
             return "unrecognized gene name"
 
         if self._allele_designation:
@@ -161,5 +178,8 @@ class StandardizedIgSymbol(StandardizedSymbol):
     def compile(self, precision: str = "allele") -> str:
         if precision == "allele" and self._allele_designation is not None:
             return f"{self._gene_name}*{self._allele_designation}"
+
+        if precision == "subgroup" and "-" in self._gene_name:
+            return self._gene_name.split("-")[0]
 
         return self._gene_name
