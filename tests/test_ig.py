@@ -60,11 +60,30 @@ class TestStandardize:
 
         assert result == expected
 
+
+    @pytest.mark.filterwarnings("ignore:Failed to standardize")
+    @pytest.mark.parametrize(
+        ("symbol", "expected", "allow_subgroup"),
+        (
+            ("IGLV6-57", "IGLV6-57", True),
+            ("IGLV6-57", "IGLV6-57", False),
+            ("IGLV6", "IGLV6", True),
+            ("IGLV6", None, False),
+        ),
+    )
+    def test_allow_subgroup(self, symbol, expected, allow_subgroup):
+        result = ig.standardize(
+            symbol=symbol, species="homosapiens", allow_subgroup=allow_subgroup,
+        )
+
+        assert result == expected
+
     @pytest.mark.parametrize(
         ("symbol", "expected", "precision"),
         (
             ("IGLV7-43*01", "IGLV7-43*01", "allele"),
             ("IGLV8-61*01", "IGLV8-61", "gene"),
+            ("IGLV8-61*01", "IGLV8", "subgroup"),
         ),
     )
     def test_precision(self, symbol, expected, precision):

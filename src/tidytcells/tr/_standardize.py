@@ -22,7 +22,8 @@ def standardize(
     symbol: Optional[str] = None,
     species: Optional[str] = None,
     enforce_functional: Optional[bool] = None,
-    precision: Optional[Literal["allele", "gene"]] = None,
+    allow_subgroup: Optional[bool] = None,
+    precision: Optional[Literal["allele", "gene", "subgroup"]] = None,
     on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[str] = None,
     gene: Optional[str] = None,
@@ -54,6 +55,12 @@ def standardize(
         If ``True``, disallows TR genes / alleles that are recognised by IMGT but are marked as non-functional (ORF or pseudogene).
         Defaults to ``False``.
     :type enforce_functional:
+        bool
+    :param allow_subgroup:
+        If ``True``, allows valid subgroups (as well as more specific gene/allele symbos) to pass standardisation.
+        If ``False``, the supplied symbol must point to at least a specific gene.
+        Defaults to ``False``.
+    :type allow_subgroup:
         bool
     :param precision:
         The maximum level of precision to standardize to.
@@ -192,10 +199,16 @@ def standardize(
         .throw_error_if_not_of_type(bool)
         .value
     )
+    allow_subgroup = (
+        Parameter(allow_subgroup, "allow_subgroup")
+        .set_default(False)
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
     precision = (
         Parameter(precision, "precision")
         .set_default("allele")
-        .throw_error_if_not_one_of("allele", "gene")
+        .throw_error_if_not_one_of("allele", "gene", "subgroup")
         .value
     )
     on_fail = (
@@ -215,6 +228,7 @@ def standardize(
         .value
     )
 
+    allow_subgroup = True if precision == "subgroup" else allow_subgroup
     species = _utils.clean_and_lowercase(species)
 
     if species == "any":
@@ -226,7 +240,7 @@ def standardize(
             species,
             StandardizedTrSymbolClass,
         ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
-            standardized_tr_symbol = StandardizedTrSymbolClass(symbol)
+            standardized_tr_symbol = StandardizedTrSymbolClass(symbol, allow_subgroup)
             invalid_reason = standardized_tr_symbol.get_reason_why_invalid(
                 enforce_functional
             )
@@ -257,7 +271,7 @@ def standardize(
         return symbol
 
     StandardizedTrSymbolClass = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]
-    standardized_tr_symbol = StandardizedTrSymbolClass(symbol)
+    standardized_tr_symbol = StandardizedTrSymbolClass(symbol, allow_subgroup)
 
     invalid_reason = standardized_tr_symbol.get_reason_why_invalid(enforce_functional)
 
