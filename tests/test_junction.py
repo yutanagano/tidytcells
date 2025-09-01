@@ -30,8 +30,8 @@ class Teststandardize:
         (
             ("casqyf", "CASQYF"),
             ("ASQY", "CASQYF"),
-            ("CASQY", "CASQYF"),
-            ("ASQYF", "CASQYF"),
+            ("CASQY", "CCASQYF"),
+            ("ASQYF", "CASQYFF"),
         ),
     )
     def test_various_corrections(self, seq, expected):
@@ -73,7 +73,7 @@ class Teststandardize:
                 ("AELNAGNNRKLI", None, "musmusculus", "CAELNAGNNRKLIF"),
                 ("AELNAGNNRKLI", None, "musmusculus", "CAELNAGNNRKLIF"),
                 ("AAAAWF", "IGHJ5*01", "homosapiens", "CAAAAWFW"),
-                ("AAAAWF", None, "homosapiens", "CAAAAWF"),
+                ("AAAAWF", None, "homosapiens", "CAAAAWFF"),
                 ("AAAAAA", "IGHJ5", "homosapiens", "CAAAAAAW"),
                 ("AAAAAA", "IGHJ", "homosapiens", "CAAAAAAW"), # all of IGH have W, all of IGL have F
                 ("AAAAAA", "IGLJ", "homosapiens", "CAAAAAAF"),
