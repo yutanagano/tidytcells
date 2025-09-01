@@ -203,11 +203,8 @@ def standardize(
 
             return original_input
 
-        if not seq.startswith("C"):
-            seq = "C" + seq
-
         if not junction_matching_regex.match(seq):
-            seq = seq + conserved_aa
+            seq =  "C" + seq + conserved_aa
 
     return seq
 
