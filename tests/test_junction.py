@@ -77,7 +77,7 @@ class Teststandardize:
                 ("AAAAAA", "IGHJ5", "homosapiens", "CAAAAAAW"),
                 ("AAAAAA", "IGHJ", "homosapiens", "CAAAAAAW"), # all of IGH have W, all of IGL have F
                 ("AAAAAA", "IGLJ", "homosapiens", "CAAAAAAF"),
-                ("AAAAAA", "TRAJ", "homosapiens", None), # but TRA is ambiguous
+                ("AAAAAA", "TRAJ", "homosapiens", "CAAAAAAF"), # but TRA is ambiguous
         ),
     )
     def test_j_symbol(self, seq, j_symbol, species, expected):
@@ -85,8 +85,12 @@ class Teststandardize:
 
         assert result == expected
 
+    def test_j_symbol_ambiguous_default(self, caplog):
+        result = junction.standardize("AAAAAA", j_symbol="TRAJ", on_fail="keep", j_strict=False)
+        assert result == "CAAAAAAF"
+
     def test_j_symbol_fail(self, caplog):
-        result = junction.standardize("AAAAAA", j_symbol="TRAJ", on_fail="keep")
+        result = junction.standardize("AAAAAA", j_symbol="TRAJ", on_fail="keep", j_strict=True)
         assert "conserved amino acid was ambiguous" in caplog.text
         assert result == "AAAAAA"
 
