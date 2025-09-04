@@ -78,6 +78,8 @@ class Teststandardize:
                 ("AAAAAA", "IGHJ", "homosapiens", "CAAAAAAW"), # all of IGH have W, all of IGL have F
                 ("AAAAAA", "IGLJ", "homosapiens", "CAAAAAAF"),
                 ("AAAAAA", "TRAJ", "homosapiens", "CAAAAAAF"), # but TRA is ambiguous
+                ("AAAAAA", "TRAJ35", "homosapiens", "CAAAAAAC"), # non-canonical C ending for TRAJ35*01 human
+                ("AAAAAA", "TRAJ35", "musmusculus", "CAAAAAAF"), # ...but not for mouse
         ),
     )
     def test_j_symbol(self, seq, j_symbol, species, expected):
