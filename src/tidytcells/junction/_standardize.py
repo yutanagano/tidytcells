@@ -27,7 +27,8 @@ def standardize(
 
     1. Be a valid amino acid sequence
     2. Begin with a cysteine (C)
-    3. End with a phenylalanine (F) or a tryptophan (W)
+    3. End with a phenylalanine (F) or a tryptophan (W) if no J symbol is supplied;
+        or non-canonical cysteine (C) only if the supplied j_symbol is TRAJ35*01 and species is human
 
     :param seq:
         String value representing a junction sequence.
@@ -120,13 +121,13 @@ def standardize(
                 set standardization status to failed
 
             IF a j symbol and species are provided:
-                attempt to resolve the correct conserved trailing amino acid (W / F)
+                attempt to resolve the correct conserved trailing amino acid (W / F / C)
 
-            IF input sequence does not start with C and end with the correct conserved W / F:
+            IF input sequence does not start with C and end with the correct conserved W / F / C:
                 IF strict is set to True:
                     set standardization status to failed
                 ELSE:
-                    add C to the beginning and W / F to the end of the input sequence as required
+                    add C to the beginning and W / F / C to the end of the input sequence as required
                     set standardization status to successful
             ELSE:
                 set standardization status to successful
