@@ -100,3 +100,37 @@ class Teststandardize:
         with pytest.raises(ValueError, match="not supported for IG genes for species musmusculus"):
             junction.standardize("AAAAAA", j_symbol="IGH", species="musmusculus", on_fail="keep")
 
+    @pytest.mark.parametrize(
+        ("seq", "trimming", "species", "expected"),
+        (
+                ("AELNAGNNRKLI", False, "homosapiens", "CAELNAGNNRKLIF"),
+                ("AELNAGNNRKLI", True, "homosapiens", "CAELNAGNNRKLIF"),
+                ("CAELNAGNNRKLI", True, "homosapiens", "CCAELNAGNNRKLIF"),
+                ("YFCAVVFNMDSNYQLIW", True, "homosapiens", "CAVVFNMDSNYQLIW"), # trimming at start
+                ("YFCAVVFNMDSNYQLIWGAGTKL", True, "homosapiens", "CAVVFNMDSNYQLIW"), # should trim until the outermost conserved aa (W)
+                ("DSSIYLCSVEATRADTQYFGPGFTRLTVL", True, "homosapiens", "CSVEATRADTQYFGPGF"), # trimming in middle
+                ("CCEFTGGGNKLTF", True, "homosapiens", "CCEFTGGGNKLTF"), # stays the same
+                ("CVGWHEQY", True, "homosapiens", "CCVGWHEQYF"), # stays the same ('CVGW' is too short)
+        ),
+    )
+    def test_trimming(self, seq, trimming, species, expected):
+        result = junction.standardize(seq=seq, trimming=trimming, species=species)
+
+        assert result == expected
+
+    @pytest.mark.parametrize(
+        ("seq", "trimming", "j_symbol", "species", "expected"),
+        (
+                ("AELNAGNNRKLI", True, "TRAJ38*01", "homosapiens", "CAELNAGNNRKLIW"), # trimming shouldnt matter here
+                ("AELNAGNNRKLI", False, "TRAJ38*01", "homosapiens", "CAELNAGNNRKLIW"),
+                ("YFCAVVFNMDSNYQLIWFGAGTKL", True, "TRA", "homosapiens", "CAVVFNMDSNYQLIWF"), # default: look for F
+                ("YFCAVVFNMDSNYQLIWFGAGTKL", True, "TRAJ38*01", "homosapiens", "CAVVFNMDSNYQLIW"), # J gene with conserved W
+                ("YFCAVVFNMDSNYQLIWFGAGTKL", True, "IGLJ", "homosapiens", "CAVVFNMDSNYQLIWF"), # J gene with conserved F
+                ("YFCAVVFNMLIWFGAGTKL", True, "TRAJ35", "homosapiens", "CYFCAVVFNMLIWFGAGTKLC"), # J gene with conserved C
+
+        ),
+    )
+    def test_trimming_and_j_symbol(self, seq, trimming, j_symbol, species, expected):
+        result = junction.standardize(seq=seq, trimming=trimming, j_symbol=j_symbol, species=species)
+
+        assert result == expected
