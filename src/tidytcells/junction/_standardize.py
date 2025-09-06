@@ -3,7 +3,8 @@ import re
 from tidytcells import aa, _utils
 from typing import Literal, Optional
 from tidytcells._utils.parameter import Parameter
-from tidytcells._utils.conserved_aa_lookup import get_conserved_aa_for_j_symbol_for_species
+from tidytcells._utils.conserved_aa_lookup import get_conserved_aa_for_j_symbol_for_species, get_conserved_aa_for_locus_for_species
+from tidytcells._utils.trimming import trim_junction
 
 logger = logging.getLogger(__name__)
 
@@ -11,10 +12,12 @@ logger = logging.getLogger(__name__)
 
 def standardize(
     seq: str,
+    locus: Optional[str] = None,
     j_symbol: Optional[str] = None,
     species: Optional[str] = None,
     strict: Optional[bool] = None,
     j_strict: Optional[bool] = None,
+    trimming: Optional[bool] = None,
     on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,
@@ -33,6 +36,11 @@ def standardize(
     :param seq:
         String value representing a junction sequence.
     :type seq:
+        str
+    :param locus:
+        String value representing the locus (TRA, TRB, IGH, IGL, etc). If supplied, this is used to inform conserved trailing
+        amino acid identification and trimming.
+    :type locus:
         str
     :param j_symbol:
         String value representing the J symbol used to determine the correct conserved trailing amino acid sequence (F or W).
@@ -56,6 +64,12 @@ def standardize(
         If ``False``, the default trailing amino acid F will be added to the end of the sequence if it cannot be determined from the J symbol.
         Defaults to ``False``.
     :type j_strict:
+        bool
+    :param trimming:
+        If ``True``, the start and end of the supplied sequence may be trimmed until the conserved leading C and trailing F/W(/C).
+        If ``False``, no trimming will be done.
+        Defaults to ``False``.
+    :type trimming:
         bool
     :param on_fail:
         Behaviour when standardization fails.
@@ -120,8 +134,11 @@ def standardize(
             IF input sequence contains non-amino acid symbols:
                 set standardization status to failed
 
-            IF a j symbol and species are provided:
+            IF a j symbol/locus and species are provided:
                 attempt to resolve the correct conserved trailing amino acid (W / F / C)
+
+            IF trimming is set to True and species is provided:
+                attempt to trim the sequence based on conserved V gene patterns and trailing amin acid
 
             IF input sequence does not start with C and end with the correct conserved W / F / C:
                 IF strict is set to True:
@@ -142,6 +159,11 @@ def standardize(
                     RETURN original sequence
     """
     seq = Parameter(seq, "seq").throw_error_if_not_of_type(str).value
+    locus = (
+        Parameter(locus, "locus")
+        .throw_error_if_not_one_of("TRA", "TRB", "TRG", "TRD", "IGH", "IGK", "IGL", None)
+        .value
+    )
     j_symbol = (
         Parameter(j_symbol, "j_symbol")
         .throw_error_if_not_of_type(str, optional=True)
@@ -161,6 +183,12 @@ def standardize(
     )
     j_strict = (
         Parameter(j_strict, "j_strict")
+        .set_default(False)
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
+    trimming = (
+        Parameter(trimming, "trimming")
         .set_default(False)
         .throw_error_if_not_of_type(bool)
         .value
@@ -199,6 +227,9 @@ def standardize(
         species = _utils.clean_and_lowercase(species)
         conserved_aa = get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures=log_failures) # returns None if aa is ambiguous
 
+        if conserved_aa is None:
+            conserved_aa = get_conserved_aa_for_locus_for_species(locus, species, log_failures=log_failures)
+
         if conserved_aa is not None:
             junction_matching_regex = re.compile(fr"^C[A-Z]*{conserved_aa}$")
 
@@ -210,6 +241,15 @@ def standardize(
             else:
                 logger.info(f"J symbol conserved amino acid could not be determined for {j_symbol}, using F as default.")
                 conserved_aa = "F"
+
+    if trimming:
+        # junction_matching_regex contains the correct ending aa pattern: [FW] (default)
+        #   or a specific F/W/C if this was determined based on J gene/locus
+        seq = trim_junction(seq, junction_matching_regex, locus, species)
+
+        # if the sequence was trimmed, it matches the regex
+        if seq != original_input:
+            return seq
 
     if not junction_matching_regex.match(seq):
         if strict:

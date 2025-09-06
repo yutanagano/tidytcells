@@ -92,3 +92,7 @@ def get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures):
     else:
         raise ValueError(f"Failed to determine the conserved trailing amino acid for J symbol {j_symbol}: symbol is not formatted correctly."
                          f"Please use tt.tr.standardize or tt.ig.standardize to correct the symbol.")
+
+def get_conserved_aa_for_locus_for_species(locus, species, log_failures):
+    if locus is not None:
+        return get_conserved_aa_for_j_symbol_for_species(locus, species, log_failures)
