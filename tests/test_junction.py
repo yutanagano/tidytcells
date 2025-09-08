@@ -108,7 +108,7 @@ class Teststandardize:
                 ("CAELNAGNNRKLI", True, "homosapiens", "CCAELNAGNNRKLIF"),
                 ("YFCAVVFNMDSNYQLIW", True, "homosapiens", "CAVVFNMDSNYQLIW"), # trimming at start
                 ("YFCAVVFNMDSNYQLIWGAGTKL", True, "homosapiens", "CAVVFNMDSNYQLIW"), # should trim until the outermost conserved aa (W)
-                ("DSSIYLCSVEATRADTQYFGPGFTRLTVL", True, "homosapiens", "CSVEATRADTQYFGPGF"), # trimming in middle
+                ("DSSIYLCSVEATRADTQYFGPGFTRLTVL", True, "homosapiens", "CSVEATRADTQYF"), # trimming in middle
                 ("CCEFTGGGNKLTF", True, "homosapiens", "CCEFTGGGNKLTF"), # stays the same
                 ("CVGWHEQY", True, "homosapiens", "CCVGWHEQYF"), # stays the same ('CVGW' is too short)
         ),
@@ -124,9 +124,9 @@ class Teststandardize:
                 ("AELNAGNNRKLI", True, "TRAJ38*01", "homosapiens", "CAELNAGNNRKLIW"), # trimming shouldnt matter here
                 ("AELNAGNNRKLI", False, "TRAJ38*01", "homosapiens", "CAELNAGNNRKLIW"),
                 ("YFCAVVFNMDSNYQLIWFGAGTKL", True, "TRA", "homosapiens", "CAVVFNMDSNYQLIWF"), # default: look for F
-                ("YFCAVVFNMDSNYQLIWFGAGTKL", True, "TRAJ38*01", "homosapiens", "CAVVFNMDSNYQLIW"), # J gene with conserved W
+                ("YFCAVVFNMDSNYQLIWGQGGTKL", True, "TRAJ38*01", "homosapiens", "CAVVFNMDSNYQLIW"), # J gene with conserved W
                 ("YFCAVVFNMDSNYQLIWFGAGTKL", True, "IGLJ", "homosapiens", "CAVVFNMDSNYQLIWF"), # J gene with conserved F
-                ("YFCAVVFNMLIWFGAGTKL", True, "TRAJ35", "homosapiens", "CYFCAVVFNMLIWFGAGTKLC"), # J gene with conserved C
+                ("YFCAELNAGNNRKLI", True, "TRAJ35", "homosapiens", "CYFCAELNAGNNRKLIC"), # J gene with conserved C
 
         ),
     )

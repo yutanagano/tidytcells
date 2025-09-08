@@ -283,6 +283,7 @@ class TestGetAaSequence:
                     "FR2-IMGT": "LRWYKQDTGRGPVSLTI",
                     "FR3-IMGT": "KSNGRYTATLDADTKQSSLHITASQLSDSASYIC",
                     "V-REGION": "KNQVEQSPQSLIILEGKNCTLQCNYTVSPFSNLRWYKQDTGRGPVSLTIMTFSENTKSNGRYTATLDADTKQSSLHITASQLSDSASYICVVS",
+                    'V-MOTIF': 'SYIC',
                 },
             ),
             (
@@ -296,9 +297,9 @@ class TestGetAaSequence:
                 "TRAJ47*02",
                 "homosapiens",
                 {
-                    "FR4-IMGT": "FGAGTILRVKS",
                     "J-PHE": "F",
                     "J-REGION": "EYGNKLVFGAGTILRVKS",
+                    'J-MOTIF': 'FGAG',
                 },
             ),
             (
@@ -311,6 +312,7 @@ class TestGetAaSequence:
                     "FR2-IMGT": "LSWYQQREGHAPVFLSY",
                     "FR3-IMGT": "KDSGHFSTFLSRSNGYSYLLLTELQIKDSASYLC",
                     "V-REGION": "GQGVEQPDNLMSVEGTFARVNCTYSTSGFNGLSWYQQREGHAPVFLSYVVLDGLKDSGHFSTFLSRSNGYSYLLLTELQIKDSASYLCAVR",
+                    'V-MOTIF': 'SYLC'
                 },
             ),
         ),

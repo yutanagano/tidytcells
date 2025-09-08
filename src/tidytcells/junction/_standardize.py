@@ -3,7 +3,7 @@ import re
 from tidytcells import aa, _utils
 from typing import Literal, Optional
 from tidytcells._utils.parameter import Parameter
-from tidytcells._utils.conserved_aa_lookup import get_conserved_aa_for_j_symbol_for_species, get_conserved_aa_for_locus_for_species
+from tidytcells._utils.conserved_aa_lookup import get_conserved_aa
 from tidytcells._utils.trimming import trim_junction
 
 logger = logging.getLogger(__name__)
@@ -161,7 +161,7 @@ def standardize(
     seq = Parameter(seq, "seq").throw_error_if_not_of_type(str).value
     locus = (
         Parameter(locus, "locus")
-        .throw_error_if_not_one_of("TRA", "TRB", "TRG", "TRD", "IGH", "IGK", "IGL", None)
+        .throw_error_if_not_one_of("TRA", "TRB", "TRG", "TRD", "IGH", "IGK", "IGL", "IG", "TR", None)
         .value
     )
     j_symbol = (
@@ -222,13 +222,10 @@ def standardize(
 
     conserved_aa = "F"
     junction_matching_regex = re.compile(r"^C[A-Z]*[FW]$")
+    species = _utils.clean_and_lowercase(species)
 
     if j_symbol:
-        species = _utils.clean_and_lowercase(species)
-        conserved_aa = get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures=log_failures) # returns None if aa is ambiguous
-
-        if conserved_aa is None:
-            conserved_aa = get_conserved_aa_for_locus_for_species(locus, species, log_failures=log_failures)
+        conserved_aa = get_conserved_aa(j_symbol=j_symbol, locus=locus, species=species, log_failures=log_failures)
 
         if conserved_aa is not None:
             junction_matching_regex = re.compile(fr"^C[A-Z]*{conserved_aa}$")
@@ -246,10 +243,6 @@ def standardize(
         # junction_matching_regex contains the correct ending aa pattern: [FW] (default)
         #   or a specific F/W/C if this was determined based on J gene/locus
         seq = trim_junction(seq, junction_matching_regex, locus, species)
-
-        # if the sequence was trimmed, it matches the regex
-        if seq != original_input:
-            return seq
 
     if not junction_matching_regex.match(seq):
         if strict:
