@@ -115,15 +115,20 @@ def get_ig_j_gene_sequence_data(species: str) -> dict:
 
 def get_v_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
     labels = ("FR1-IMGT", "CDR1-IMGT", "FR2-IMGT", "CDR2-IMGT", "FR3-IMGT", "V-REGION")
-    return get_gene_sequence_data(labels, gene_groups, species)
+    return add_v_motifs(get_gene_sequence_data(labels, gene_groups, species))
 
 def get_d_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
     labels = ("D-REGION",)
     return get_gene_sequence_data(labels, gene_groups, species)
 
 def get_j_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
-    labels = ("FR4-IMGT", "J-REGION", "J-PHE", "J-TRP")
-    return get_gene_sequence_data(labels, gene_groups, species)
+    labels = ("J-REGION", "J-MOTIF", "J-PHE", "J-TRP")
+    data = get_gene_sequence_data(labels, gene_groups, species)
+
+    if species == "Homo+sapiens":
+        data["TRAJ35*01"]["J-CYS"] = "C"
+
+    return add_j_motifs(data, species)
 
 
 def get_gene_sequence_data(
@@ -150,8 +155,10 @@ def get_sequence_data_for_label_for_gene_group_for_species(
     aa_seqs = collections.defaultdict(dict)
 
     response = requests.get(
-        f"https://www.imgt.org/genedb/GENElect?query=8.2+{gene_group}&species={species}&IMGTlabel={label}"
+        f"https://www.imgt.org/genedb/GENElect?query=8.2+{gene_group}&species={species}&IMGTlabel={label}",
+        headers={"User-Agent": "Mozilla/5.0"},
     )
+
     parser = BeautifulSoup(response.text, features="html.parser")
     fasta = parser.find_all("pre")[1].string
 
@@ -193,6 +200,47 @@ def parse_fasta_header(line: str) -> Tuple[str]:
     functionality = fields[3].strip("()[]")
 
     return gene, allele_designation, functionality
+
+
+def add_v_motifs(v_aa_dict):
+    for allele, seq_data in v_aa_dict.items():
+        if "FR3-IMGT" in seq_data:
+            if seq_data["FR3-IMGT"].endswith("C") and len(seq_data["FR3-IMGT"]) >= 4:
+                v_aa_dict[allele]["V-MOTIF"] = seq_data["FR3-IMGT"][-4:]
+
+    return v_aa_dict
+
+
+def add_j_motifs(j_aa_dict, species):
+    for allele, seq_data in j_aa_dict.items():
+        if "J-REGION" not in seq_data or len(seq_data["J-REGION"]) < 4:
+            continue
+
+        if "J-MOTIF" in seq_data and len(seq_data["J-MOTIF"]) == 4:
+            continue
+
+        conserved_aa = seq_data["J-PHE"] if "J-PHE" in seq_data \
+            else seq_data["J-TRP"] if "J-TRP" in seq_data \
+            else seq_data["J-CYS"] if "J-CYS" in seq_data \
+            else None
+
+        if conserved_aa is None or conserved_aa not in seq_data["J-REGION"]:
+            continue
+
+        if seq_data["J-REGION"].count(conserved_aa) == 1:
+            motif_idx = seq_data["J-REGION"].index(conserved_aa)
+        elif seq_data["J-REGION"].count(conserved_aa + "G") == 1: # G is a very common second amino acid in the motif
+            motif_idx = seq_data["J-REGION"].index(conserved_aa + "G")
+        elif seq_data["J-REGION"][1:].count(conserved_aa) == 1:  # J-REGION sometimes starts with F, which is unlikely to be the motif-F
+            motif_idx = seq_data["J-REGION"][1:].index(conserved_aa) + 1
+        elif species == "Mus+musculus" and allele.startswith("TRG") and seq_data["J-REGION"].count(conserved_aa + "A") == 1:
+            motif_idx = seq_data["J-REGION"].index(conserved_aa + "A")
+        else:
+            continue
+
+        seq_data["J-MOTIF"] = seq_data["J-REGION"][motif_idx: motif_idx + 4]
+
+    return j_aa_dict
 
 
 def save_as_json(data: dict, file_name: str) -> None:
