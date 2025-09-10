@@ -109,7 +109,7 @@ def get_ig_d_gene_sequence_data(species: str) -> dict:
     return get_d_gene_sequence_data(species, gene_groups)
 
 def get_ig_j_gene_sequence_data(species: str) -> dict:
-    gene_groups = ("IGHJ", "IGLJ", "IGKV")
+    gene_groups = ("IGHJ", "IGLJ", "IGKJ")
     return get_j_gene_sequence_data(species, gene_groups)
 
 
