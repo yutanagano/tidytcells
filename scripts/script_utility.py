@@ -109,7 +109,7 @@ def get_ig_d_gene_sequence_data(species: str) -> dict:
     return get_d_gene_sequence_data(species, gene_groups)
 
 def get_ig_j_gene_sequence_data(species: str) -> dict:
-    gene_groups = ("IGHJ", "IGLJ", "IGKV")
+    gene_groups = ("IGHJ", "IGLJ", "IGKJ")
     return get_j_gene_sequence_data(species, gene_groups)
 
 
@@ -125,7 +125,7 @@ def get_j_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
     labels = ("J-REGION", "J-MOTIF", "J-PHE", "J-TRP")
     data = get_gene_sequence_data(labels, gene_groups, species)
 
-    if species == "Homo+sapiens":
+    if species == "Homo+sapiens" and "TRA" in gene_groups:
         data["TRAJ35*01"]["J-CYS"] = "C"
 
     return add_j_motifs(data, species)
