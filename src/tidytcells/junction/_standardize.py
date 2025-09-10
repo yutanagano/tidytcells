@@ -242,7 +242,7 @@ def standardize(
     if trimming:
         # junction_matching_regex contains the correct ending aa pattern: [FW] (default)
         #   or a specific F/W/C if this was determined based on J gene/locus
-        seq = trim_junction(seq, junction_matching_regex, locus, species)
+        seq = trim_junction(seq, junction_matching_regex, conserved_aa, locus, species)
 
     if not junction_matching_regex.match(seq):
         if strict:

@@ -106,11 +106,13 @@ class Teststandardize:
                 ("AELNAGNNRKLI", False, "homosapiens", "CAELNAGNNRKLIF"),
                 ("AELNAGNNRKLI", True, "homosapiens", "CAELNAGNNRKLIF"),
                 ("CAELNAGNNRKLI", True, "homosapiens", "CCAELNAGNNRKLIF"),
+                ("FCAVVFNMDSNYQLIW", True, "homosapiens", "CAVVFNMDSNYQLIW"), # trimming at start
                 ("YFCAVVFNMDSNYQLIW", True, "homosapiens", "CAVVFNMDSNYQLIW"), # trimming at start
                 ("YFCAVVFNMDSNYQLIWGAGTKL", True, "homosapiens", "CAVVFNMDSNYQLIW"), # should trim until the outermost conserved aa (W)
                 ("DSSIYLCSVEATRADTQYFGPGFTRLTVL", True, "homosapiens", "CSVEATRADTQYF"), # trimming in middle
                 ("CCEFTGGGNKLTF", True, "homosapiens", "CCEFTGGGNKLTF"), # stays the same
                 ("CVGWHEQY", True, "homosapiens", "CCVGWHEQYF"), # stays the same ('CVGW' is too short)
+                ("CASSPGVFGANVLTFG", True, "homosapiens", "CASSPGVFGANVLTF"), #make sure to trim at the last F
         ),
     )
     def test_trimming(self, seq, trimming, species, expected):

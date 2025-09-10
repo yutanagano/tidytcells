@@ -47,101 +47,134 @@ def get_conserved_motifs(locus, species, motif_type):
     else:
         raise ValueError(f"Trimming is not supported for species {species}.")
 
-
-def trim_v_motif_start_recursive(orig_seq, v_motifs):
-    v_motifs = {motif[1:] for motif in v_motifs}
-
-    if len(v_motifs) == 0 or len(list(v_motifs)[0]) == 1:
+def minimal_trim_junction_start(orig_seq, locus, species):
+    if orig_seq[0] == "C":
         return orig_seq
 
-    for motif in v_motifs:
-        if orig_seq.startswith(motif):
-            return orig_seq.replace(motif, "C", 1)
-
-    return trim_v_motif_start_recursive(orig_seq, v_motifs)
-
-def trim_j_motif_end_recursive(orig_seq, j_motifs):
-    j_motifs = {motif[:-1] for motif in j_motifs}
-
-    if len(j_motifs) == 0 or len(list(j_motifs)[0]) == 1:
-        return orig_seq
-
-    for motif in j_motifs:
-        if orig_seq.endswith(motif):
-            return orig_seq.rsplit(motif, 1)[0] + motif[-1]
-
-    return trim_j_motif_end_recursive(orig_seq, j_motifs)
-
-
-def trim_junction_start(orig_seq, locus, species):
     v_motifs = get_conserved_motifs(locus, species, "V-MOTIF")
 
-    # case 1: few extra amino acids at start, specific known motifs
-    #   trim these *only* if they appear at the start
-    seq = trim_v_motif_start_recursive(orig_seq, v_motifs)
+    for i in range(1, len(orig_seq) - 5):
+        if orig_seq[i] == "C":
+            trimmed_seq = orig_seq[i:]
 
-    if seq != orig_seq and seq.startswith("C"):
-        return seq
+            motif_in_seq = orig_seq[:i+1]
+            motif_in_seq = motif_in_seq[-4:] if len(motif_in_seq) >= 4 else motif_in_seq
 
-    # case 2: long sequence provided (>4 extra aa's at start)
-    #   look for conserved V motif of length 4 *anywhere* in the sequence. if found, trim
-    #   due to the length, this rarely occurs randomly in CDR3
-    for motif in v_motifs:
-        if motif in orig_seq:
-            new_seq = "C" + orig_seq.split(motif)[1]
-            print("V trim orig_seq:", orig_seq, "new_seq:", new_seq)
-            if len(new_seq) >= 6:
-                print("--returned")
-                return new_seq
+            v_motifs_for_len = {motif[-len(motif_in_seq):] for motif in v_motifs}
+
+            for known_motif in v_motifs_for_len:
+                if known_motif == motif_in_seq:
+                    return trimmed_seq
 
     return orig_seq
 
-def trim_junction_end(orig_seq, locus, species, conserved_aas):
+def minimal_trim_junction_end(orig_seq, locus, species, conserved_aas):
+    if orig_seq[-1] in conserved_aas:
+        return orig_seq
+
     j_motifs = get_conserved_motifs(locus, species, "J-MOTIF")
     j_motifs = {motif for motif in j_motifs if motif[0] in conserved_aas}
 
-    # case 1: few extra amino acids at start, specific known motifs
-    #   trim these *only* if they appear at the start
-    seq = trim_j_motif_end_recursive(orig_seq, j_motifs)
+    for i in range(2, len(orig_seq) - 4):
+        if orig_seq[-i] in conserved_aas:
+            trimmed_seq = orig_seq[:-i + 1]
 
-    if seq != orig_seq and seq[-1] in conserved_aas:
-        return seq
+            motif_in_seq = orig_seq[-i:]
+            motif_in_seq = motif_in_seq[:4] if len(motif_in_seq) >= 4 else motif_in_seq
 
-    # case 2: long sequence provided (>4 extra aa's at start)
-    #   look for conserved J motif of length 4 *anywhere* in the sequence. if found, trim
-    #   due to the length, this rarely occurs randomly in CDR3
-    # todo maybe have min length before this is applied?
-    for motif in j_motifs:
-        if motif in seq:
-            new_seq = seq.split(motif)[0] + motif[0]
-            print("J trim orig_seq:", orig_seq, "start_trimmed:", seq, "new_seq:", seq)
-            if len(new_seq) >= 6:
-                print("--returned")
-                return new_seq
+            j_motifs_for_len = {motif[:len(motif_in_seq)] for motif in j_motifs}
+
+            for known_motif in j_motifs_for_len:
+                if known_motif == motif_in_seq:
+                    return trimmed_seq
 
     return orig_seq
 
 def get_expected_conserved_aas(junction_matching_regex):
     return junction_matching_regex.pattern.split("*")[1].strip("[]$")
 
-def trim_junction(orig_seq, junction_matching_regex, locus, species):
+def trim_junction(orig_seq, junction_matching_regex, conserved_aa, locus, species):
     # do not trim if it is already a valid CDR3 junction, or if it contains no C (likely to only be CDR3 without conserved aa's)
     if junction_matching_regex.match(orig_seq) or "C" not in orig_seq:
         return orig_seq
 
-    seq = trim_junction_start(orig_seq, locus, species)
+    seq = minimal_trim_junction_start(orig_seq, locus, species)
 
     # if junction_matching_regex.match(seq): # WFGA
     #     return seq
 
     if seq.startswith("C"): # only continue end-trimming if start is 'complete'
-        # todo can be made more efficient: first check from the right side if the position is in there
         conserved_aas = get_expected_conserved_aas(junction_matching_regex)
-        seq = trim_junction_end(seq, locus, species, conserved_aas)
+
+        seq = minimal_trim_junction_end(seq, locus, species, conserved_aas)
 
         if junction_matching_regex.match(seq):
+            # print(f"'{orig_seq}': '{seq}',")
             return seq
 
     # if any trimming failed, this is likely the CDR3 without conserved aa's; return original sequence
     return orig_seq
 
+
+def startswith_cdr3_start_motif(seq, locus, species):
+    # cdr3_start_motifs = get_conserved_motifs(locus, species, "V-CDR3-START")
+    cdr3_start_motifs = {"AV", "AS", "AW"}
+
+    for motif in cdr3_start_motifs:
+        if seq.startswith(motif):
+            return True
+
+    return False
+
+def endswith_cdr3_end_motif(seq, locus, species):
+    # cdr3_end_motifs = get_conserved_motifs(locus, species, "J-CDR3-END")
+    cdr3_end_motifs = {"RIF", "KVI", "RLT"}
+
+    for motif in cdr3_end_motifs:
+        if seq.endswith(motif):
+            return True
+
+    return False
+
+
+
+# def trim_junction(orig_seq, junction_matching_regex, conserved_aa, locus, species):
+#     # do not trim if it is already a valid CDR3 junction, or if it contains no C (likely to only be CDR3 without conserved aa's)
+#     if junction_matching_regex.match(orig_seq): # or "C" not in orig_seq:
+#         return orig_seq
+#
+#     # todo not sure if this check is necessary/useful? or if a 'length' should be added
+#     if startswith_cdr3_start_motif(orig_seq, locus, species) and endswith_cdr3_end_motif(orig_seq, locus, species):
+#         return orig_seq
+#
+#     seq = minimal_trim_junction_start(orig_seq, locus, species)
+#
+#     all_conserved_aas = get_expected_conserved_aas(junction_matching_regex)
+#     seq = minimal_trim_junction_end(seq, locus, species, all_conserved_aas)
+#
+#     start_trimmed = not orig_seq.startswith(seq)
+#     end_trimmed = not orig_seq.endswith(seq)
+#
+#     if not start_trimmed and not end_trimmed:
+#         return orig_seq
+#
+#     if start_trimmed or end_trimmed and junction_matching_regex.match(seq):
+#         return seq
+#
+#     if not start_trimmed and end_trimmed and startswith_cdr3_start_motif(seq, locus, species):
+#         seq = "C" + seq
+#         if junction_matching_regex.match(seq):
+#             return seq
+#
+#     if start_trimmed and not end_trimmed and endswith_cdr3_end_motif(seq, locus, species):
+#         seq = seq + conserved_aa
+#         if junction_matching_regex.match(seq):
+#             return seq
+#
+#     if junction_matching_regex.match(seq):
+#         assert False, "this scenario shouldn happen"
+#         return seq
+#
+#     # if any trimming failed, this is likely the CDR3 without conserved aa's; return original sequence
+#     return orig_seq
+#
