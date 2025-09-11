@@ -1,19 +1,20 @@
 import logging
 import re
-from tidytcells import aa
+from tidytcells import aa, _utils
 from typing import Literal, Optional
 from tidytcells._utils.parameter import Parameter
-
+from tidytcells._utils.conserved_aa_lookup import get_conserved_aa_for_j_symbol_for_species
 
 logger = logging.getLogger(__name__)
 
 
-JUNCTION_MATCHING_REGEX = re.compile(r"^C[A-Z]*[FW]$")
-
 
 def standardize(
     seq: str,
+    j_symbol: Optional[str] = None,
+    species: Optional[str] = None,
     strict: Optional[bool] = None,
+    j_strict: Optional[bool] = None,
     on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,
@@ -26,17 +27,35 @@ def standardize(
 
     1. Be a valid amino acid sequence
     2. Begin with a cysteine (C)
-    3. End with a phenylalanine (F) or a tryptophan (W)
+    3. End with a phenylalanine (F) or a tryptophan (W) if no J symbol is supplied;
+        or non-canonical cysteine (C) only if the supplied j_symbol is TRAJ35*01 and species is human
 
     :param seq:
         String value representing a junction sequence.
     :type seq:
+        str
+    :param j_symbol:
+        String value representing the J symbol used to determine the correct conserved trailing amino acid sequence (F or W).
+        This is determined based on the allele sequence. If less-precise gene or subgroup information is provided, an attempt will be made
+        to extend the J symbol name to all known alleles.
+        If not provided, the conserved trailing amino acid which may be added to the end of the sequence will default to 'F'.
+    :type j_symbol:
+        str
+    :param species:
+        String value representing the species of the J symbol. Defaults to ``homosapiens``.
+    :type species:
         str
     :param strict:
         If ``True``, any string that does not look like a junction sequence is rejected.
         If ``False``, any inputs that are valid amino acid sequences but do not start with C and end with F/W are not rejected and instead are corrected by having a C appended to the beginning and an F appended at the end.
         Defaults to ``False``.
     :type strict:
+        bool
+    :param j_strict:
+        If ``True``, the input will be rejected if a valid conserved trailing amino acid (F/W) cannot with certainty be determined from the J symbol.
+        If ``False``, the default trailing amino acid F will be added to the end of the sequence if it cannot be determined from the J symbol.
+        Defaults to ``False``.
+    :type j_strict:
         bool
     :param on_fail:
         Behaviour when standardization fails.
@@ -81,6 +100,16 @@ def standardize(
         >>> print(result)
         None
 
+        By default, the conserved trailing amino acid is presumed to be 'F'.
+        When `j_symbol` is provided, the correct trailing amino acid (F or W) is determined based on the symbol.
+
+        >>> tt.junction.standardize("AELNAGNNRKLI")
+        'CAELNAGNNRKLIF'
+
+        >>> tt.junction.standardize("AELNAGNNRKLI", j_symbol="TRAJ38*01")
+        'CAELNAGNNRKLIW'
+
+
     .. topic:: Decision Logic
 
         To provide an easy way to gauge the scope and limitations of standardization, below is a simplified overview of the decision logic employed when attempting to standardize a junction sequence.
@@ -91,11 +120,14 @@ def standardize(
             IF input sequence contains non-amino acid symbols:
                 set standardization status to failed
 
-            IF input sequence does not start with C and end with W / F:
+            IF a j symbol and species are provided:
+                attempt to resolve the correct conserved trailing amino acid (W / F / C)
+
+            IF input sequence does not start with C and end with the correct conserved W / F / C:
                 IF strict is set to True:
                     set standardization status to failed
                 ELSE:
-                    add C to the beginning and F to the end of the input sequence as required
+                    add C to the beginning and W / F / C to the end of the input sequence as required
                     set standardization status to successful
             ELSE:
                 set standardization status to successful
@@ -110,8 +142,25 @@ def standardize(
                     RETURN original sequence
     """
     seq = Parameter(seq, "seq").throw_error_if_not_of_type(str).value
+    j_symbol = (
+        Parameter(j_symbol, "j_symbol")
+        .throw_error_if_not_of_type(str, optional=True)
+        .value
+    )
+    species = (
+        Parameter(species, "species")
+        .set_default("homosapiens")
+        .throw_error_if_not_of_type(str)
+        .value
+    )
     strict = (
         Parameter(strict, "strict")
+        .set_default(False)
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
+    j_strict = (
+        Parameter(j_strict, "j_strict")
         .set_default(False)
         .throw_error_if_not_of_type(bool)
         .value
@@ -143,7 +192,26 @@ def standardize(
             return None
         return original_input
 
-    if not JUNCTION_MATCHING_REGEX.match(seq):
+    conserved_aa = "F"
+    junction_matching_regex = re.compile(r"^C[A-Z]*[FW]$")
+
+    if j_symbol:
+        species = _utils.clean_and_lowercase(species)
+        conserved_aa = get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures=log_failures) # returns None if aa is ambiguous
+
+        if conserved_aa is not None:
+            junction_matching_regex = re.compile(fr"^C[A-Z]*{conserved_aa}$")
+
+        if conserved_aa is None:
+            if j_strict:
+                if on_fail == "reject":
+                    return None
+                return original_input
+            else:
+                logger.info(f"J symbol conserved amino acid could not be determined for {j_symbol}, using F as default.")
+                conserved_aa = "F"
+
+    if not junction_matching_regex.match(seq):
         if strict:
             if log_failures:
                 logger.warning(
@@ -155,11 +223,8 @@ def standardize(
 
             return original_input
 
-        if not seq.startswith("C"):
-            seq = "C" + seq
-
-        if not JUNCTION_MATCHING_REGEX.match(seq):
-            seq = seq + "F"
+        if not junction_matching_regex.match(seq):
+            seq =  "C" + seq + conserved_aa
 
     return seq
 

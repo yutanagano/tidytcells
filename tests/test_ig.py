@@ -159,8 +159,8 @@ class TestQuery:
     @pytest.mark.parametrize(
         ("species", "precision", "expected_len", "expected_in", "expected_not_in"),
         (
-            ("homosapiens", "allele", 1251, "IGKV3-15*02", "IGKV3-15"),
-            ("homosapiens", "gene", 474, "IGKV3-15", "IGKV3-15*02"),
+            ("homosapiens", "allele", 1302, "IGKV3-15*02", "IGKV3-15"),
+            ("homosapiens", "gene", 494, "IGKV3-15", "IGKV3-15*02"),
         ),
     )
     def test_query_all(
@@ -208,10 +208,10 @@ class TestQuery:
             "expected_not_in",
         ),
         (
-            ("homosapiens", "gene", "F", 185, "IGHD6-19", "IGHV1/OR16-21*01"),
-            ("homosapiens", "allele", "NF", 571, "IGHV1/OR16-21*01", "IGL35*01"),
-            ("homosapiens", "gene", "P", 264, "IGKV3D-31", "IGHV3-20*02"),
-            ("homosapiens", "allele", "ORF", 101, "IGHV3-20*02", "IGKV3D-31"),
+            ("homosapiens", "gene", "F", 187, "IGHD6-19", "IGHV1/OR16-21*01"),
+            ("homosapiens", "allele", "NF", 617, "IGHV1/OR16-21*01", "IGL35*01"),
+            ("homosapiens", "gene", "P", 282, "IGKV3D-31", "IGHV3-20*02"),
+            ("homosapiens", "allele", "ORF", 102, "IGHV3-20*02", "IGKV3D-31"),
         ),
     )
     def test_query_functionality(
@@ -265,6 +265,7 @@ class TestGetAaSequence:
                 "homosapiens",
                 {
                     "J-REGION": "AEYFQHWGQGTLVTVSS",
+                    "J-TRP": "W"
                 },
             )
         ),
