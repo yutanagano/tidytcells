@@ -25,7 +25,6 @@ class TestStandardize:
             ("TRBV20/OR9-2*01", "TRBV20/OR9-2*01"),
             ("TCRAV14/4", "TRAV14/DV4"),
             ("TRAV15-1-DV6-1", "TRAV15-1/DV6-1"),
-            ("TRAV15/DV6", "TRAV15-1/DV6-1"),
         )
     )
     def test_any_species(self, symbol, expected):
@@ -67,7 +66,7 @@ class TestStandardize:
             ("TRBJ2-7", "TRBJ2-7", True),
             ("TRBJ2-7", "TRBJ2-7", False),
             ("TRBJ2", "TRBJ2", True),
-            ("TRBJ2", "TRBJ2-1", False),
+            ("TRBJ2", None, False),
         ),
     )
     def test_allow_subgroup(self, symbol, expected, allow_subgroup):
@@ -76,6 +75,28 @@ class TestStandardize:
         )
 
         assert result == expected
+
+    @pytest.mark.filterwarnings("ignore:Failed to standardize")
+    @pytest.mark.parametrize(
+        ("symbol", "expected"),
+        (
+            ("TRAV14/DV4*01", "TRAV14/DV4*01"),
+            ("TRAV14/DV4-1*01", "TRAV14/DV4*01"),
+            ("TRAV14-1/DV4-1*01", "TRAV14/DV4*01"),
+            ("TRAV14-1/DV4*01", "TRAV14/DV4*01"),
+            ("TRAV14-1/DV4*01", "TRAV14/DV4*01"),
+            ("TRAV1-1*02", "TRAV1-1*02"),
+            ("TRAV10-1", "TRAV10"),
+            ("TRAV10-1*01", "TRAV10*01"),
+        ),
+    )
+    def test_remove_illegal_dash1(self, symbol, expected, ):
+        result = tr.standardize(
+            symbol=symbol, species="homosapiens",
+        )
+
+        assert result == expected
+
 
     @pytest.mark.parametrize(
         ("symbol", "expected", "precision"),
@@ -147,7 +168,7 @@ class TestStandardizeHomoSapiens:
             ("TCRAV30-1", "TRAV30"),
             ("TCRDV01-01*01", "TRDV1*01"),
             ("TCRAV14/4", "TRAV14/DV4"),
-            ("TCRAV36-01*01", "TRAV36/DV7*01"),
+            ("TCRAV36*01", "TRAV36/DV7*01"),
             ("29/DV5*01", "TRAV29/DV5*01"),
             ("TCRBJ2.7", "TRBJ2-7"),
         ),
@@ -170,18 +191,6 @@ class TestStandardizeMusMusculus:
         result = tr.standardize(symbol=symbol, species="musmusculus")
         assert "Failed to standardize" in caplog.text
         assert result == None
-
-    @pytest.mark.parametrize(
-        ("symbol", "expected"),
-        (
-            ("TRAV15-1-DV6-1", "TRAV15-1/DV6-1"),
-            ("TRAV15/DV6", "TRAV15-1/DV6-1"),
-        ),
-    )
-    def test_corrections(self, symbol, expected):
-        result = tr.standardize(symbol=symbol, species="musmusculus")
-
-        assert result == expected
 
 
 class TestQuery:

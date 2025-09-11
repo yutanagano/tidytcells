@@ -23,9 +23,8 @@ class TestStandardize:
         ("symbol", "expected"),
         (
             ("IGHV1/OR15-1*01", "IGHV1/OR15-1*01"),
-            ("IGHV6", "IGHV6-1"),
+            ("IGHV6-1", "IGHV6-1"),
             ("LV2-18", "IGLV2-18"),
-            ("IGLV(VI)-22", "IGLV(VI)-22-1"),
         )
     )
     def test_any_species(self, symbol, expected):
@@ -74,6 +73,26 @@ class TestStandardize:
     def test_allow_subgroup(self, symbol, expected, allow_subgroup):
         result = ig.standardize(
             symbol=symbol, species="homosapiens", allow_subgroup=allow_subgroup,
+        )
+
+        assert result == expected
+
+
+    @pytest.mark.filterwarnings("ignore:Failed to standardize")
+    @pytest.mark.parametrize(
+        ("symbol", "expected"),
+        (
+            ("IGHV5-10-1*01", "IGHV5-10-1*01"),
+            ("IGHV5-10-1", "IGHV5-10-1"),
+            ("IGHJ1-1", "IGHJ1"),
+            ("IGHJ1-1*01", "IGHJ1*01"),
+            ("IGHJ4-1*02", "IGHJ4*02"),
+            ("IGLV(VI)-22-1-1", "IGLV(VI)-22-1"),
+        ),
+    )
+    def test_remove_illegal_dash1(self, symbol, expected, ):
+        result = ig.standardize(
+            symbol=symbol, species="homosapiens",
         )
 
         assert result == expected
