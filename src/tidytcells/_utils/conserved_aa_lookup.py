@@ -26,7 +26,7 @@ def _is_valid_extension(original, extension):
 
 
 def _get_all_extended_symbols(j_symbol, aa_dict):
-    return sorted(list({key for key in aa_dict.keys() if _is_valid_extension(j_symbol, key)}))
+    return sorted(list({key for key in aa_dict.keys() if _is_valid_extension(j_symbol, key) if "J" in key}))
 
 
 def _resolve_conserved_aa_from_partial_j_symbol(j_symbol, aa_dict, log_failures):
