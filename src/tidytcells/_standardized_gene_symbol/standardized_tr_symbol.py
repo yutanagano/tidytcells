@@ -55,9 +55,6 @@ class StandardizedTrSymbol(StandardizedSymbol):
         if self._has_valid_gene_name():
             return
 
-        if self._gene_name == "TRAV15-1":
-            pass
-
         if self._is_synonym():
             self._gene_name = self._synonym_dictionary[self._gene_name]
             return
@@ -83,12 +80,6 @@ class StandardizedTrSymbol(StandardizedSymbol):
         if self._has_valid_gene_name():
             return
 
-
-        #
-        # if self._gene_name.startswith("TRAV") and "DV" not in self._gene_name:
-        #     self._try_resolving_trdv_designation_from_trav_info()
-        #     if self._has_valid_gene_name():
-        #         return
 
     def _has_valid_gene_name(self) -> bool:
         if self._gene_name in self._valid_tr_dictionary:
