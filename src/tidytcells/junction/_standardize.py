@@ -4,7 +4,7 @@ from tidytcells import aa, _utils
 from typing import Literal, Optional
 from tidytcells._utils.parameter import Parameter
 from tidytcells._utils.conserved_aa_lookup import get_conserved_aa
-from tidytcells._utils.trimming import trim_junction
+from tidytcells._utils.trimming import process_junction
 
 logger = logging.getLogger(__name__)
 
@@ -221,14 +221,14 @@ def standardize(
         return original_input
 
     conserved_aa = "F"
-    junction_matching_regex = re.compile(r"^C[A-Z]*[FW]$")
+    junction_matching_regex = re.compile(r"^C[A-Z]{4,}[FW]$")
     species = _utils.clean_and_lowercase(species)
 
     if j_symbol:
         conserved_aa = get_conserved_aa(j_symbol=j_symbol, locus=locus, species=species, log_failures=log_failures)
 
         if conserved_aa is not None:
-            junction_matching_regex = re.compile(fr"^C[A-Z]*{conserved_aa}$")
+            junction_matching_regex = re.compile(r"^C[A-Z]{4,}[" + conserved_aa + "]$")
 
         if conserved_aa is None:
             if j_strict:
@@ -239,10 +239,11 @@ def standardize(
                 logger.info(f"J symbol conserved amino acid could not be determined for {j_symbol}, using F as default.")
                 conserved_aa = "F"
 
-    if trimming:
-        # junction_matching_regex contains the correct ending aa pattern: [FW] (default)
-        #   or a specific F/W/C if this was determined based on J gene/locus
-        seq = trim_junction(seq, junction_matching_regex, conserved_aa, locus, species)
+    # if trimming:
+    #     # junction_matching_regex contains the correct ending aa pattern: [FW] (default)
+    #     #   or a specific F/W/C if this was determined based on J gene/locus
+    #
+    seq = process_junction(seq, junction_matching_regex, conserved_aa, locus, species, trimming=trimming, check_motifs=True)
 
     if not junction_matching_regex.match(seq):
         if strict:
@@ -256,10 +257,10 @@ def standardize(
 
             return original_input
 
-        if not junction_matching_regex.match(seq):
-            seq =  "C" + seq + conserved_aa
-
-    return seq
+    #     if not junction_matching_regex.match(seq):
+    #         seq =  "C" + seq + conserved_aa
+    #
+    # return seq
 
 
 def standardise(*args, **kwargs) -> Optional[str]:

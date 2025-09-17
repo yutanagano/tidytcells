@@ -208,6 +208,11 @@ def add_v_motifs(v_aa_dict):
             if seq_data["FR3-IMGT"].endswith("C") and len(seq_data["FR3-IMGT"]) >= 4:
                 v_aa_dict[allele]["V-MOTIF"] = seq_data["FR3-IMGT"][-4:]
 
+                if seq_data["FR3-IMGT"] in seq_data["V-REGION"]:
+                    _v, cdr3_motif = seq_data["V-REGION"].split(seq_data["FR3-IMGT"])
+                    if len(cdr3_motif) > 0:
+                        v_aa_dict[allele]["V-CDR3-MOTIF"] = cdr3_motif.rstrip("*")
+
     return v_aa_dict
 
 
@@ -216,29 +221,32 @@ def add_j_motifs(j_aa_dict, species):
         if "J-REGION" not in seq_data or len(seq_data["J-REGION"]) < 4:
             continue
 
-        if "J-MOTIF" in seq_data and len(seq_data["J-MOTIF"]) == 4:
-            continue
+        if not ("J-MOTIF" in seq_data and len(seq_data["J-MOTIF"]) == 4):
+            conserved_aa = seq_data["J-PHE"] if "J-PHE" in seq_data \
+                else seq_data["J-TRP"] if "J-TRP" in seq_data \
+                else seq_data["J-CYS"] if "J-CYS" in seq_data \
+                else None
 
-        conserved_aa = seq_data["J-PHE"] if "J-PHE" in seq_data \
-            else seq_data["J-TRP"] if "J-TRP" in seq_data \
-            else seq_data["J-CYS"] if "J-CYS" in seq_data \
-            else None
+            if conserved_aa is None or conserved_aa not in seq_data["J-REGION"]:
+                continue
 
-        if conserved_aa is None or conserved_aa not in seq_data["J-REGION"]:
-            continue
+            if seq_data["J-REGION"].count(conserved_aa) == 1:
+                motif_idx = seq_data["J-REGION"].index(conserved_aa)
+            elif seq_data["J-REGION"].count(conserved_aa + "G") == 1: # G is a very common second amino acid in the motif
+                motif_idx = seq_data["J-REGION"].index(conserved_aa + "G")
+            elif seq_data["J-REGION"][1:].count(conserved_aa) == 1:  # J-REGION sometimes starts with F, which is unlikely to be the motif-F
+                motif_idx = seq_data["J-REGION"][1:].index(conserved_aa) + 1
+            elif species == "Mus+musculus" and allele.startswith("TRG") and seq_data["J-REGION"].count(conserved_aa + "A") == 1:
+                motif_idx = seq_data["J-REGION"].index(conserved_aa + "A")
+            else:
+                continue
 
-        if seq_data["J-REGION"].count(conserved_aa) == 1:
-            motif_idx = seq_data["J-REGION"].index(conserved_aa)
-        elif seq_data["J-REGION"].count(conserved_aa + "G") == 1: # G is a very common second amino acid in the motif
-            motif_idx = seq_data["J-REGION"].index(conserved_aa + "G")
-        elif seq_data["J-REGION"][1:].count(conserved_aa) == 1:  # J-REGION sometimes starts with F, which is unlikely to be the motif-F
-            motif_idx = seq_data["J-REGION"][1:].index(conserved_aa) + 1
-        elif species == "Mus+musculus" and allele.startswith("TRG") and seq_data["J-REGION"].count(conserved_aa + "A") == 1:
-            motif_idx = seq_data["J-REGION"].index(conserved_aa + "A")
-        else:
-            continue
+            seq_data["J-MOTIF"] = seq_data["J-REGION"][motif_idx: motif_idx + 4]
 
-        seq_data["J-MOTIF"] = seq_data["J-REGION"][motif_idx: motif_idx + 4]
+        cdr3_motif, _j = seq_data["J-REGION"].split(seq_data["J-MOTIF"])
+
+        if len(cdr3_motif) > 0:
+            j_aa_dict[allele]["J-CDR3-MOTIF"] = cdr3_motif.lstrip("*")
 
     return j_aa_dict
 

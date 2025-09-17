@@ -125,6 +125,7 @@ class Teststandardize:
         (
                 ("AELNAGNNRKLI", True, "TRAJ38*01", "homosapiens", "CAELNAGNNRKLIW"), # trimming shouldnt matter here
                 ("AELNAGNNRKLI", False, "TRAJ38*01", "homosapiens", "CAELNAGNNRKLIW"),
+                ("AELNAGNNRKLI", True, "TRA", "homosapiens", "CAELNAGNNRKLIW"),
                 ("YFCAVVFNMDSNYQLIWFGAGTKL", True, "TRA", "homosapiens", "CAVVFNMDSNYQLIWF"), # default: look for F
                 ("YFCAVVFNMDSNYQLIWGQGGTKL", True, "TRAJ38*01", "homosapiens", "CAVVFNMDSNYQLIW"), # J gene with conserved W
                 ("YFCAVVFNMDSNYQLIWFGAGTKL", True, "IGLJ", "homosapiens", "CAVVFNMDSNYQLIWF"), # J gene with conserved F
