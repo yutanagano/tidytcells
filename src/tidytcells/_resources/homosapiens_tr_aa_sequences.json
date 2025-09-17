@@ -3034,7 +3034,7 @@
         "J-REGION": "*ETSGSRLTFGEGTQLTVNP",
         "J-PHE": "F",
         "J-MOTIF": "FGEG",
-        "J-CDR3-MOTIF": "*ETSGSRLT"
+        "J-CDR3-MOTIF": "ETSGSRLT"
     },
     "TRAJ59*01": {
         "J-REGION": "KEGNRKFTFGMGTQVRVKL",

@@ -211,7 +211,7 @@ def add_v_motifs(v_aa_dict):
                 if seq_data["FR3-IMGT"] in seq_data["V-REGION"]:
                     _v, cdr3_motif = seq_data["V-REGION"].split(seq_data["FR3-IMGT"])
                     if len(cdr3_motif) > 0:
-                        v_aa_dict[allele]["V-CDR3-MOTIF"] = cdr3_motif
+                        v_aa_dict[allele]["V-CDR3-MOTIF"] = cdr3_motif.rstrip("*")
 
     return v_aa_dict
 
@@ -246,7 +246,7 @@ def add_j_motifs(j_aa_dict, species):
         cdr3_motif, _j = seq_data["J-REGION"].split(seq_data["J-MOTIF"])
 
         if len(cdr3_motif) > 0:
-            j_aa_dict[allele]["J-CDR3-MOTIF"] = cdr3_motif
+            j_aa_dict[allele]["J-CDR3-MOTIF"] = cdr3_motif.lstrip("*")
 
     return j_aa_dict
 
