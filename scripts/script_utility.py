@@ -209,9 +209,10 @@ def add_v_motifs(v_aa_dict):
                 v_aa_dict[allele]["V-MOTIF"] = seq_data["FR3-IMGT"][-4:]
 
                 if seq_data["FR3-IMGT"] in seq_data["V-REGION"]:
-                    _v, cdr3_motif = seq_data["V-REGION"].split(seq_data["FR3-IMGT"])
-                    if len(cdr3_motif) > 0:
-                        v_aa_dict[allele]["V-CDR3-MOTIF"] = cdr3_motif.rstrip("*")
+                    cdr3_start_motif = seq_data["V-REGION"][seq_data["V-REGION"].index(seq_data["FR3-IMGT"]) + len(seq_data["FR3-IMGT"]) - 1:]
+
+                    if len(cdr3_start_motif) > 0:
+                        v_aa_dict[allele]["V-CDR3-START"] = cdr3_start_motif.rstrip("*")
 
     return v_aa_dict
 
@@ -236,6 +237,8 @@ def add_j_motifs(j_aa_dict, species):
                 motif_idx = seq_data["J-REGION"].index(conserved_aa + "G")
             elif seq_data["J-REGION"][1:].count(conserved_aa) == 1:  # J-REGION sometimes starts with F, which is unlikely to be the motif-F
                 motif_idx = seq_data["J-REGION"][1:].index(conserved_aa) + 1
+            elif seq_data["J-REGION"].count(conserved_aa + "GT") == 1: # G is a very common second amino acid in the motif
+                motif_idx = seq_data["J-REGION"].index(conserved_aa + "GT")
             elif species == "Mus+musculus" and allele.startswith("TRG") and seq_data["J-REGION"].count(conserved_aa + "A") == 1:
                 motif_idx = seq_data["J-REGION"].index(conserved_aa + "A")
             else:
@@ -243,10 +246,10 @@ def add_j_motifs(j_aa_dict, species):
 
             seq_data["J-MOTIF"] = seq_data["J-REGION"][motif_idx: motif_idx + 4]
 
-        cdr3_motif, _j = seq_data["J-REGION"].split(seq_data["J-MOTIF"])
+        cdr3_end_motif = seq_data["J-REGION"][0:seq_data["J-REGION"].index(seq_data["J-MOTIF"]) + 1]
 
-        if len(cdr3_motif) > 0:
-            j_aa_dict[allele]["J-CDR3-MOTIF"] = cdr3_motif.lstrip("*")
+        if len(cdr3_end_motif) > 1:
+            j_aa_dict[allele]["J-CDR3-END"] = cdr3_end_motif.lstrip("*")
 
     return j_aa_dict
 
