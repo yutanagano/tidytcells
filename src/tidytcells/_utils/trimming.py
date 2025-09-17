@@ -28,7 +28,7 @@ def get_motifs_for_tr_locus(tr_aa_dict, motif_type, locus):
 def get_conserved_motifs(locus, species, motif_type):
     # todo allow locus to be list? IGL/IGK?? or just use IG in that case?
 
-    assert motif_type in ("V-MOTIF", "J-MOTIF", "V-CDR3-MOTIF", "J-CDR3-MOTIF"), f"Unknown motif type: {motif_type}"
+    assert motif_type in ("V-MOTIF", "J-MOTIF", "V-CDR3-START", "J-CDR3-END"), f"Unknown motif type: {motif_type}"
 
     if species == "homosapiens":
         if locus is None: # get all TR + IG motifs combined
@@ -49,9 +49,50 @@ def get_conserved_motifs(locus, species, motif_type):
     else:
         raise ValueError(f"Trimming is not supported for species {species}.")
 
+
+def startswith_cdr3_motif(seq, locus, species, include_conserved, max_motif_len=4):
+    assert type(include_conserved) == bool
+
+    start_motifs = get_conserved_motifs(locus, species, "V-CDR3-START")
+    start_motifs.discard("C")
+
+    if max_motif_len is not None:
+        start_motifs = {motif[:max_motif_len] if len(motif) > max_motif_len else motif for motif in start_motifs}
+
+    if not include_conserved:
+        start_motifs = {motif[1:] for motif in start_motifs}
+
+    for motif in start_motifs:
+        if seq.startswith(motif):
+            return True
+
+    return False # todo one of the motifs is literally 'C'.. defeats the purpose?
+
+
+def endswith_cdr3_motif(seq, locus, species, include_conserved=False, max_motif_len=4):
+    assert type(include_conserved) == bool
+
+    end_motifs = get_conserved_motifs(locus, species, "J-CDR3-END")
+
+    if max_motif_len is not None:
+        end_motifs = {motif[-max_motif_len:] if len(motif) > max_motif_len else motif for motif in end_motifs}
+
+    end_motifs.discard("")
+
+    if not include_conserved:
+        end_motifs = {motif[:-1] for motif in end_motifs}
+
+    for motif in end_motifs:
+        if seq.startswith(motif):
+            return True
+
+    return False
+
+
+
 def minimal_trim_junction_start(orig_seq, locus, species):
     # if junction / or CDR3
-    if orig_seq[0] == "C" or startswith_cdr3_start_motif(orig_seq, locus, species):
+    if startswith_cdr3_motif(orig_seq, locus, species, include_conserved=True) or startswith_cdr3_motif(orig_seq, locus, species, include_conserved=False):
         return orig_seq
 
     v_motifs = get_conserved_motifs(locus, species, "V-MOTIF")
@@ -73,8 +114,11 @@ def minimal_trim_junction_start(orig_seq, locus, species):
 
 def minimal_trim_junction_end(orig_seq, locus, species, conserved_aas):
     # if junction / or CDR3
-    if orig_seq[-1] in conserved_aas or endswith_cdr3_end_motif(orig_seq, locus, species):
+    if endswith_cdr3_motif(orig_seq, locus, species, include_conserved=True) or endswith_cdr3_motif(orig_seq, locus, species, include_conserved=False):
         return orig_seq
+
+    # if orig_seq[-1] in conserved_aas or endswith_cdr3_end_motif(orig_seq, locus, species):
+    #     return orig_seq
 
     j_motifs = get_conserved_motifs(locus, species, "J-MOTIF")
     j_motifs = {motif for motif in j_motifs if motif[0] in conserved_aas}
@@ -98,53 +142,13 @@ def get_expected_conserved_aas(junction_matching_regex):
     return junction_matching_regex.pattern.split("[")[-1].rstrip("]$")
 
 
-# def trim_junction(orig_seq, junction_matching_regex, conserved_aa, locus, species):
-#     # do not trim if it is already a valid CDR3 junction, or if it contains no C (likely to only be CDR3 without conserved aa's)
-#     if junction_matching_regex.match(orig_seq) or "C" not in orig_seq:
-#         return orig_seq
-#
-#     seq = minimal_trim_junction_start(orig_seq, locus, species)
-#
-#     # if junction_matching_regex.match(seq): # WFGA
-#     #     return seq
-#
-#     if seq.startswith("C"): # only continue end-trimming if start is 'complete'
-#         conserved_aas = get_expected_conserved_aas(junction_matching_regex)
-#
-#         seq = minimal_trim_junction_end(seq, locus, species, conserved_aas)
-#
-#         if junction_matching_regex.match(seq):
-#             # print(f"'{orig_seq}': '{seq}',")
-#             return seq
-#
-#     # if any trimming failed, this is likely the CDR3 without conserved aa's; return original sequence
-#     return orig_seq
-
-
-def startswith_cdr3_start_motif(seq, locus, species):
-    cdr3_start_motifs = get_conserved_motifs(locus, species, "V-CDR3-MOTIF")
-
-    for motif in cdr3_start_motifs:
-        if seq.startswith(motif):
-            return True
-
-    return False
-
-def endswith_cdr3_end_motif(seq, locus, species):
-    cdr3_end_motifs = get_conserved_motifs(locus, species, "J-CDR3-MOTIF")
-
-    for motif in cdr3_end_motifs:
-        if seq.endswith(motif):
-            return True
-
-    return False
-
 
 def is_valid_junction(seq, junction_matching_regex, locus, species, check_motifs=True):
     if junction_matching_regex.match(seq):
 
         if check_motifs:
-            return is_valid_cdr3(seq[1:-1], locus, species)
+            if startswith_cdr3_motif(seq, locus, species, include_conserved=True) and endswith_cdr3_motif(seq, locus, species, include_conserved=True):
+                return True
         else:
             return True
 
@@ -153,29 +157,14 @@ def is_valid_junction(seq, junction_matching_regex, locus, species, check_motifs
 
 def is_valid_cdr3(seq, locus, species, min_len=4):
     if len(seq) >= min_len:
-        if startswith_cdr3_start_motif(seq, locus, species) and endswith_cdr3_end_motif(seq, locus, species):
+        if startswith_cdr3_motif(seq, locus, species, include_conserved=False) and endswith_cdr3_motif(seq, locus, species, include_conserved=False):
             return True
 
     return False
 
 
-    # if junction_matching_regex.match(seq):
-    #     if check_motifs:
-    #         pass
-    #     else:
-    #         return True
-    #
-    #
-    # return False
-
 
 def process_junction(orig_seq, junction_matching_regex, conserved_aa, locus, species, trimming=True, check_motifs=True):
-    # do not trim if it is already a valid CDR3 junction, or if it contains no C (likely to only be CDR3 without conserved aa's)
-    # if junction_matching_regex.match(orig_seq): # or "C" not in orig_seq:
-    #     # return orig_seq
-    #     print("used to be return orig seq but this is not 'safe'?")
-    #     pass
-
     # cases are checked in order of most likely occurrence + minimal interventions
     # case 1: is junction with leading/trailing, CAAAAF (already valid)
     # case 2: is CDR3 without leading/trailing, AAAA (reconstruct leading/trailing)
@@ -185,53 +174,90 @@ def process_junction(orig_seq, junction_matching_regex, conserved_aa, locus, spe
 
     # case 1: junction
     if is_valid_junction(orig_seq, junction_matching_regex, locus, species, check_motifs):
-        print("valid junction:", orig_seq) # todo for the cdr3 motifs keep with conserved aa
+        # print("valid junction:", orig_seq) # todo for the cdr3 motifs keep with conserved aa
         return orig_seq
 
     # case 2: cdr3
     if check_motifs and is_valid_cdr3(orig_seq, locus, species):
         # todo retrieve precise conserved aa if all_conserved_aas is ambiguous?, this one is just preferred
-        print("valid cdr3 to junction:", orig_seq, ":", "C" + orig_seq + conserved_aa)
+        # print("valid cdr3 to junction:", orig_seq, ":", "C" + orig_seq + conserved_aa)
 
         return "C" + orig_seq + conserved_aa
+
+    all_conserved_aas = get_expected_conserved_aas(junction_matching_regex)  # todo if all_conserved_aas >1, determine based on J motif
 
     # trimming
     if trimming:
         seq = minimal_trim_junction_start(orig_seq, locus, species)
-        all_conserved_aas = get_expected_conserved_aas(junction_matching_regex) # todo if all_conserved_aas >1, determine based on J motif
         seq = minimal_trim_junction_end(seq, locus, species, all_conserved_aas)
     else:
         seq = orig_seq
 
     # case 3
     if is_valid_junction(seq, junction_matching_regex, locus, species, check_motifs):
-        print("valid junction after trimming:", orig_seq, ":", seq)
+        # print("valid junction after trimming:", orig_seq, ":", seq)
         return seq
 
     # case 4 (only add conserved aas to sides that were not trimmed)
     start_was_trimmed = not orig_seq.startswith(seq)
     end_was_trimmed = not orig_seq.endswith(seq)
 
-    if startswith_cdr3_start_motif(seq, locus, species) and not start_was_trimmed:
-        seq = "C" + seq
+    # only 'add' to sites that were not trimmed
+    #   if the current start/end is not a valid conserved motif
+    #     but adding a C / FW makes it a conserved motif
+    #       then add C / FW
 
-    if endswith_cdr3_end_motif(seq, locus, species) and not end_was_trimmed:
-        seq + conserved_aa
+    if not start_was_trimmed:
+        if not startswith_cdr3_motif(seq, locus, species, include_conserved=True):
+            if startswith_cdr3_motif("C" + seq, locus, species, include_conserved=True):
+                seq = "C" + seq
+
+    if not end_was_trimmed:
+        if not endswith_cdr3_motif(seq, locus, species, include_conserved=True):
+            if endswith_cdr3_motif(seq + conserved_aa, locus, species, include_conserved=True):
+                seq = seq + conserved_aa
+            else: # special case: check other possible conserved end aa's
+                for aa in all_conserved_aas:
+                    if aa != conserved_aa and endswith_cdr3_motif(seq + aa, locus, species, include_conserved=True):
+                        seq = seq + aa
+                        break
+
+
+    # if startswith_cdr3_motif(seq, locus, species, include_conserved=False) and not start_was_trimmed:
+    #     seq = "C" + seq
+
+    # if endswith_cdr3_motif(seq, locus, species, include_conserved=False) and not end_was_trimmed:
+    #     seq = seq + conserved_aa
 
     if is_valid_junction(seq, junction_matching_regex, locus, species, check_motifs):
-        print("valid junction after trimming and restoring:", orig_seq, ":", seq)
+        # print("valid junction after trimming and restoring:", orig_seq, ":", seq)
         return seq
 
     # assert False, "incomplete or invalid CDR3?"
     # case 5: invalid CDR3
 
-    print("incomplete or invalid CDR3:", orig_seq, f": {seq})" if seq != orig_seq else "")
-    return None
+    print(locus, orig_seq, ":", seq) #, f"start={startswith_cdr3_start_motif(seq[1:], locus, species)}", f"end={endswith_cdr3_end_motif(seq[:-1], locus, species)}", sep="\t")
+
+    return orig_seq
+
+   # 'AVKDARLMFG' -> 'CAVKDARLMF'
+   # 'ARHRNWLFDY' / 'CARHRNWLFDY'
+   # 'AVLNTGGFKTI' / 'CAVLNTGGFKTI' -> NTGGFKTI
+   # 'AAFDDKIIFG' / 'CAAFDDKIIF'
+   # 'AANNARLMFG' / 'CAANNARLMF'
+   # 'AASASKLIFG' / 'CAASASKLIF'
+   # 'AASGTGAGSYQLT' / 'CAASGTGAGSYQLT'
+   # 'AASSLYGQNFV' / 'CAASSLYGQNFV'
 
 
-
-
-
+    #
+    # print("incomplete or invalid CDR3:", orig_seq, f": {seq})" if seq != orig_seq else "")
+    # return None
+    #
+    #
+    #
+    #
+    #
 
 
     #
