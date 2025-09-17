@@ -260,7 +260,7 @@ def standardize(
     #     if not junction_matching_regex.match(seq):
     #         seq =  "C" + seq + conserved_aa
     #
-    # return seq
+    return seq
 
 
 def standardise(*args, **kwargs) -> Optional[str]:
