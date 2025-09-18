@@ -15,6 +15,8 @@ def _get_conserved_aa_exact_symbol(aa_dict, j_symbol):
         return "W"
     elif "J-CYS" in aa_dict[j_symbol] and aa_dict[j_symbol]["J-CYS"] == "C":
         return "C"
+    elif "J-VAL" in aa_dict[j_symbol] and aa_dict[j_symbol]["J-VAL"] == "V":
+        return "V"
 
 
 def _is_valid_extension(original, extension):
@@ -63,16 +65,10 @@ def _lookup_conserved_aa(j_symbol, aa_dict, log_failures):
 
     return _resolve_conserved_aa_from_partial_j_symbol(j_symbol, aa_dict, log_failures)
 
-def get_hs_tr_aa_with_non_canonical_c():
-    '''Homo sapiens TRAJ35*01 is known to have non-canonical cysteine ending, this is not retrieved by IMGT J-PHE/J-TRP'''
-    hs_aa = copy.deepcopy(HOMOSAPIENS_TR_AA_SEQUENCES)
-    hs_aa["TRAJ35*01"]["J-CYS"] = "C"
-
-    return hs_aa
 
 def _get_aa_dict(gene_type, species):
     if gene_type == "TR" and species == "homosapiens":
-        return get_hs_tr_aa_with_non_canonical_c()
+        return HOMOSAPIENS_TR_AA_SEQUENCES
     elif gene_type == "IG" and species == "homosapiens":
         return HOMOSAPIENS_IG_AA_SEQUENCES
     elif gene_type == "TR" and species == "musmusculus":
