@@ -50,7 +50,7 @@ def get_conserved_motifs(locus, species, motif_type):
         raise ValueError(f"Trimming is not supported for species {species}.")
 
 
-def startswith_cdr3_motif(seq, locus, species, include_conserved, max_motif_len=4):
+def startswith_cdr3_motif(seq, locus, species, include_conserved, max_motif_len=2):
     assert type(include_conserved) == bool
 
     start_motifs = get_conserved_motifs(locus, species, "V-CDR3-START")
@@ -69,7 +69,7 @@ def startswith_cdr3_motif(seq, locus, species, include_conserved, max_motif_len=
     return False # todo one of the motifs is literally 'C'.. defeats the purpose?
 
 
-def endswith_cdr3_motif(seq, locus, species, include_conserved=False, max_motif_len=4):
+def endswith_cdr3_motif(seq, locus, species, include_conserved=False, max_motif_len=2):
     assert type(include_conserved) == bool
 
     end_motifs = get_conserved_motifs(locus, species, "J-CDR3-END")
@@ -83,7 +83,7 @@ def endswith_cdr3_motif(seq, locus, species, include_conserved=False, max_motif_
         end_motifs = {motif[:-1] for motif in end_motifs}
 
     for motif in end_motifs:
-        if seq.startswith(motif):
+        if seq.endswith(motif):
             return True
 
     return False
@@ -236,7 +236,7 @@ def process_junction(orig_seq, junction_matching_regex, conserved_aa, locus, spe
     # assert False, "incomplete or invalid CDR3?"
     # case 5: invalid CDR3
 
-    print(locus, orig_seq, ":", seq) #, f"start={startswith_cdr3_start_motif(seq[1:], locus, species)}", f"end={endswith_cdr3_end_motif(seq[:-1], locus, species)}", sep="\t")
+    print(locus, orig_seq, ":", seq, f"start={startswith_cdr3_motif(seq, locus, species, include_conserved=True)}", f"end={endswith_cdr3_motif(seq, locus, species, include_conserved=True)}", sep="\t")
 
     return orig_seq
 
