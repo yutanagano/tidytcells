@@ -3170,6 +3170,7 @@
     "TRBJ2-7*02": {
         "J-REGION": "SYEQYVGPGTRLTVT",
         "J-MOTIF": "VGPG",
+        "J-VAL": "V",
         "J-CDR3-END": "SYEQYV"
     },
     "TRGJ1*01": {

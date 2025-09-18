@@ -125,8 +125,12 @@ def get_j_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
     labels = ("J-REGION", "J-MOTIF", "J-PHE", "J-TRP")
     data = get_gene_sequence_data(labels, gene_groups, species)
 
-    if species == "Homo+sapiens" and "TRA" in gene_groups:
-        data["TRAJ35*01"]["J-CYS"] = "C"
+    # Add known non-canonical cases
+    if species == "Homo+sapiens":
+        if "TRA" in gene_groups:
+            data["TRAJ35*01"]["J-CYS"] = "C"
+        if "TRB" in gene_groups:
+            data["TRBJ2-7*02"]["J-VAL"] = "V"
 
     return add_j_motifs(data, species)
 
@@ -226,6 +230,7 @@ def add_j_motifs(j_aa_dict, species):
             conserved_aa = seq_data["J-PHE"] if "J-PHE" in seq_data \
                 else seq_data["J-TRP"] if "J-TRP" in seq_data \
                 else seq_data["J-CYS"] if "J-CYS" in seq_data \
+                else seq_data["J-VAL"] if "J-VAL" in seq_data \
                 else None
 
             if conserved_aa is None or conserved_aa not in seq_data["J-REGION"]:
