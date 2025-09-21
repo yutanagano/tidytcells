@@ -2310,7 +2310,8 @@
         "J-PHE": "F"
     },
     "TRAJ35*01": {
-        "J-REGION": "IGFGNVLHCGSGTQVIVLP"
+        "J-REGION": "IGFGNVLHCGSGTQVIVLP",
+        "J-CYS": "C"
     },
     "TRAJ36*01": {
         "J-REGION": "QTGANNLFFGTGTRLTVIP",

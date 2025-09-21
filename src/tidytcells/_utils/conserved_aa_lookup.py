@@ -1,6 +1,4 @@
-import copy
 import logging
-
 from tidytcells._resources import (
     HOMOSAPIENS_TR_AA_SEQUENCES,
     HOMOSAPIENS_IG_AA_SEQUENCES,
@@ -9,6 +7,37 @@ from tidytcells._resources import (
 
 
 logger = logging.getLogger(__name__)
+
+
+TR_AA_SEQUENCES = {
+    "homosapiens": HOMOSAPIENS_TR_AA_SEQUENCES,
+    "musmusculus": MUSMUSCULUS_TR_AA_SEQUENCES,
+}
+
+IG_AA_SEQUENCES = {"homosapiens": HOMOSAPIENS_IG_AA_SEQUENCES}
+
+
+def get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures):
+    if j_symbol.startswith("TR"):
+        if species not in TR_AA_SEQUENCES:
+            raise ValueError(
+                f"Failed to determine the conserved trailing amino acid for J symbol {j_symbol}: this feature "
+                f"is not supported for TR genes for species {species}."
+            )
+        return _get_conserved_aa(j_symbol, TR_AA_SEQUENCES[species], log_failures)
+
+    if j_symbol.startswith("IG"):
+        if species not in IG_AA_SEQUENCES:
+            raise ValueError(
+                f"Failed to determine the conserved trailing amino acid for J symbol {j_symbol}: this feature "
+                f"is not supported for IG genes for species {species}."
+            )
+        return _get_conserved_aa(j_symbol, IG_AA_SEQUENCES[species], log_failures)
+
+    raise ValueError(
+        f"Failed to determine the conserved trailing amino acid for J symbol {j_symbol}: symbol is not formatted correctly."
+        f"Please use tt.tr.standardize or tt.ig.standardize to correct the symbol."
+    )
 
 
 def _get_conserved_aa_exact_symbol(aa_dict, j_symbol):
@@ -76,14 +105,6 @@ def _get_conserved_aa(j_symbol, aa_dict, log_failures):
     return _resolve_conserved_aa_from_partial_j_symbol(j_symbol, aa_dict, log_failures)
 
 
-def get_hs_tr_aa_with_non_canonical_c():
-    """Homo sapiens TRAJ35*01 is known to have non-canonical cysteine ending, this is not retrieved by IMGT J-PHE/J-TRP"""
-    hs_aa = copy.deepcopy(HOMOSAPIENS_TR_AA_SEQUENCES)
-    hs_aa["TRAJ35*01"]["J-CYS"] = "C"
-
-    return hs_aa
-
-
 def _get_aa_dict(gene_type, species):
     if gene_type == "TR" and species == "homosapiens":
         return get_hs_tr_aa_with_non_canonical_c()
@@ -91,22 +112,3 @@ def _get_aa_dict(gene_type, species):
         return HOMOSAPIENS_IG_AA_SEQUENCES
     elif gene_type == "TR" and species == "musmusculus":
         return MUSMUSCULUS_TR_AA_SEQUENCES
-
-
-def get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures):
-    if j_symbol.startswith("TR") or j_symbol.startswith("IG"):
-        aa_dict = _get_aa_dict(j_symbol[0:2], species)
-
-        if aa_dict is not None:
-            return _get_conserved_aa(j_symbol, aa_dict, log_failures)
-
-        else:
-            raise ValueError(
-                f"Failed to determine the conserved trailing amino acid for J symbol {j_symbol}: this feature "
-                f"is not supported for {j_symbol[0:2]} genes for species {species}."
-            )
-    else:
-        raise ValueError(
-            f"Failed to determine the conserved trailing amino acid for J symbol {j_symbol}: symbol is not formatted correctly."
-            f"Please use tt.tr.standardize or tt.ig.standardize to correct the symbol."
-        )
