@@ -237,12 +237,9 @@ def standardize(
 
     if j_symbol:
         species = _utils.clean_and_lowercase(species)
-        aa118_target_from_j = get_conserved_aa_for_j_symbol_for_species(
+        aa_118_target, aa_118_certain = get_conserved_aa_for_j_symbol_for_species(
             j_symbol, species, log_failures=log_failures
-        )  # returns None if aa is ambiguous
-        if aa118_target_from_j is not None:
-            aa_118_target = aa118_target_from_j
-            aa_118_certain = True
+        )
 
     if aa_118_certain:
         junction_matching_regex = re.compile(rf"^C[A-Z]*{aa_118_target}$")
