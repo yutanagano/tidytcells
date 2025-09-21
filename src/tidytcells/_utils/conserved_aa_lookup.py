@@ -4,7 +4,7 @@ from tidytcells._resources import (
     HOMOSAPIENS_IG_AA_SEQUENCES,
     MUSMUSCULUS_TR_AA_SEQUENCES,
 )
-from typing import Optional
+from typing import Optional, Tuple
 
 TR_AA_SEQUENCES = {
     "homosapiens": HOMOSAPIENS_TR_AA_SEQUENCES,
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def get_conserved_aa_for_j_symbol_for_species(
     j_symbol, species, log_failures
-) -> tuple[str, bool]:
+) -> Tuple[str, bool]:
     """
     Given a standardized J symbol and species, attempt to infer what the
     conserved residue at position 118 is.
