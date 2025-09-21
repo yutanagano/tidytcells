@@ -14,54 +14,66 @@ def standardize(
     seq: str,
     j_symbol: Optional[str] = None,
     species: Optional[str] = None,
-    strict: Optional[bool] = None,
-    j_strict: Optional[bool] = None,
+    allow_uncertain_118: Optional[bool] = None,
+    add_missing_conserved: Optional[bool] = None,
     on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[bool] = None,
+    j_strict: Optional[bool] = None,
+    strict: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,
 ) -> Optional[str]:
     """
-    Ensures that a string value looks like a valid junction (CDR3) amino acid sequence.
-    This function is a special variant of :py:func:`tidytcells.aa.standardize`.
+    Ensures that a string value looks like a valid junction (CDR3) amino acid
+    sequence.
 
     A valid junction sequence must:
 
     1. Be a valid amino acid sequence
     2. Begin with a cysteine (C)
-    3. End with a phenylalanine (F) or a tryptophan (W) if no J symbol is supplied;
-        or non-canonical cysteine (C) only if the supplied j_symbol is TRAJ35*01 and species is human
+    3. End with a tryptophan (W), phenylalanine (F) or cysteine (C) in a way
+       consistent with J symbol if supplied
 
     :param seq:
         String value representing a junction sequence.
     :type seq:
         str
     :param j_symbol:
-        String value representing the J symbol used to determine the correct conserved trailing amino acid sequence (F or W).
-        This is determined based on the allele sequence. If less-precise gene or subgroup information is provided, an attempt will be made
-        to extend the J symbol name to all known alleles.
-        If not provided, the conserved trailing amino acid which may be added to the end of the sequence will default to 'F'.
+        The J symbol used to determine the correct conserved trailing amino
+        acid at position 118 (F / W / C). If the symbol does not resolve to a
+        single allele but all productive alleles consistent with the symbol
+        have the same conserved residue, this will be set as the expected
+        ending residue. If the supplied symbol does not map to any (group of)
+        known J alleles, the function will raise a ``ValueError``.
     :type j_symbol:
         str
     :param species:
-        String value representing the species of the J symbol. Defaults to ``homosapiens``.
+        The species that produced the underlying receptor. Defaults to
+        ``homosapiens``.
     :type species:
         str
-    :param strict:
-        If ``True``, any string that does not look like a junction sequence is rejected.
-        If ``False``, any inputs that are valid amino acid sequences but do not start with C and end with F/W are not rejected and instead are corrected by having a C appended to the beginning and an F appended at the end.
-        Defaults to ``False``.
-    :type strict:
+    :param allow_uncertain_118:
+        If ``False``, standardization immediately fails if the expected
+        conserved trailing amino acid at position 118 cannot be determined with
+        certainty using `j_symbol`, or if `j_symbol` is not supplied. If
+        ``True``, in the event of an uncertain residue at position 118, any of
+        tryptophan (W), phenylalanine (F) or cysteine (C) can be accepted, and
+        if a trailing residue must be appended (see parameter
+        `add_missing_conserved`), a phenylalanine will be added. Defaults to
+        ``True``.
+    :type allow_uncertain_118:
         bool
-    :param j_strict:
-        If ``True``, the input will be rejected if a valid conserved trailing amino acid (F/W) cannot with certainty be determined from the J symbol.
-        If ``False``, the default trailing amino acid F will be added to the end of the sequence if it cannot be determined from the J symbol.
-        Defaults to ``False``.
-    :type j_strict:
+    :param add_missing_conserved:
+        If ``False``, standardization immediately fails for any input sequence
+        that does not start and end with the expected conserved residues. If
+        ``True``, any inputs that are valid amino acid sequences but do not
+        start and end as expected are corrected by adding a cysteine (C) at the
+        beginning and the expected trailing residue (see `allow_uncertain_118`)
+        at the end. Defaults to ``True``.
+    :type add_missing_conserved:
         bool
     :param on_fail:
-        Behaviour when standardization fails.
-        If set to ``"reject"``, returns ``None`` on failure.
-        If set to ``"keep"``, returns the original input.
+        Behaviour when standardization fails. If set to ``"reject"``, returns
+        ``None`` on failure. If set to ``"keep"``, returns the original input.
         Defaults to ``"reject"``.
     :type on_fail:
         str
@@ -70,6 +82,16 @@ def standardize(
         Defaults to ``True``.
     :type log_failures:
         bool
+    :param j_strict:
+        Inverse setting to `allow_uncertain_118`. Deprecated in favor of
+        `allow_uncertain_118`.
+    :type j_strict:
+        bool
+    :param strict:
+        Inverse setting to `add_missing_conserved`. Deprecated in favor of
+        `add_missing_conserved`.
+    :type strict:
+        bool
     :param suppress_warnings:
         Disable warnings that are usually logged when standardisation fails.
         Deprecated in favour of `log_failures`.
@@ -77,61 +99,76 @@ def standardize(
         bool
 
     :return:
-        If possible, a standardized version of the input string is returned.
-        If the input string cannot be standardized, the function follows the behaviour as set by `on_fail`.
+        If possible, a standardized version of the input string is returned. If
+        the input string cannot be standardized, the function follows the
+        behaviour as set by `on_fail`.
     :rtype:
         Optional[str]
 
     .. topic:: Example usage
 
-        Strings that look like junction sequences will be accepted, and returned in capitalised form.
+        Strings that look like junction sequences will be accepted, and
+        returned in capitalised form.
 
         >>> tt.junction.standardize("csadaf")
         'CSADAF'
 
-        Strings that are valid amino acid sequences but do not stard and end with the appropriate residues will have a C and an F appended to its beginning and end as required.
+        Strings that are valid amino acid sequences but do not start and end
+        with the appropriate residues will have a cysteine (C) and the
+        appropriate conserved trailing residue at position 118 (defaults to
+        phenylalanine, F) appended to its beginning and end as required.
 
         >>> tt.junction.standardize("sada")
         'CSADAF'
 
-        However, setting `strict` to ``True`` will cause these cases to be rejected.
+        The conserved trailing residue can be intelligently inferred if
+        `j_symbol` is supplied.
 
-        >>> result = tt.junction.standardize("sada", strict=True)
+        >>> tt.junction.standardize("sada", j_symbol="TRAJ38*01")
+        'CSADAW'
+
+        Furthermore, setting `add_missing_conserved` to ``False`` will cause
+        these cases to be rejected.
+
+        >>> result = tt.junction.standardize("sada", add_missing_conserved=False)
         Input sadaf was rejected as it is not a valid junction sequence.
         >>> print(result)
         None
 
-        By default, the conserved trailing amino acid is presumed to be 'F'.
-        When `j_symbol` is provided, the correct trailing amino acid (F or W) is determined based on the symbol.
-
-        >>> tt.junction.standardize("AELNAGNNRKLI")
-        'CAELNAGNNRKLIF'
-
-        >>> tt.junction.standardize("AELNAGNNRKLI", j_symbol="TRAJ38*01")
-        'CAELNAGNNRKLIW'
-
-
     .. topic:: Decision Logic
 
-        To provide an easy way to gauge the scope and limitations of standardization, below is a simplified overview of the decision logic employed when attempting to standardize a junction sequence.
-        For more detail, please refer to the `source code <https://github.com/yutanagano/tidytcells>`_.
+        To provide an easy way to gauge the scope and limitations of
+        standardization, below is a simplified overview of the decision logic
+        employed when attempting to standardize a junction sequence. For more
+        detail, please refer to the
+        `source code <https://github.com/yutanagano/tidytcells>`_.
 
         .. code-block:: none
 
             IF input sequence contains non-amino acid symbols:
                 set standardization status to failed
+                skip rest of standardization
 
-            IF a j symbol and species are provided:
-                attempt to resolve the correct conserved trailing amino acid (W / F / C)
+            // inferred using J symbol if supplied
+            IF expected ending residue (W / F / C) uncertain:
+                {
+                    IF allow_uncertain_118:
+                        accept any of W / F / C
+                    ELSE:
+                        set standardization status to failed
+                        skip rest of standardization
+                }
 
-            IF input sequence does not start with C and end with the correct conserved W / F / C:
-                IF strict is set to True:
-                    set standardization status to failed
-                ELSE:
-                    add C to the beginning and W / F / C to the end of the input sequence as required
-                    set standardization status to successful
-            ELSE:
+            IF input sequence starts (C) and ends (W / F / C) as expected:
                 set standardization status to successful
+            ELSE:
+                {
+                    IF add_missing_conserved:
+                        append expected starting and ending residues
+                        set standardization status to successful
+                    ELSE:
+                        set standardization status to failed
+                }
 
             IF standardization status is set to successful:
                 RETURN standardized sequence
@@ -154,15 +191,19 @@ def standardize(
         .throw_error_if_not_of_type(str)
         .value
     )
-    strict = (
-        Parameter(strict, "strict")
-        .set_default(False)
+    j_strict_inverted = not j_strict if j_strict is not None else None
+    allow_uncertain_118 = (
+        Parameter(allow_uncertain_118, "allow_uncertain_118")
+        .set_default(True)
+        .resolve_with_alias(j_strict_inverted, "j_strict")
         .throw_error_if_not_of_type(bool)
         .value
     )
-    j_strict = (
-        Parameter(j_strict, "j_strict")
-        .set_default(False)
+    strict_inverted = not strict if strict is not None else None
+    add_missing_conserved = (
+        Parameter(add_missing_conserved, "add_missing_conserved")
+        .set_default(True)
+        .resolve_with_alias(strict_inverted, "strict")
         .throw_error_if_not_of_type(bool)
         .value
     )
@@ -206,15 +247,15 @@ def standardize(
             junction_matching_regex = re.compile(rf"^C[A-Z]*{conserved_aa}$")
 
         if conserved_aa is None:
-            if j_strict:
-                if on_fail == "reject":
-                    return None
-                return original_input
-            else:
+            if allow_uncertain_118:
                 logger.info(
                     f"J symbol conserved amino acid could not be determined for {j_symbol}, using F as default."
                 )
                 conserved_aa = "F"
+            else:
+                if on_fail == "reject":
+                    return None
+                return original_input
 
     if not junction_matching_regex.match(seq):
         if strict:
