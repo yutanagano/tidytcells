@@ -234,31 +234,34 @@ def standardize(
             return None
         return original_input
 
-    conserved_aa = "F"
-    junction_matching_regex = re.compile(r"^C[A-Z]*[FW]$")
+    aa_118_target = "F"
+    aa_118_certain = False
+    junction_matching_regex = None
 
     if j_symbol:
         species = _utils.clean_and_lowercase(species)
-        conserved_aa = get_conserved_aa_for_j_symbol_for_species(
+        aa118_target_from_j = get_conserved_aa_for_j_symbol_for_species(
             j_symbol, species, log_failures=log_failures
         )  # returns None if aa is ambiguous
+        if aa118_target_from_j is not None:
+            aa_118_target = aa118_target_from_j
+            aa_118_certain = True
 
-        if conserved_aa is not None:
-            junction_matching_regex = re.compile(rf"^C[A-Z]*{conserved_aa}$")
-
-        if conserved_aa is None:
-            if allow_uncertain_118:
-                logger.info(
-                    f"J symbol conserved amino acid could not be determined for {j_symbol}, using F as default."
-                )
-                conserved_aa = "F"
-            else:
-                if on_fail == "reject":
-                    return None
-                return original_input
+    if aa_118_certain:
+        junction_matching_regex = re.compile(rf"^C[A-Z]*{aa_118_target}$")
+    else:
+        if not allow_uncertain_118:
+            if on_fail == "reject":
+                return None
+            return original_input
+        else:
+            logger.info(
+                f"Unclear residue at position 118 (j_symbol = {j_symbol}), accepting either F or W."
+            )
+            junction_matching_regex = re.compile(r"^C[A-Z]*[FW]$")
 
     if not junction_matching_regex.match(seq):
-        if strict:
+        if not add_missing_conserved:
             if log_failures:
                 logger.warning(
                     f"Failed to standardize {original_input}: not a valid junction sequence."
@@ -269,8 +272,7 @@ def standardize(
 
             return original_input
 
-        if not junction_matching_regex.match(seq):
-            seq = "C" + seq + conserved_aa
+        seq = "C" + seq + aa_118_target
 
     return seq
 
