@@ -25,8 +25,8 @@ class TestStandardize:
             ("HLA-B8", "HLA-B*08"),
             ("A1", "HLA-A*01"),
             ("H-2Eb1", "MH2-EB1"),
-            ("H-2Aa", "MH2-AA")
-        )
+            ("H-2Aa", "MH2-AA"),
+        ),
     )
     def test_any_species(self, symbol, expected):
         result = mh.standardize(symbol, species="any")

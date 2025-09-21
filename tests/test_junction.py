@@ -67,19 +67,29 @@ class Teststandardize:
     @pytest.mark.parametrize(
         ("seq", "j_symbol", "species", "expected"),
         (
-                ("AELNAGNNRKLI", "TRAJ38*01", "homosapiens", "CAELNAGNNRKLIW"),
-                ("AELNAGNNRKLI", "TRAJ38*01", "musmusculus", "CAELNAGNNRKLIW"),
-                ("AELNAGNNRKLI", None, "homosapiens", "CAELNAGNNRKLIF"),
-                ("AELNAGNNRKLI", None, "musmusculus", "CAELNAGNNRKLIF"),
-                ("AELNAGNNRKLI", None, "musmusculus", "CAELNAGNNRKLIF"),
-                ("AAAAWF", "IGHJ5*01", "homosapiens", "CAAAAWFW"),
-                ("AAAAWF", None, "homosapiens", "CAAAAWFF"),
-                ("AAAAAA", "IGHJ5", "homosapiens", "CAAAAAAW"),
-                ("AAAAAA", "IGHJ", "homosapiens", "CAAAAAAW"), # all of IGH have W, all of IGL have F
-                ("AAAAAA", "IGLJ", "homosapiens", "CAAAAAAF"),
-                ("AAAAAA", "TRAJ", "homosapiens", "CAAAAAAF"), # but TRA is ambiguous
-                ("AAAAAA", "TRAJ35", "homosapiens", "CAAAAAAC"), # non-canonical C ending for TRAJ35*01 human
-                ("AAAAAA", "TRAJ35", "musmusculus", "CAAAAAAF"), # ...but not for mouse
+            ("AELNAGNNRKLI", "TRAJ38*01", "homosapiens", "CAELNAGNNRKLIW"),
+            ("AELNAGNNRKLI", "TRAJ38*01", "musmusculus", "CAELNAGNNRKLIW"),
+            ("AELNAGNNRKLI", None, "homosapiens", "CAELNAGNNRKLIF"),
+            ("AELNAGNNRKLI", None, "musmusculus", "CAELNAGNNRKLIF"),
+            ("AELNAGNNRKLI", None, "musmusculus", "CAELNAGNNRKLIF"),
+            ("AAAAWF", "IGHJ5*01", "homosapiens", "CAAAAWFW"),
+            ("AAAAWF", None, "homosapiens", "CAAAAWFF"),
+            ("AAAAAA", "IGHJ5", "homosapiens", "CAAAAAAW"),
+            (
+                "AAAAAA",
+                "IGHJ",
+                "homosapiens",
+                "CAAAAAAW",
+            ),  # all of IGH have W, all of IGL have F
+            ("AAAAAA", "IGLJ", "homosapiens", "CAAAAAAF"),
+            ("AAAAAA", "TRAJ", "homosapiens", "CAAAAAAF"),  # but TRA is ambiguous
+            (
+                "AAAAAA",
+                "TRAJ35",
+                "homosapiens",
+                "CAAAAAAC",
+            ),  # non-canonical C ending for TRAJ35*01 human
+            ("AAAAAA", "TRAJ35", "musmusculus", "CAAAAAAF"),  # ...but not for mouse
         ),
     )
     def test_j_symbol(self, seq, j_symbol, species, expected):
@@ -88,15 +98,22 @@ class Teststandardize:
         assert result == expected
 
     def test_j_symbol_ambiguous_default(self, caplog):
-        result = junction.standardize("AAAAAA", j_symbol="TRAJ", on_fail="keep", j_strict=False)
+        result = junction.standardize(
+            "AAAAAA", j_symbol="TRAJ", on_fail="keep", j_strict=False
+        )
         assert result == "CAAAAAAF"
 
     def test_j_symbol_fail(self, caplog):
-        result = junction.standardize("AAAAAA", j_symbol="TRAJ", on_fail="keep", j_strict=True)
+        result = junction.standardize(
+            "AAAAAA", j_symbol="TRAJ", on_fail="keep", j_strict=True
+        )
         assert "conserved amino acid was ambiguous" in caplog.text
         assert result == "AAAAAA"
 
     def test_j_symbol_fail_species(self):
-        with pytest.raises(ValueError, match="not supported for IG genes for species musmusculus"):
-            junction.standardize("AAAAAA", j_symbol="IGH", species="musmusculus", on_fail="keep")
-
+        with pytest.raises(
+            ValueError, match="not supported for IG genes for species musmusculus"
+        ):
+            junction.standardize(
+                "AAAAAA", j_symbol="IGH", species="musmusculus", on_fail="keep"
+            )

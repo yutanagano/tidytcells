@@ -31,9 +31,7 @@ def get_synonyms_data(valid_alleles: Iterable[str], is_tr: bool = True) -> dict:
     )
 
     # Only keep genes whose 'approved symbols' are in our IMGT list
-    genes = genes[
-        genes["Approved symbol"].map(lambda x: x in valid_alleles)
-    ].copy()
+    genes = genes[genes["Approved symbol"].map(lambda x: x in valid_alleles)].copy()
 
     # Get TR genes with "alias symbols"
     genes_with_aliases = genes[genes["Alias symbols"].notna()][
@@ -64,9 +62,7 @@ def get_synonyms_data(valid_alleles: Iterable[str], is_tr: bool = True) -> dict:
     # Remove ambiguous synonyms
     synonyms = synonyms.groupby("Synonym").aggregate(lambda x: x.tolist())
     synonyms = synonyms[synonyms["Approved symbol"].map(len) == 1].copy()
-    synonyms["Approved symbol"] = synonyms["Approved symbol"].map(
-        lambda x: x.pop()
-    )
+    synonyms["Approved symbol"] = synonyms["Approved symbol"].map(lambda x: x.pop())
     synonyms.index = synonyms.index.str.upper()
 
     # Remove any synonyms that are also names of other valid genes

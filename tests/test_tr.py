@@ -26,7 +26,7 @@ class TestStandardize:
             ("TCRAV14/4", "TRAV14/DV4"),
             ("TRAV15-1-DV6-1", "TRAV15-1/DV6-1"),
             ("TRAV15/DV6", "TRAV15-1/DV6-1"),
-        )
+        ),
     )
     def test_any_species(self, symbol, expected):
         result = tr.standardize(symbol, species="any")

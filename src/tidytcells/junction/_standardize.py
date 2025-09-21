@@ -3,10 +3,11 @@ import re
 from tidytcells import aa, _utils
 from typing import Literal, Optional
 from tidytcells._utils.parameter import Parameter
-from tidytcells._utils.conserved_aa_lookup import get_conserved_aa_for_j_symbol_for_species
+from tidytcells._utils.conserved_aa_lookup import (
+    get_conserved_aa_for_j_symbol_for_species,
+)
 
 logger = logging.getLogger(__name__)
-
 
 
 def standardize(
@@ -197,10 +198,12 @@ def standardize(
 
     if j_symbol:
         species = _utils.clean_and_lowercase(species)
-        conserved_aa = get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures=log_failures) # returns None if aa is ambiguous
+        conserved_aa = get_conserved_aa_for_j_symbol_for_species(
+            j_symbol, species, log_failures=log_failures
+        )  # returns None if aa is ambiguous
 
         if conserved_aa is not None:
-            junction_matching_regex = re.compile(fr"^C[A-Z]*{conserved_aa}$")
+            junction_matching_regex = re.compile(rf"^C[A-Z]*{conserved_aa}$")
 
         if conserved_aa is None:
             if j_strict:
@@ -208,7 +211,9 @@ def standardize(
                     return None
                 return original_input
             else:
-                logger.info(f"J symbol conserved amino acid could not be determined for {j_symbol}, using F as default.")
+                logger.info(
+                    f"J symbol conserved amino acid could not be determined for {j_symbol}, using F as default."
+                )
                 conserved_aa = "F"
 
     if not junction_matching_regex.match(seq):
@@ -224,7 +229,7 @@ def standardize(
             return original_input
 
         if not junction_matching_regex.match(seq):
-            seq =  "C" + seq + conserved_aa
+            seq = "C" + seq + conserved_aa
 
     return seq
 
