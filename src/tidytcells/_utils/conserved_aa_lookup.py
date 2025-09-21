@@ -5,19 +5,32 @@ from tidytcells._resources import (
     MUSMUSCULUS_TR_AA_SEQUENCES,
 )
 
-
-logger = logging.getLogger(__name__)
-
-
 TR_AA_SEQUENCES = {
     "homosapiens": HOMOSAPIENS_TR_AA_SEQUENCES,
     "musmusculus": MUSMUSCULUS_TR_AA_SEQUENCES,
 }
-
 IG_AA_SEQUENCES = {"homosapiens": HOMOSAPIENS_IG_AA_SEQUENCES}
 
 
+logger = logging.getLogger(__name__)
+
+
 def get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures):
+    """
+    Given a standardized J symbol and species, attempt to infer what the
+    conserved residue at position 118 is.
+
+    Returns:
+        aa_118_target (str): The target (expected) residue at position 118.
+            This is either the conserved residue inferred from the J symbol, or
+            F if the conserved residue could not be inferred.
+        aa_118_certain (bool): True if the conserved residue could be inferred
+            with certainty, false otherwise.
+
+    Raises:
+        ValueError: If `j_symbol` is not recognized.
+    """
+
     if j_symbol.startswith("TR"):
         if species not in TR_AA_SEQUENCES:
             raise ValueError(
@@ -35,9 +48,16 @@ def get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures):
         return _get_conserved_aa(j_symbol, IG_AA_SEQUENCES[species], log_failures)
 
     raise ValueError(
-        f"Failed to determine the conserved trailing amino acid for J symbol {j_symbol}: symbol is not formatted correctly."
-        f"Please use tt.tr.standardize or tt.ig.standardize to correct the symbol."
+        f"Unrecognized J symbol {j_symbol}. "
+        "Have you used tt.tr.standardize or tt.ig.standardize to standardize the symbol?"
     )
+
+
+def _get_conserved_aa(j_symbol, aa_dict, log_failures):
+    if j_symbol in aa_dict:
+        return _get_conserved_aa_exact_symbol(aa_dict, j_symbol)
+
+    return _resolve_conserved_aa_from_partial_j_symbol(j_symbol, aa_dict, log_failures)
 
 
 def _get_conserved_aa_exact_symbol(aa_dict, j_symbol):
@@ -96,19 +116,3 @@ def _resolve_conserved_aa_from_partial_j_symbol(j_symbol, aa_dict, log_failures)
                 f"conserved amino acid was ambiguous based on extended allele names ({extended_symbols}). "
             )
         return None
-
-
-def _get_conserved_aa(j_symbol, aa_dict, log_failures):
-    if j_symbol in aa_dict:
-        return _get_conserved_aa_exact_symbol(aa_dict, j_symbol)
-
-    return _resolve_conserved_aa_from_partial_j_symbol(j_symbol, aa_dict, log_failures)
-
-
-def _get_aa_dict(gene_type, species):
-    if gene_type == "TR" and species == "homosapiens":
-        return get_hs_tr_aa_with_non_canonical_c()
-    elif gene_type == "IG" and species == "homosapiens":
-        return HOMOSAPIENS_IG_AA_SEQUENCES
-    elif gene_type == "TR" and species == "musmusculus":
-        return MUSMUSCULUS_TR_AA_SEQUENCES
