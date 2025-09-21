@@ -30,20 +30,20 @@ def standardize(
 
     1. Be a valid amino acid sequence
     2. Begin with a cysteine (C)
-    3. End with a tryptophan (W), phenylalanine (F) or cysteine (C) in a way
-       consistent with J symbol if supplied
+    3. End with a phenylalanine (F), tryptophan (W) or cysteine (C) in a way
+       consistent with `j_symbol` if supplied
 
     :param seq:
-        String value representing a junction sequence.
+        The junction sequence.
     :type seq:
         str
     :param j_symbol:
-        The J symbol used to determine the correct conserved trailing amino
-        acid at position 118 (F / W / C). If the symbol does not resolve to a
-        single allele but all productive alleles consistent with the symbol
-        have the same conserved residue, this will be set as the expected
-        ending residue. If the supplied symbol does not map to any (group of)
-        known J alleles, the function will raise a ``ValueError``.
+        The TR/IG J symbol used to determine the correct conserved trailing
+        amino acid at position 118 (F / W / C). If the symbol does not resolve
+        to a single allele but all productive alleles consistent with the
+        symbol have the same conserved residue, this will be set as the
+        expected ending residue. If the supplied symbol does not map to any
+        (group of) known J alleles, the function will raise a ``ValueError``.
     :type j_symbol:
         str
     :param species:
@@ -55,10 +55,9 @@ def standardize(
         If ``False``, standardization immediately fails if the expected
         conserved trailing amino acid at position 118 cannot be determined with
         certainty using `j_symbol`, or if `j_symbol` is not supplied. If
-        ``True``, in the event of an uncertain residue at position 118, any of
-        tryptophan (W), phenylalanine (F) or cysteine (C) can be accepted, and
-        if a trailing residue must be appended (see parameter
-        `add_missing_conserved`), a phenylalanine will be added. Defaults to
+        ``True``, in the event of an uncertain residue at position 118, either
+        F or W is accepted, and if a trailing residue must be appended (see
+        parameter `add_missing_conserved`), an F will be added. Defaults to
         ``True``.
     :type allow_uncertain_118:
         bool
@@ -66,9 +65,9 @@ def standardize(
         If ``False``, standardization immediately fails for any input sequence
         that does not start and end with the expected conserved residues. If
         ``True``, any inputs that are valid amino acid sequences but do not
-        start and end as expected are corrected by adding a cysteine (C) at the
-        beginning and the expected trailing residue (see `allow_uncertain_118`)
-        at the end. Defaults to ``True``.
+        start and end as expected are corrected by adding a C at the beginning
+        and the expected trailing residue (see `allow_uncertain_118`) at the
+        end. Defaults to ``True``.
     :type add_missing_conserved:
         bool
     :param on_fail:
@@ -114,9 +113,9 @@ def standardize(
         'CSADAF'
 
         Strings that are valid amino acid sequences but do not start and end
-        with the appropriate residues will have a cysteine (C) and the
-        appropriate conserved trailing residue at position 118 (defaults to
-        phenylalanine, F) appended to its beginning and end as required.
+        with the appropriate residues will have a C and the appropriate
+        conserved trailing residue at position 118 (defaults to F) appended to
+        its beginning and end as required.
 
         >>> tt.junction.standardize("sada")
         'CSADAF'
@@ -150,16 +149,16 @@ def standardize(
                 skip rest of standardization
 
             // inferred using J symbol if supplied
-            IF expected ending residue (W / F / C) uncertain:
+            IF expected trailing residue at position 118 uncertain:
                 {
                     IF allow_uncertain_118:
-                        accept any of W / F / C
+                        accept either F or W
                     ELSE:
                         set standardization status to failed
                         skip rest of standardization
                 }
 
-            IF input sequence starts (C) and ends (W / F / C) as expected:
+            IF input sequence starts (C) and ends (F / W / C) as expected:
                 set standardization status to successful
             ELSE:
                 {
@@ -225,11 +224,9 @@ def standardize(
     )
 
     original_input = seq
-
     seq = aa.standardize(seq=seq, on_fail="reject", log_failures=log_failures)
 
-    not_valid_amino_acid_sequence = seq is None
-    if not_valid_amino_acid_sequence:
+    if seq is None:
         if on_fail == "reject":
             return None
         return original_input
