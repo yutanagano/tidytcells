@@ -8,7 +8,7 @@ from pandas import DataFrame
 from pathlib import Path
 import requests
 from typing import Tuple
-
+import re
 
 def get_tr_alleles_list(species: str) -> dict:
     gene_groups = (
@@ -221,40 +221,57 @@ def add_v_motifs(v_aa_dict):
     return v_aa_dict
 
 
+def get_motif_idx(j_region, conserved_aa):
+    if conserved_aa is not None:
+        if conserved_aa not in j_region:
+            return None
+
+        if j_region.count(conserved_aa) == 1:
+            return j_region.index(conserved_aa)
+
+        if j_region.count(conserved_aa + "G") == 1:  # G is a very common second amino acid in the motif
+            return j_region.index(conserved_aa + "G")
+
+    cons_aas_regex = "[FW]" if conserved_aa is None else conserved_aa
+    motif_regex = cons_aas_regex + "[AG][A-Z]G"
+
+    match = re.search(motif_regex, j_region)
+    if match:
+        return match.start()
+
+
 def add_j_motifs(j_aa_dict, species):
     for allele, seq_data in j_aa_dict.items():
         if "J-REGION" not in seq_data or len(seq_data["J-REGION"]) < 4:
             continue
 
+        conserved_aa = seq_data["J-PHE"] if "J-PHE" in seq_data \
+            else seq_data["J-TRP"] if "J-TRP" in seq_data \
+            else seq_data["J-CYS"] if "J-CYS" in seq_data \
+            else seq_data["J-VAL"] if "J-VAL" in seq_data \
+            else None
+
         if not ("J-MOTIF" in seq_data and len(seq_data["J-MOTIF"]) == 4):
-            conserved_aa = seq_data["J-PHE"] if "J-PHE" in seq_data \
-                else seq_data["J-TRP"] if "J-TRP" in seq_data \
-                else seq_data["J-CYS"] if "J-CYS" in seq_data \
-                else seq_data["J-VAL"] if "J-VAL" in seq_data \
-                else None
+            motif_idx = get_motif_idx(seq_data["J-REGION"], conserved_aa)
 
-            if conserved_aa is None or conserved_aa not in seq_data["J-REGION"]:
-                continue
+            if motif_idx is not None:
+                if "J-MOTIF" in seq_data:
+                    if seq_data["J-REGION"][motif_idx: motif_idx + 4] != seq_data["J-MOTIF"]:
+                        pass
+                seq_data["J-MOTIF"] = seq_data["J-REGION"][motif_idx: motif_idx + 4]
 
-            if seq_data["J-REGION"].count(conserved_aa) == 1:
-                motif_idx = seq_data["J-REGION"].index(conserved_aa)
-            elif seq_data["J-REGION"].count(conserved_aa + "G") == 1: # G is a very common second amino acid in the motif
-                motif_idx = seq_data["J-REGION"].index(conserved_aa + "G")
-            elif seq_data["J-REGION"][1:].count(conserved_aa) == 1:  # J-REGION sometimes starts with F, which is unlikely to be the motif-F
-                motif_idx = seq_data["J-REGION"][1:].index(conserved_aa) + 1
-            elif seq_data["J-REGION"].count(conserved_aa + "GT") == 1: # G is a very common second amino acid in the motif
-                motif_idx = seq_data["J-REGION"].index(conserved_aa + "GT")
-            elif species == "Mus+musculus" and allele.startswith("TRG") and seq_data["J-REGION"].count(conserved_aa + "A") == 1:
-                motif_idx = seq_data["J-REGION"].index(conserved_aa + "A")
-            else:
-                continue
+        if "J-MOTIF" in seq_data and len(seq_data["J-MOTIF"]) == 4:
+            if conserved_aa is None:
+                conserved_aa = seq_data["J-MOTIF"][0]
+                if conserved_aa == "F":
+                    seq_data["J-PHE"] = "F"
+                elif conserved_aa == "W":
+                    seq_data["J-TRP"] = "W"
 
-            seq_data["J-MOTIF"] = seq_data["J-REGION"][motif_idx: motif_idx + 4]
+            cdr3_end_motif = seq_data["J-REGION"][0:seq_data["J-REGION"].index(seq_data["J-MOTIF"]) + 1]
 
-        cdr3_end_motif = seq_data["J-REGION"][0:seq_data["J-REGION"].index(seq_data["J-MOTIF"]) + 1]
-
-        if len(cdr3_end_motif) > 1:
-            j_aa_dict[allele]["J-CDR3-END"] = cdr3_end_motif.lstrip("*")
+            if len(cdr3_end_motif) > 1:
+                j_aa_dict[allele]["J-CDR3-END"] = cdr3_end_motif.lstrip("*")
 
     return j_aa_dict
 

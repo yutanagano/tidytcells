@@ -5928,7 +5928,10 @@
         "J-CDR3-END": "WVF"
     },
     "IGLJ5*02": {
-        "J-REGION": "WVFGEGTELTVL"
+        "J-REGION": "WVFGEGTELTVL",
+        "J-MOTIF": "FGEG",
+        "J-PHE": "F",
+        "J-CDR3-END": "WVF"
     },
     "IGLJ6*01": {
         "J-REGION": "NVFGSGTKVTVL",
@@ -5943,7 +5946,10 @@
         "J-CDR3-END": "AVF"
     },
     "IGLJ7*02": {
-        "J-REGION": "AVFGGGTQLTAL"
+        "J-REGION": "AVFGGGTQLTAL",
+        "J-MOTIF": "FGGG",
+        "J-PHE": "F",
+        "J-CDR3-END": "AVF"
     },
     "IGKJ1*01": {
         "J-REGION": "WTFGQGTKVEIK",
