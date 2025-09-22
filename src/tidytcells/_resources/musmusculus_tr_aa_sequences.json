@@ -3779,7 +3779,8 @@
     "TRAJ23*01": {
         "J-REGION": "NYNQGKLIFGQGTKLSIKP",
         "J-MOTIF": "FGQG",
-        "J-CDR3-END": "NYNQGKLIF"
+        "J-CDR3-END": "NYNQGKLIF",
+        "J-PHE": "F"
     },
     "TRAJ24*01": {
         "J-REGION": "ELASLGKLQFGTGTQVVVTP",
@@ -3978,7 +3979,10 @@
         "J-CDR3-END": "NTGYQNFYF"
     },
     "TRAJ5*01": {
-        "J-REGION": "GTQVVGQLTFGRGTRLQVYA"
+        "J-REGION": "GTQVVGQLTFGRGTRLQVYA",
+        "J-MOTIF": "FGRG",
+        "J-PHE": "F",
+        "J-CDR3-END": "GTQVVGQLTF"
     },
     "TRAJ50*01": {
         "J-REGION": "ASSSFSKLVFGQGTSLSVVP",

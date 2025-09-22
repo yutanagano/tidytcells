@@ -3199,7 +3199,9 @@
     },
     "TRGJP1*01": {
         "J-REGION": "TTGWFKIFAEGTKLIVTSP",
-        "J-PHE": "F"
+        "J-PHE": "F",
+        "J-MOTIF": "FAEG",
+        "J-CDR3-END": "TTGWFKIF"
     },
     "TRGJP2*01": {
         "J-REGION": "SSDWIKTFAKGTRLIVTSP",
