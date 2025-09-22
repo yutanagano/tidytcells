@@ -118,24 +118,29 @@ class TestStandardizeHomoSapiens:
     @pytest.mark.parametrize(
         ("symbol", "expected"),
         (
-            ("TRAV14DV4", "TRAV14/DV4"),
-            ("TRBV20OR9-2", "TRBV20/OR9-2"),
-            ("TRBV01", "TRBV1"),
-            ("TCRBV1", "TRBV1"),
-            ("TRAV14", "TRAV14/DV4"),
-            ("TRDV4", "TRAV14/DV4"),
-            ("TCRAV13S2", "TRAV13-2"),
-            ("TCRAV38S2", "TRAV38-2/DV8"),
-            ("TCRAV30-1", "TRAV30"),
-            ("TCRDV01-01*01", "TRDV1*01"),
-            ("TCRAV14/4", "TRAV14/DV4"),
-            ("TCRAV36-01*01", "TRAV36/DV7*01"),
-            ("29/DV5*01", "TRAV29/DV5*01"),
-            ("TCRBJ2.7", "TRBJ2-7"),
+            ("TRBJ2-2", "TRBJ2-2", "homosapiens"),
+            ("TRAV14DV4", "TRAV14/DV4", "homosapiens"),
+            ("TRAV14DV4", "TRAV14/DV4", "homosapiens"),
+            ("TRBV20OR9-2", "TRBV20/OR9-2", "homosapiens"),
+            ("TRBV01", "TRBV1", "homosapiens"),
+            ("TCRBV1", "TRBV1", "homosapiens"),
+            ("TRAV14", "TRAV14/DV4", "homosapiens"),
+            ("TRDV4", "TRAV14/DV4", "homosapiens"),
+            ("TCRAV13S2", "TRAV13-2", "homosapiens"),
+            ("TCRAV38S2", "TRAV38-2/DV8", "homosapiens"),
+            ("TCRAV30-1", "TRAV30", "homosapiens"),
+            ("TCRDV01-01*01", "TRDV1*01", "homosapiens"),
+            ("TCRAV14/4", "TRAV14/DV4", "homosapiens"),
+            ("TCRAV36*01", "TRAV36/DV7*01", "homosapiens"),
+            ("29/DV5*01", "TRAV29/DV5*01", "homosapiens"),
+            ("TCRBJ2.7", "TRBJ2-7", "homosapiens"),
+            ("TRAV15-1", "TRAV15", "homosapiens"),
+            ("TRAV15-1", "TRAV15-1/DV6-1", "musmusculus"),
+
         ),
     )
-    def test_various_typos(self, symbol, expected):
-        result = tr.standardize(symbol=symbol, species="homosapiens")
+    def test_various_typos(self, symbol, expected, species):
+        result = tr.standardize(symbol=symbol, species=species)
 
         assert result == expected
 
@@ -265,6 +270,7 @@ class TestGetAaSequence:
                     "FR2-IMGT": "LRWYKQDTGRGPVSLTI",
                     "FR3-IMGT": "KSNGRYTATLDADTKQSSLHITASQLSDSASYIC",
                     "V-REGION": "KNQVEQSPQSLIILEGKNCTLQCNYTVSPFSNLRWYKQDTGRGPVSLTIMTFSENTKSNGRYTATLDADTKQSSLHITASQLSDSASYICVVS",
+                    'V-CDR3-START': 'CVVS',
                     'V-MOTIF': 'SYIC',
                 },
             ),
@@ -279,6 +285,7 @@ class TestGetAaSequence:
                 "TRAJ47*02",
                 "homosapiens",
                 {
+                    'J-CDR3-END': 'EYGNKLVF',
                     "J-PHE": "F",
                     "J-REGION": "EYGNKLVFGAGTILRVKS",
                     'J-MOTIF': 'FGAG',
@@ -294,6 +301,7 @@ class TestGetAaSequence:
                     "FR2-IMGT": "LSWYQQREGHAPVFLSY",
                     "FR3-IMGT": "KDSGHFSTFLSRSNGYSYLLLTELQIKDSASYLC",
                     "V-REGION": "GQGVEQPDNLMSVEGTFARVNCTYSTSGFNGLSWYQQREGHAPVFLSYVVLDGLKDSGHFSTFLSRSNGYSYLLLTELQIKDSASYLCAVR",
+                    'V-CDR3-START': 'CAVR',
                     'V-MOTIF': 'SYLC'
                 },
             ),
