@@ -15,7 +15,7 @@ def standardize(
     j_symbol: Optional[str] = None,
     species: Optional[str] = None,
     allow_uncertain_118: Optional[bool] = None,
-    add_missing_conserved: Optional[bool] = None,
+    fix_missing_conserved: Optional[bool] = None,
     on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[bool] = None,
     j_strict: Optional[bool] = None,
@@ -57,18 +57,18 @@ def standardize(
         certainty using `j_symbol`, or if `j_symbol` is not supplied. If
         ``True``, in the event of an uncertain residue at position 118, either
         F or W is accepted, and if a trailing residue must be appended (see
-        parameter `add_missing_conserved`), an F will be added. Defaults to
+        parameter `fix_missing_conserved`), an F will be added. Defaults to
         ``True``.
     :type allow_uncertain_118:
         bool
-    :param add_missing_conserved:
+    :param fix_missing_conserved:
         If ``False``, standardization immediately fails for any input sequence
         that does not start and end with the expected conserved residues. If
         ``True``, any inputs that are valid amino acid sequences but do not
         start and end as expected are corrected by adding a C at the beginning
         and the expected trailing residue (see `allow_uncertain_118`) at the
         end. Defaults to ``True``.
-    :type add_missing_conserved:
+    :type fix_missing_conserved:
         bool
     :param on_fail:
         Behaviour when standardization fails. If set to ``"reject"``, returns
@@ -87,8 +87,8 @@ def standardize(
     :type j_strict:
         bool
     :param strict:
-        Inverse setting to `add_missing_conserved`. Deprecated in favor of
-        `add_missing_conserved`.
+        Inverse setting to `fix_missing_conserved`. Deprecated in favor of
+        `fix_missing_conserved`.
     :type strict:
         bool
     :param suppress_warnings:
@@ -126,10 +126,10 @@ def standardize(
         >>> tt.junction.standardize("sada", j_symbol="TRAJ38*01")
         'CSADAW'
 
-        Furthermore, setting `add_missing_conserved` to ``False`` will cause
+        Furthermore, setting `fix_missing_conserved` to ``False`` will cause
         these cases to be rejected.
 
-        >>> result = tt.junction.standardize("sada", add_missing_conserved=False)
+        >>> result = tt.junction.standardize("sada", fix_missing_conserved=False)
         Input sadaf was rejected as it is not a valid junction sequence.
         >>> print(result)
         None
@@ -162,7 +162,7 @@ def standardize(
                 set standardization status to successful
             ELSE:
                 {
-                    IF add_missing_conserved:
+                    IF fix_missing_conserved:
                         append expected starting and ending residues
                         set standardization status to successful
                     ELSE:
@@ -199,8 +199,8 @@ def standardize(
         .value
     )
     strict_inverted = not strict if strict is not None else None
-    add_missing_conserved = (
-        Parameter(add_missing_conserved, "add_missing_conserved")
+    fix_missing_conserved = (
+        Parameter(fix_missing_conserved, "fix_missing_conserved")
         .set_default(True)
         .resolve_with_alias(strict_inverted, "strict")
         .throw_error_if_not_of_type(bool)
@@ -255,7 +255,7 @@ def standardize(
             junction_matching_regex = re.compile(r"^C[A-Z]*[FW]$")
 
     if not junction_matching_regex.match(seq):
-        if not add_missing_conserved:
+        if not fix_missing_conserved:
             if log_failures:
                 logger.warning(
                     f"Failed to standardize {original_input}: not a valid junction sequence."
