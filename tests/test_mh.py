@@ -25,8 +25,8 @@ class TestStandardize:
             ("HLA-B8", "HLA-B*08"),
             ("A1", "HLA-A*01"),
             ("H-2Eb1", "MH2-EB1"),
-            ("H-2Aa", "MH2-AA")
-        )
+            ("H-2Aa", "MH2-AA"),
+        ),
     )
     def test_any_species(self, symbol, expected):
         result = mh.standardize(symbol, species="any")
@@ -160,7 +160,7 @@ class TestQuery:
     @pytest.mark.parametrize(
         ("species", "precision", "expected_len", "expected_in", "expected_not_in"),
         (
-            ("homosapiens", "allele", 25194, "HLA-DRB3*03:04", "HLA-DRB3*03:04P"),
+            ("homosapiens", "allele", 26177, "HLA-DRB3*03:04", "HLA-DRB3*03:04P"),
             ("homosapiens", "gene", 46, "HLA-B", "HLA-FOO"),
             ("musmusculus", "allele", 70, "MH1-M10-1", "HLA-A"),
             ("musmusculus", "gene", 70, "MH1-Q8", "H2-Aa"),

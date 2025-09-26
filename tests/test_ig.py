@@ -26,7 +26,7 @@ class TestStandardize:
             ("IGHV6", "IGHV6-1"),
             ("LV2-18", "IGLV2-18"),
             ("IGLV(VI)-22", "IGLV(VI)-22-1"),
-        )
+        ),
     )
     def test_any_species(self, symbol, expected):
         result = ig.standardize(symbol, species="any")
@@ -105,7 +105,10 @@ class TestStandardizeHomoSapiens:
     @pytest.mark.parametrize(
         ("symbol", "expected"),
         (
-            ("A10", "IGKV6D-21",),
+            (
+                "A10",
+                "IGKV6D-21",
+            ),
             ("IGKV1OR2108", "IGKV1/OR2-108"),
             ("IGO1", "IGKV1/OR2-108"),
         ),
@@ -134,14 +137,12 @@ class TestStandardizeHomoSapiens:
         assert result == expected
 
 
-
-
 class TestQuery:
     @pytest.mark.parametrize(
         ("species", "precision", "expected_len", "expected_in", "expected_not_in"),
         (
-            ("homosapiens", "allele", 1251, "IGKV3-15*02", "IGKV3-15"),
-            ("homosapiens", "gene", 474, "IGKV3-15", "IGKV3-15*02"),
+            ("homosapiens", "allele", 1302, "IGKV3-15*02", "IGKV3-15"),
+            ("homosapiens", "gene", 494, "IGKV3-15", "IGKV3-15*02"),
         ),
     )
     def test_query_all(
@@ -189,10 +190,10 @@ class TestQuery:
             "expected_not_in",
         ),
         (
-            ("homosapiens", "gene", "F", 185, "IGHD6-19", "IGHV1/OR16-21*01"),
-            ("homosapiens", "allele", "NF", 571, "IGHV1/OR16-21*01", "IGL35*01"),
-            ("homosapiens", "gene", "P", 264, "IGKV3D-31", "IGHV3-20*02"),
-            ("homosapiens", "allele", "ORF", 101, "IGHV3-20*02", "IGKV3D-31"),
+            ("homosapiens", "gene", "F", 187, "IGHD6-19", "IGHV1/OR16-21*01"),
+            ("homosapiens", "allele", "NF", 617, "IGHV1/OR16-21*01", "IGL35*01"),
+            ("homosapiens", "gene", "P", 282, "IGKV3D-31", "IGHV3-20*02"),
+            ("homosapiens", "allele", "ORF", 102, "IGHV3-20*02", "IGKV3D-31"),
         ),
     )
     def test_query_functionality(
@@ -231,7 +232,7 @@ class TestGetAaSequence:
                     "FR2-IMGT": "ISWVRQAPGQGLEWMGW",
                     "CDR2-IMGT": "ISAYNGNT",
                     "FR3-IMGT": "NYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTA",
-                    "V-REGION": "QVQLVQSGAEVKKPGASVKVSCKASGYTFTSYGISWVRQAPGQGLEWMGWISAYNGNTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTA"
+                    "V-REGION": "QVQLVQSGAEVKKPGASVKVSCKASGYTFTSYGISWVRQAPGQGLEWMGWISAYNGNTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTA",
                 },
             ),
             (
@@ -244,10 +245,8 @@ class TestGetAaSequence:
             (
                 "IGHJ1*01",
                 "homosapiens",
-                {
-                    "J-REGION": "AEYFQHWGQGTLVTVSS",
-                },
-            )
+                {"J-REGION": "AEYFQHWGQGTLVTVSS", "J-TRP": "W"},
+            ),
         ),
     )
     def test_get_aa_sequence(self, symbol, species, expected):
