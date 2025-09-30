@@ -143,7 +143,10 @@ class TestStandardizeHomoSapiens:
     @pytest.mark.parametrize(
         ("symbol", "expected"),
         (
-            ("A10", "IGKV6D-21",),
+            (
+                "A10",
+                "IGKV6D-21",
+            ),
             ("IGKV1OR2108", "IGKV1/OR2-108"),
             ("IGO1", "IGKV1/OR2-108"),
         ),
@@ -170,8 +173,6 @@ class TestStandardizeHomoSapiens:
         result = ig.standardize(symbol=symbol, species="homosapiens")
 
         assert result == expected
-
-
 
 
 class TestQuery:
@@ -269,7 +270,7 @@ class TestGetAaSequence:
                     "FR2-IMGT": "ISWVRQAPGQGLEWMGW",
                     "CDR2-IMGT": "ISAYNGNT",
                     "FR3-IMGT": "NYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTA",
-                    "V-REGION": "QVQLVQSGAEVKKPGASVKVSCKASGYTFTSYGISWVRQAPGQGLEWMGWISAYNGNTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTA"
+                    "V-REGION": "QVQLVQSGAEVKKPGASVKVSCKASGYTFTSYGISWVRQAPGQGLEWMGWISAYNGNTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTA",
                 },
             ),
             (
@@ -282,11 +283,8 @@ class TestGetAaSequence:
             (
                 "IGHJ1*01",
                 "homosapiens",
-                {
-                    "J-REGION": "AEYFQHWGQGTLVTVSS",
-                    "J-TRP": "W"
-                },
-            )
+                {"J-REGION": "AEYFQHWGQGTLVTVSS", "J-TRP": "W"},
+            ),
         ),
     )
     def test_get_aa_sequence(self, symbol, species, expected):
