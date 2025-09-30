@@ -1,6 +1,7 @@
 import script_utility
 from homosapiens_catalogue_tr import get_synonyms_data
 
+
 def main() -> None:
     print("Fetching IG allele data from IMGT...")
     valid_allele_data = script_utility.get_ig_alleles_list("Homo+sapiens")
@@ -13,7 +14,6 @@ def main() -> None:
     print("Fetching IG gene sequence data from IMGT...")
     sequence_data = script_utility.get_ig_aa_sequence_data("Homo+sapiens")
     script_utility.save_as_json(sequence_data, "homosapiens_ig_aa_sequences.json")
-
 
 
 if __name__ == "__main__":
