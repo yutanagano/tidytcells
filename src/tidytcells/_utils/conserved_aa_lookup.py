@@ -2,7 +2,7 @@ import copy
 import logging
 
 from tidytcells._resources import HOMOSAPIENS_TR_AA_SEQUENCES, HOMOSAPIENS_IG_AA_SEQUENCES, MUSMUSCULUS_TR_AA_SEQUENCES
-
+from util import remove_allele
 
 logger = logging.getLogger(__name__)
 
@@ -19,20 +19,22 @@ def _get_conserved_aa_exact_symbol(aa_dict, j_symbol):
         return "V"
 
 
-def _is_valid_extension(original, extension):
-    if extension.startswith(original):
+def is_valid_extension(original, extension):
+    if extension.startswith(original): # todo what about AV/DV genes with no -1?
         if original[-1].isnumeric() and extension[len(original)].isnumeric():
             return False # cannot concatenate numbers if original ends with a number (e.g., TRAV1 to TRAV13 is not valid)
+        if original[-1].isnumeric() and extension[len(original)] == "P":
+            return False # do not add 'pseudogene'
         return True
     return False
 
 
-def _get_all_extended_symbols(j_symbol, aa_dict):
-    return sorted(list({key for key in aa_dict.keys() if _is_valid_extension(j_symbol, key) if "J" in key}))
+def _get_all_extended_symbols(j_symbol, aa_dict, gene=""):
+    return sorted(list({key for key in aa_dict.keys() if is_valid_extension(j_symbol, key) if gene in key}))
 
 
 def _resolve_conserved_aa_from_partial_j_symbol(j_symbol, aa_dict, log_failures):
-    extended_symbols = _get_all_extended_symbols(j_symbol, aa_dict)
+    extended_symbols = _get_all_extended_symbols(j_symbol, aa_dict, gene="J")
     all_results = set()
 
     if len(extended_symbols) == 0:
@@ -67,17 +69,20 @@ def _lookup_conserved_aa(j_symbol, aa_dict, log_failures):
 
 
 def _get_aa_dict(gene_type, species):
-    if gene_type == "TR" and species == "homosapiens":
+    assert gene_type[0:2] in ("TR", "IG")
+    species = species.lower().replace(" ", "")
+
+    if gene_type[0:2] == "TR" and species == "homosapiens":
         return HOMOSAPIENS_TR_AA_SEQUENCES
-    elif gene_type == "IG" and species == "homosapiens":
+    elif gene_type[0:2] == "IG" and species == "homosapiens":
         return HOMOSAPIENS_IG_AA_SEQUENCES
-    elif gene_type == "TR" and species == "musmusculus":
+    elif gene_type[0:2] == "TR" and species == "musmusculus":
         return MUSMUSCULUS_TR_AA_SEQUENCES
 
 
 def get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures):
     if j_symbol.startswith("TR") or j_symbol.startswith("IG"):
-        aa_dict = _get_aa_dict(j_symbol[0:2], species)
+        aa_dict = _get_aa_dict(j_symbol, species)
 
         if aa_dict is not None:
             return _lookup_conserved_aa(j_symbol, aa_dict, log_failures)
@@ -100,3 +105,63 @@ def get_conserved_aa(j_symbol, locus, species, log_failures):
         conserved_aa = get_conserved_aa_for_locus_for_species(locus=locus, species=species, log_failures=log_failures)
 
     return conserved_aa
+
+
+def get_all_aa_seqs_for_symbol(symbol, species, gene=""):
+    aa_dict = _get_aa_dict(symbol, species)
+
+    if aa_dict is not None:
+        if symbol in aa_dict:
+            return {symbol: aa_dict[symbol]}
+
+        extended_symbols = _get_all_extended_symbols(symbol, aa_dict, gene)
+        return {ext_symbol: aa_dict[ext_symbol] for ext_symbol in extended_symbols}
+
+    return dict()
+
+
+def _get_genes_to_alleles(alleles):
+    genes_to_alleles = dict()
+
+    for allele in alleles:
+        gene = remove_allele(allele)
+
+        if gene not in genes_to_alleles:
+            genes_to_alleles[gene] = [allele]
+        else:
+            genes_to_alleles[gene].append(allele)
+
+    return genes_to_alleles
+
+
+def collapse_aas_per_gene(symbol_to_aa_dict):
+    genes_to_alleles = _get_genes_to_alleles(symbol_to_aa_dict.keys())
+    genes_to_aa = dict()
+
+    for gene in genes_to_alleles:
+        all_genes_same_aa = True
+        gene_aa_dict = None
+
+        for allele in genes_to_alleles[gene]:
+            if gene_aa_dict is None:
+                gene_aa_dict = symbol_to_aa_dict[allele]
+            else:
+                if gene_aa_dict != symbol_to_aa_dict[allele]:
+                    all_genes_same_aa = False
+
+        if all_genes_same_aa:
+            genes_to_aa[gene] = gene_aa_dict
+        else:
+            for allele in genes_to_alleles[gene]:
+                genes_to_aa[allele] = symbol_to_aa_dict[allele]
+
+    return genes_to_aa
+
+
+def get_all_collapsed_aa_seqs_for_symbol(symbol, species, gene=""):
+    all_aas = get_all_aa_seqs_for_symbol(symbol, species, gene=gene)
+
+    if "*" in symbol:
+        return all_aas
+
+    return collapse_aas_per_gene(all_aas)

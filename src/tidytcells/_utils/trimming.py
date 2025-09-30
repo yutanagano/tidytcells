@@ -1,8 +1,6 @@
 import logging
-import re
 
 from tidytcells._resources import HOMOSAPIENS_TR_AA_SEQUENCES, HOMOSAPIENS_IG_AA_SEQUENCES, MUSMUSCULUS_TR_AA_SEQUENCES
-
 
 logger = logging.getLogger(__name__)
 
@@ -89,10 +87,9 @@ def endswith_cdr3_motif(seq, locus, species, include_conserved=False, max_motif_
     return False
 
 
-
 def minimal_trim_junction_start(orig_seq, locus, species):
     # if junction / or CDR3
-    if startswith_cdr3_motif(orig_seq, locus, species, include_conserved=True) or startswith_cdr3_motif(orig_seq, locus, species, include_conserved=False):
+    if startswith_cdr3_motif(orig_seq, locus, species, include_conserved=True, max_motif_len=None) or startswith_cdr3_motif(orig_seq, locus, species, include_conserved=False, max_motif_len=None):
         return orig_seq
 
     v_motifs = get_conserved_motifs(locus, species, "V-MOTIF")
@@ -114,7 +111,7 @@ def minimal_trim_junction_start(orig_seq, locus, species):
 
 def minimal_trim_junction_end(orig_seq, locus, species, conserved_aas):
     # if junction / or CDR3
-    if endswith_cdr3_motif(orig_seq, locus, species, include_conserved=True) or endswith_cdr3_motif(orig_seq, locus, species, include_conserved=False):
+    if endswith_cdr3_motif(orig_seq, locus, species, include_conserved=True, max_motif_len=None) or endswith_cdr3_motif(orig_seq, locus, species, include_conserved=False, max_motif_len=None):
         return orig_seq
 
     # if orig_seq[-1] in conserved_aas or endswith_cdr3_end_motif(orig_seq, locus, species):
@@ -142,7 +139,6 @@ def get_expected_conserved_aas(junction_matching_regex):
     return junction_matching_regex.pattern.split("[")[-1].rstrip("]$")
 
 
-
 def is_valid_junction(seq, junction_matching_regex, locus, species, check_motifs=True):
     if junction_matching_regex.match(seq):
 
@@ -161,6 +157,17 @@ def is_valid_cdr3(seq, locus, species, min_len=4):
             return True
 
     return False
+
+
+def _get_conserved_aa(gene_seqs_dict):
+    if "J-PHE" in gene_seqs_dict and gene_seqs_dict["J-PHE"] == "F":
+        return "F"
+    elif "J-TRP" in gene_seqs_dict and gene_seqs_dict["J-TRP"] == "W":
+        return "W"
+    elif "J-CYS" in gene_seqs_dict and gene_seqs_dict["J-CYS"] == "C":
+        return "C"
+    elif "J-VAL" in gene_seqs_dict and gene_seqs_dict["J-VAL"] == "V":
+        return "V"
 
 
 
@@ -236,7 +243,10 @@ def process_junction(orig_seq, junction_matching_regex, conserved_aa, locus, spe
     # assert False, "incomplete or invalid CDR3?"
     # case 5: invalid CDR3
 
-    print(locus, orig_seq, ":", seq, f"start={startswith_cdr3_motif(seq, locus, species, include_conserved=True)}", f"end={endswith_cdr3_motif(seq, locus, species, include_conserved=True)}", sep="\t")
+    if startswith_cdr3_motif(seq, locus, species, include_conserved=True) and endswith_cdr3_motif(seq, locus, species, include_conserved=True):
+        pass
+
+    # print(locus, orig_seq, ":", seq, f"start={startswith_cdr3_motif(seq, locus, species, include_conserved=True)}", f"end={endswith_cdr3_motif(seq, locus, species, include_conserved=True)}", sep="\t")
 
     return orig_seq
 
@@ -289,4 +299,5 @@ def process_junction(orig_seq, junction_matching_regex, conserved_aa, locus, spe
     # # TODO remove *  from motifs
     # # TODO shorter motifs????
     # return orig_seq
+
 

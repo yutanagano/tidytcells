@@ -103,6 +103,8 @@ class Teststandardize:
     @pytest.mark.parametrize(
         ("seq", "trimming", "species", "expected"),
         (
+                ('AGGYQNFYFGKGSLTVIP', True, "homosapiens", "CAGGYQNFYF"),
+                ("VVNRGTGGFKTIFGAG", True, "homosapiens", "CVVNRGTGGFKTIF"),
                 ("AELNAGNNRKLI", False, "homosapiens", "CAELNAGNNRKLIF"),
                 ("AELNAGNNRKLI", True, "homosapiens", "CAELNAGNNRKLIF"),
                 ("CAELNAGNNRKLI", True, "homosapiens", "CCAELNAGNNRKLIF"),

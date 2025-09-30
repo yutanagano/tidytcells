@@ -5,6 +5,7 @@ from typing import Literal, Optional
 from tidytcells._utils.parameter import Parameter
 from tidytcells._utils.conserved_aa_lookup import get_conserved_aa
 from tidytcells._utils.trimming import process_junction
+from tidytcells._utils.alignment import align_j
 
 logger = logging.getLogger(__name__)
 
@@ -239,10 +240,8 @@ def standardize(
                 logger.info(f"J symbol conserved amino acid could not be determined for {j_symbol}, using F as default.")
                 conserved_aa = "F"
 
-    # if trimming:
-    #     # junction_matching_regex contains the correct ending aa pattern: [FW] (default)
-    #     #   or a specific F/W/C if this was determined based on J gene/locus
-    #
+        align_j(seq, j_symbol=j_symbol, species=species)
+
     seq = process_junction(seq, junction_matching_regex, conserved_aa, locus, species, trimming=trimming, check_motifs=True)
 
     if not junction_matching_regex.match(seq):
