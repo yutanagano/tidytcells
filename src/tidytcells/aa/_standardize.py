@@ -96,7 +96,7 @@ def standardize(
 
     original_input = seq
 
-    seq = seq.upper()
+    seq = seq.upper().strip()
 
     for char in seq:
         if char not in AMINO_ACIDS:
