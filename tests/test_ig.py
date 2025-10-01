@@ -284,6 +284,7 @@ class TestGetAaSequence:
                 "IGHJ1*01",
                 "homosapiens",
                 {
+                    'J-CDR3-END': 'AEYFQHW',
                     'J-MOTIF': 'WGQG',
                     "J-REGION": "AEYFQHWGQGTLVTVSS",
                     "J-TRP": "W"

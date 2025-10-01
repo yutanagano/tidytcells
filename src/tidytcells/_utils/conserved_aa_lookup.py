@@ -44,7 +44,7 @@ def _get_compatible_symbols(j_symbol, aa_dict, gene):
         if gene in candidate
         and candidate.startswith(j_symbol)
         and not (j_symbol[-1].isnumeric() and candidate[len(j_symbol)].isnumeric())
-        and not (j_symbol[-1].isnumeric() and candidate[len(j_symbol)] == "P") # do not add 'pseudogene'
+           and not (j_symbol[-1].isnumeric() and candidate[len(j_symbol)] == "P")  # do not add 'pseudogene'
     ]
 
 
@@ -198,7 +198,7 @@ def _get_aa_dict(gene_type, species):
         return MUSMUSCULUS_TR_AA_SEQUENCES
 
 
-def get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures):
+def lon_get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures):
     if j_symbol.startswith("TR") or j_symbol.startswith("IG"):
         aa_dict = _get_aa_dict(j_symbol, species)
 
@@ -207,17 +207,17 @@ def get_conserved_aa_for_j_symbol_for_species(j_symbol, species, log_failures):
 
         else:
             raise ValueError(f"Failed to determine the conserved trailing amino acid for J symbol {j_symbol}: this feature "
-                f"is not supported for {j_symbol[0:2]} genes for species {species}.")
+                f"is not supported for {j_symbol[0:2]} genes of species {species}.")
     else:
         raise ValueError(f"Failed to determine the conserved trailing amino acid for J symbol {j_symbol}: symbol is not formatted correctly."
                          f"Please use tt.tr.standardize or tt.ig.standardize to correct the symbol.")
 
 def get_conserved_aa_for_locus_for_species(locus, species, log_failures):
     if locus is not None:
-        return get_conserved_aa_for_j_symbol_for_species(locus, species, log_failures)
+        return lon_get_conserved_aa_for_j_symbol_for_species(locus, species, log_failures)
 
 def get_conserved_aa(j_symbol, locus, species, log_failures):
-    conserved_aa = get_conserved_aa_for_j_symbol_for_species(j_symbol=j_symbol, species=species, log_failures=log_failures)  # returns None if aa is ambiguous
+    conserved_aa = lon_get_conserved_aa_for_j_symbol_for_species(j_symbol=j_symbol, species=species, log_failures=log_failures)  # returns None if aa is ambiguous
 
     if conserved_aa is None:
         conserved_aa = get_conserved_aa_for_locus_for_species(locus=locus, species=species, log_failures=log_failures)

@@ -279,7 +279,6 @@ def standardize(
             )
             junction_matching_regex = re.compile(r"^C[A-Z]{4,}[FW]$")
 
-
     #### added in
     if j_symbol:
         align_j(seq, j_symbol=j_symbol, species=species)
