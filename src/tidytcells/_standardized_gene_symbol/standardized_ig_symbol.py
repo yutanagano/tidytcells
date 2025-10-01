@@ -55,9 +55,13 @@ class StandardizedIgSymbol(StandardizedSymbol):
         cleaned_ig_symbol = _utils.clean_and_uppercase(ig_symbol)
 
         # Deal with lowercase a/b in genes like IGHD1/OR15-1a*01
-        match = re.search(r'(.*?OR15-\d)([AB])', cleaned_ig_symbol)
+        match = re.search(r"(.*?OR15-\d)([AB])", cleaned_ig_symbol)
         if match:
-            cleaned_ig_symbol = match.group(1) + match.group(2).lower() + cleaned_ig_symbol[match.end():]
+            cleaned_ig_symbol = (
+                match.group(1)
+                + match.group(2).lower()
+                + cleaned_ig_symbol[match.end() :]
+            )
 
         return cleaned_ig_symbol
 
