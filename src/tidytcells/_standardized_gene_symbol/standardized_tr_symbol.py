@@ -41,8 +41,8 @@ class StandardizedTrSymbol(StandardizedSymbol):
         return {key.split("-")[0] for key in self._valid_tr_dictionary if "-" in key}
 
     def __init__(self, symbol: str, allow_subgroup: bool = False) -> None:
-        self.allow_subgroup = allow_subgroup
         self._parse_tr_symbol(symbol)
+        self.allow_subgroup = self._allele_designation is None and allow_subgroup
         self._resolve_gene_name()
 
     def _parse_tr_symbol(self, tr_symbol: str) -> None:
