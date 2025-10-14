@@ -9,6 +9,7 @@ from pathlib import Path
 import requests
 from typing import Tuple
 import re
+import time
 
 def get_tr_alleles_list(species: str) -> dict:
     gene_groups = (
@@ -64,6 +65,7 @@ def get_alleles_list(species: str, gene_groups: Tuple[str]) -> dict:
 def get_alleles_for_gene_group_for_species(gene_group: str, species: str) -> dict:
     alleles = collections.defaultdict(dict)
 
+    time.sleep(5) # to prevent getting blocked
     response = requests.get(
         f"https://www.imgt.org/genedb/GENElect?query=7.2+{gene_group}&species={species}"
     )
@@ -169,6 +171,7 @@ def get_sequence_data_for_label_for_gene_group_for_species(
 ) -> dict:
     aa_seqs = collections.defaultdict(dict)
 
+    time.sleep(5)  # to prevent getting blocked
     response = requests.get(
         f"https://www.imgt.org/genedb/GENElect?query=8.2+{gene_group}&species={species}&IMGTlabel={label}",
         headers={"User-Agent": "Mozilla/5.0"},
@@ -184,10 +187,9 @@ def get_sequence_data_for_label_for_gene_group_for_species(
             allele = fields[1]
             functionality = fields[3]
 
-            if "F" in functionality:
-                current_allele = allele
-            else:
-                current_allele = None
+            current_allele = allele
+
+            aa_seqs[current_allele]["functionality"] = functionality
 
             continue
 
@@ -244,7 +246,7 @@ def get_motif_idx(j_region, conserved_aa):
             return j_region.index(conserved_aa + "G")
 
     cons_aas_regex = "[FW]" if conserved_aa is None else conserved_aa
-    motif_regex = cons_aas_regex + "[AG][A-Z]G"
+    motif_regex = cons_aas_regex + "[AGS][A-Z]G"
 
     match = re.search(motif_regex, j_region)
     if match:
