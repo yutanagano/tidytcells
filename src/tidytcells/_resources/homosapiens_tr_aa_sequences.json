@@ -3820,7 +3820,9 @@
     "TRAJ35*01": {
         "functionality": "F",
         "J-REGION": "IGFGNVLHCGSGTQVIVLP",
-        "J-CYS": "C"
+        "J-CYS": "C",
+        "J-MOTIF": "CGSG",
+        "J-CDR3-END": "IGFGNVLHC"
     },
     "TRAJ36*01": {
         "functionality": "F",

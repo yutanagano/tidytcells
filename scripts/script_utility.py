@@ -253,7 +253,7 @@ def get_motif_idx(j_region, conserved_aa):
         return match.start()
 
 
-def add_j_motifs(j_aa_dict, species):
+def add_j_motifs(j_aa_dict, species): # todo somehow motif recovery doesnt work for TRAJ35*01 (manually added)
     for allele, seq_data in j_aa_dict.items():
         if "J-REGION" not in seq_data or len(seq_data["J-REGION"]) < 4:
             continue

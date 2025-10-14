@@ -299,6 +299,7 @@ class TestGetAaSequence:
                     "V-REGION": "KNQVEQSPQSLIILEGKNCTLQCNYTVSPFSNLRWYKQDTGRGPVSLTIMTFSENTKSNGRYTATLDADTKQSSLHITASQLSDSASYICVVS",
                     'V-CDR3-START': 'CVVS',
                     'V-MOTIF': 'SYIC',
+                    'functionality': 'F'
                 },
             ),
             (
@@ -306,6 +307,7 @@ class TestGetAaSequence:
                 "homosapiens",
                 {
                     "D-REGION": "GTGG",
+                    'functionality': 'F'
                 },
             ),
             (
@@ -316,6 +318,7 @@ class TestGetAaSequence:
                     "J-PHE": "F",
                     "J-REGION": "EYGNKLVFGAGTILRVKS",
                     'J-MOTIF': 'FGAG',
+                    'functionality': '(F)'
                 },
             ),
             (
@@ -329,7 +332,8 @@ class TestGetAaSequence:
                     "FR3-IMGT": "KDSGHFSTFLSRSNGYSYLLLTELQIKDSASYLC",
                     "V-REGION": "GQGVEQPDNLMSVEGTFARVNCTYSTSGFNGLSWYQQREGHAPVFLSYVVLDGLKDSGHFSTFLSRSNGYSYLLLTELQIKDSASYLCAVR",
                     'V-CDR3-START': 'CAVR',
-                    'V-MOTIF': 'SYLC'
+                    'V-MOTIF': 'SYLC',
+                    'functionality': 'F'
                 },
             ),
         ),
