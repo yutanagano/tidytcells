@@ -4,5 +4,5 @@ from tidytcells._standardized_junction.standardized_junction import (
 from tidytcells._resources import MUSMUSCULUS_TR_AA_SEQUENCES
 
 
-class StandardizedHomoSapiensTrSymbol(StandardizedJunction):
+class StandardizedMusMusculusTrJunction(StandardizedJunction):
     _sequence_dictionary = MUSMUSCULUS_TR_AA_SEQUENCES

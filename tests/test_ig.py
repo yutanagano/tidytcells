@@ -271,6 +271,7 @@ class TestGetAaSequence:
                     "CDR2-IMGT": "ISAYNGNT",
                     "FR3-IMGT": "NYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTA",
                     "V-REGION": "QVQLVQSGAEVKKPGASVKVSCKASGYTFTSYGISWVRQAPGQGLEWMGWISAYNGNTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTA",
+                    'functionality': 'F',
                 },
             ),
             (
@@ -278,6 +279,7 @@ class TestGetAaSequence:
                 "homosapiens",
                 {
                     "D-REGION": "GTTGT",
+                    'functionality': 'F',
                 },
             ),
             (
@@ -287,7 +289,8 @@ class TestGetAaSequence:
                     'J-CDR3-END': 'AEYFQHW',
                     'J-MOTIF': 'WGQG',
                     "J-REGION": "AEYFQHWGQGTLVTVSS",
-                    "J-TRP": "W"
+                    "J-TRP": "W",
+                    'functionality': 'F',
                 },
             )
         ),

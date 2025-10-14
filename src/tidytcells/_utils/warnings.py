@@ -16,7 +16,7 @@ def warn_failure(
     logger.warning(warning_message)
 
 
-def warn_unsupported_species(species: str, gene_type: str, logger: Logger):
+def warn_unsupported_species(species: str, type: str, logger: Logger):
     logger.warning(
-        f'Unsupported species: "{species}". ' f"Skipping {gene_type} standardisation."
+        f'Unsupported species: "{species}". ' f"Skipping {type} standardisation."
     )

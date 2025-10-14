@@ -1,28 +1,43 @@
 import logging
-import re
 from tidytcells import aa, _utils
-from typing import Literal, Optional
+from tidytcells._utils.alignment import get_is_valid_locus_gene_fn
 from tidytcells._utils.parameter import Parameter
-from tidytcells._utils.conserved_aa_lookup import get_conserved_aa_for_j_symbol_for_species
-from tidytcells._utils.trimming import process_junction
-from tidytcells._utils.alignment import align_j
+from tidytcells._standardized_junction import (
+    StandardizedJunction,
+    StandardizedHomoSapiensTrJunction,
+    StandardizedHomoSapiensIgJunction,
+    StandardizedMusMusculusTrJunction,
+)
 
+from typing import Dict, Optional, Type, Literal
 
 logger = logging.getLogger(__name__)
 
 
+SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Dict[str, Type[StandardizedJunction]]] = {
+    "homosapiens": {"TR": StandardizedHomoSapiensTrJunction,
+                    "IG": StandardizedHomoSapiensIgJunction},
+    "musmusculus": {"TR": StandardizedMusMusculusTrJunction},
+}
+
 def standardize(
     seq: str,
-    locus: Optional[str] = None,
+    locus: str,
     j_symbol: Optional[str] = None,
+    v_symbol: Optional[str] = None,
     species: Optional[str] = None,
-    allow_uncertain_118: Optional[bool] = None,
-    fix_missing_conserved: Optional[bool] = None,
-    trimming: Optional[bool] = None,
+    allow_c_correction: Optional[bool] = None,
+    allow_fw_correction: Optional[bool] = None,
+    enforce_functional_v: Optional[bool] = None,
+    enforce_functional_j: Optional[bool] = None,
+    allow_v_reconstruction: Optional[bool] = None,
+    allow_j_reconstruction: Optional[bool] = None,
+    # allow_uncertain_118: Optional[bool] = None,
+    # fix_missing_conserved: Optional[bool] = None,
     on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[bool] = None,
-    j_strict: Optional[bool] = None,
-    strict: Optional[bool] = None,
+    # j_strict: Optional[bool] = None,
+    # strict: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,
 ) -> Optional[str]:
     """
@@ -41,17 +56,22 @@ def standardize(
     :type seq:
         str
     :param locus:
-        String value representing the locus (TRA, TRB, IGH, IGL, etc). If supplied, this is used to inform conserved trailing
+        String value representing the locus (TRA, TRB, IGH, IGL, etc; TR or IG may be used if a more precise locus is unknown).
+        If supplied, this is used to inform conserved trailing
         amino acid identification and trimming.
     :type locus:
         str
     :param j_symbol:
-        The TR/IG J symbol used to determine the correct conserved trailing
+        The TR/IG J symbol used to determine the correct conserved trailing # todo change this
         amino acid at position 118 (F / W / C). If the symbol does not resolve
         to a single allele but all productive alleles consistent with the
         symbol have the same conserved residue, this will be set as the
         expected ending residue. If the supplied symbol does not map to any
         (group of) known J alleles, the function will raise a ``ValueError``.
+    :type j_symbol:
+        str
+    :param j_symbol:
+        The TR/IG V symbol ....
     :type j_symbol:
         str
     :param species:
@@ -77,12 +97,6 @@ def standardize(
         and the expected trailing residue (see `allow_uncertain_118`) at the
         end. Defaults to ``True``.
     :type fix_missing_conserved:
-        bool
-    :param trimming:
-        If ``True``, the start and end of the supplied sequence may be trimmed until the conserved leading C and trailing F/W(/C).
-        If ``False``, no trimming will be done.
-        Defaults to ``False``.
-    :type trimming:
         bool
     :param on_fail:
         Behaviour when standardization fails. If set to ``"reject"``, returns
@@ -195,12 +209,23 @@ def standardize(
     seq = Parameter(seq, "seq").throw_error_if_not_of_type(str).value
     locus = (
         Parameter(locus, "locus")
-        .throw_error_if_not_one_of("TRA", "TRB", "TRG", "TRD", "IGH", "IGK", "IGL", "IG", "TR", None)
+        .throw_error_if_not_one_of("TRA", "TRB", "TRG", "TRD", "IGH", "IGK", "IGL", "IG", "TR")
         .value
     )
     j_symbol = (
         Parameter(j_symbol, "j_symbol")
         .throw_error_if_not_of_type(str, optional=True)
+        .throw_error_if_failed_test(test=get_is_valid_locus_gene_fn(locus, "J"),
+                                    mssg=f"is not a valid J gene for \"locus\" {locus}",
+                                    optional=True)
+        .value
+    )
+    v_symbol = (
+        Parameter(v_symbol, "v_symbol")
+        .throw_error_if_not_of_type(str, optional=True)
+        .throw_error_if_failed_test(test=get_is_valid_locus_gene_fn(locus, "V"),
+                                    mssg=f"is not a valid V gene for \"locus\" {locus}",
+                                    optional=True)
         .value
     )
     species = (
@@ -209,28 +234,58 @@ def standardize(
         .throw_error_if_not_of_type(str)
         .value
     )
-    j_strict_inverted = not j_strict if j_strict is not None else None
-    allow_uncertain_118 = (
-        Parameter(allow_uncertain_118, "allow_uncertain_118")
-        .set_default(True)
-        .resolve_with_alias(j_strict_inverted, "j_strict")
-        .throw_error_if_not_of_type(bool)
-        .value
-    )
-    strict_inverted = not strict if strict is not None else None
-    fix_missing_conserved = (
-        Parameter(fix_missing_conserved, "fix_missing_conserved")
-        .set_default(True)
-        .resolve_with_alias(strict_inverted, "strict")
-        .throw_error_if_not_of_type(bool)
-        .value
-    )
-    trimming = (
-        Parameter(trimming, "trimming")
+    # j_strict_inverted = not j_strict if j_strict is not None else None
+    # allow_uncertain_118 = (
+    #     Parameter(allow_uncertain_118, "allow_uncertain_118")
+    #     .set_default(True)
+    #     .resolve_with_alias(j_strict_inverted, "j_strict")
+    #     .throw_error_if_not_of_type(bool)
+    #     .value
+    # )
+    allow_c_correction = (
+        Parameter(allow_c_correction, "allow_c_correction")
         .set_default(False)
         .throw_error_if_not_of_type(bool)
         .value
     )
+    allow_fw_correction = (
+        Parameter(allow_fw_correction, "allow_fw_correction")
+        .set_default(False)
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
+    enforce_functional_v = (
+        Parameter(enforce_functional_v, "enforce_functional_v")
+        .set_default(True)
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
+    enforce_functional_j = (
+        Parameter(enforce_functional_j, "enforce_functional_j")
+        .set_default(False)
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
+    allow_v_reconstruction = (
+        Parameter(allow_v_reconstruction, "allow_v_reconstruction")
+        .set_default(False)
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
+    allow_j_reconstruction = (
+        Parameter(allow_j_reconstruction, "allow_j_reconstruction")
+        .set_default(False)
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
+    # strict_inverted = not strict if strict is not None else None
+    # fix_missing_conserved = (
+    #     Parameter(fix_missing_conserved, "fix_missing_conserved")
+    #     .set_default(True)
+    #     .resolve_with_alias(strict_inverted, "strict")
+    #     .throw_error_if_not_of_type(bool)
+    #     .value
+    # )
     on_fail = (
         Parameter(on_fail, "on_fail")
         .set_default("reject")
@@ -248,6 +303,7 @@ def standardize(
         .value
     )
 
+    species = _utils.clean_and_lowercase(species)
     original_input = seq
     seq = aa.standardize(seq=seq, on_fail="reject", log_failures=log_failures)
 
@@ -256,92 +312,55 @@ def standardize(
             return None
         return original_input
 
-    aa_118_target = "F"
-    aa_118_certain = False
-    junction_matching_regex = None
+    if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
+        if log_failures:
+            _utils.warn_unsupported_species(species, "junction", logger)
 
-    if j_symbol:
-        species = _utils.clean_and_lowercase(species)
-        aa_118_target, aa_118_certain = get_conserved_aa_for_j_symbol_for_species(
-            j_symbol, species, log_failures=log_failures
+        if on_fail == "reject":
+            return None
+
+        return original_input
+
+    if locus[0:2] not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
+        if log_failures:
+            logger.warning(
+                f'Unsupported locus: "{locus}" for species "{species}". ' f"Skipping {type} standardisation."
+            )
+
+        if on_fail == "reject":
+            return None
+
+        return original_input
+
+
+    StandardizedJunctionClass = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][locus[0:2]]
+    standardized_junction = StandardizedJunctionClass(seq=seq, locus=locus, j_symbol=j_symbol, v_symbol=v_symbol,
+                                                      allow_c_correction=allow_c_correction,
+                                                      allow_fw_correction=allow_fw_correction,
+                                                      enforce_functional_v=enforce_functional_v,
+                                                      enforce_functional_j=enforce_functional_j,
+                                                      allow_v_reconstruction=allow_v_reconstruction,
+                                                      allow_j_reconstruction=allow_j_reconstruction)
+
+    invalid_reason = standardized_junction.get_reason_why_invalid()
+
+    if invalid_reason is None:
+        return standardized_junction.compile("junction")
+
+    if log_failures:
+        _utils.warn_failure(
+            reason_for_failure=invalid_reason,
+            original_input=seq,
+            attempted_fix=standardized_junction.corrected_seq,
+            species=species,
+            logger=logger,
         )
 
-    if aa_118_certain:
-        junction_matching_regex = re.compile(rf"^C[A-Z]{4,}{aa_118_target}$")
-    else:
-        if not allow_uncertain_118:
-            if on_fail == "reject":
-                return None
-            return original_input
-        else:
-            logger.info(
-                f"Unclear residue at position 118 (j_symbol = {j_symbol}), accepting either F or W."
-            )
-            junction_matching_regex = re.compile(r"^C[A-Z]{4,}[FW]$")
-
-    #### added in
-    if j_symbol:
-        align_j(seq, j_symbol=j_symbol, species=species)
-
-    seq = process_junction(seq, junction_matching_regex, aa_118_target, locus, species, trimming=trimming, check_motifs=True)
-    #####
-
-    if not junction_matching_regex.match(seq):
-        if not fix_missing_conserved:
-            if log_failures:
-                logger.warning(
-                    f"Failed to standardize {original_input}: not a valid junction sequence."
-                )
-
-            if on_fail == "reject":
-                return None
-
-            return original_input
-
-        seq = "C" + seq + aa_118_target
+    if on_fail == "reject":
+        return None
 
     return seq
 
-
-#     conserved_aa = "F"
-#     junction_matching_regex = re.compile(r"^C[A-Z]{4,}[FW]$")
-#     species = _utils.clean_and_lowercase(species)
-#
-#     if j_symbol:
-#         conserved_aa = get_conserved_aa(j_symbol=j_symbol, locus=locus, species=species, log_failures=log_failures)
-#
-#         if conserved_aa is not None:
-#             junction_matching_regex = re.compile(r"^C[A-Z]{4,}[" + conserved_aa + "]$")
-#
-#         if conserved_aa is None:
-#             if j_strict:
-#                 if on_fail == "reject":
-#                     return None
-#                 return original_input
-#             else:
-#                 logger.info(f"J symbol conserved amino acid could not be determined for {j_symbol}, using F as default.")
-#                 conserved_aa = "F"
-#
-#         align_j(seq, j_symbol=j_symbol, species=species)
-#
-#     seq = process_junction(seq, junction_matching_regex, conserved_aa, locus, species, trimming=trimming, check_motifs=True)
-#
-#     if not junction_matching_regex.match(seq):
-#         if strict:
-#             if log_failures:
-#                 logger.warning(
-#                     f"Failed to standardize {original_input}: not a valid junction sequence."
-#                 )
-#
-#             if on_fail == "reject":
-#                 return None
-#
-#             return original_input
-#
-#     #     if not junction_matching_regex.match(seq):
-#     #         seq =  "C" + seq + conserved_aa
-#     #
-#     return seq
 
 def standardise(*args, **kwargs) -> Optional[str]:
     """
