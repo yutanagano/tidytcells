@@ -40,6 +40,8 @@ class StandardizedJunction(ABC):
         self.max_j_mismatches = max_j_mismatches
         self.min_j_score = min_j_score
         self.min_v_score = min_v_score
+        self.corrected_first_aa = False
+        self.corrected_last_aa = False
 
         self.reason_invalid = []
         self._resolve_juncton()
@@ -65,6 +67,10 @@ class StandardizedJunction(ABC):
     @property
     def v_alignment_success(self):
         return len(self.v_alignments) > 0
+
+    @property
+    def success(self):
+        return self.get_reason_why_invalid() is None
 
     def get_aa_dict_from_symbol(self, gene) -> dict:
         symbol = self.locus[0:2]
@@ -104,25 +110,26 @@ class StandardizedJunction(ABC):
             # TRY F FIRST # todo add some locus restriction??
             best_score = -1 if len(best_alignments) == 0 else best_alignments[0]["score"]
             corrected_seq = self.orig_seq[:-1] + "F"
-            corr_best_alignments = align_j_regions(corrected_seq, self.j_aa_dict, self.min_j_score,
+            corr_best_alignments = align_j_regions(corrected_seq, self.j_aa_dict, self.min_j_score+1,
                                                    self.mismatch_penalty, max_mismatches=0)
             corr_best_score = -1 if len(corr_best_alignments) == 0 else corr_best_alignments[0]["score"]
 
             if corr_best_score > best_score:
                 self.corrected_seq = corrected_seq
+                self.corrected_last_aa = True
                 best_alignments = corr_best_alignments
 
             # THEN TRY W (basically, if F doesnt align) # todo add some locus restriction
             best_score = -1 if len(best_alignments) == 0 else best_alignments[0]["score"]
             corrected_seq = self.orig_seq[:-1] + "W"
-            corr_best_alignments = align_j_regions(corrected_seq, self.j_aa_dict, self.min_j_score,
+            corr_best_alignments = align_j_regions(corrected_seq, self.j_aa_dict, self.min_j_score+1,
                                                    self.mismatch_penalty, max_mismatches=0)
             corr_best_score = -1 if len(corr_best_alignments) == 0 else corr_best_alignments[0]["score"]
 
             if corr_best_score > best_score:
                 self.corrected_seq = corrected_seq
-                best_alignments = corr_best_alignments
-
+                self.corrected_last_aa = True
+                best_alignments = corr_best_alignments # todo check all these cases
 
         if len(best_alignments) == 0:
             err = "J alignment unsuccessful"
@@ -143,12 +150,13 @@ class StandardizedJunction(ABC):
             best_score = -1 if len(best_alignments) == 0 else best_alignments[0]["score"]
             corrected_seq = "C" + self.orig_seq[1:]
 
-            corr_best_alignments = align_v_regions(corrected_seq, self.v_aa_dict, self.min_v_score,
+            corr_best_alignments = align_v_regions(corrected_seq, self.v_aa_dict, self.min_v_score+1,
                                                    self.mismatch_penalty, 0)
             corr_best_score = -1 if len(corr_best_alignments) == 0 else corr_best_alignments[0]["score"]
 
             if corr_best_score > best_score:
                 self.corrected_seq = corrected_seq
+                self.corrected_first_aa = True
                 best_alignments = corr_best_alignments
 
         if len(best_alignments) == 0:
@@ -249,7 +257,6 @@ class StandardizedJunction(ABC):
 
         return results.pop()
 
-
     def get_reason_why_invalid(self) -> Optional[str]: # optional: enforce_complete / no reconstruction etc
         """
         If the CDR3 cannot be standardized (it is invalid), this method returns a string outlining the reason why (incomplete on the left side, right side, etc).
@@ -262,7 +269,6 @@ class StandardizedJunction(ABC):
             return None
 
         return ", ".join(self.reason_invalid)
-
 
     def compile(self, region: str = "junction") -> str:
         """

@@ -39,6 +39,7 @@ def standardize(
     # j_strict: Optional[bool] = None,
     # strict: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,
+    return_cls: Optional[bool] = None,
 ) -> Optional[str]:
     """
     Ensures that a string value looks like a valid junction (CDR3) amino acid
@@ -302,6 +303,12 @@ def standardize(
         .throw_error_if_not_of_type(bool)
         .value
     )
+    return_cls = (
+        Parameter(return_cls, "return_cls")
+        .set_default(False)
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
 
     species = _utils.clean_and_lowercase(species)
     original_input = seq
@@ -310,7 +317,7 @@ def standardize(
     if seq is None:
         if on_fail == "reject":
             return None
-        return original_input
+        return original_input if not return_cls else None
 
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
@@ -319,7 +326,7 @@ def standardize(
         if on_fail == "reject":
             return None
 
-        return original_input
+        return original_input if not return_cls else None
 
     if locus[0:2] not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
         if log_failures:
@@ -330,7 +337,7 @@ def standardize(
         if on_fail == "reject":
             return None
 
-        return original_input
+        return original_input if not return_cls else None
 
 
     StandardizedJunctionClass = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][locus[0:2]]
@@ -345,16 +352,20 @@ def standardize(
     invalid_reason = standardized_junction.get_reason_why_invalid()
 
     if invalid_reason is None:
-        return standardized_junction.compile("junction")
+        seq = standardized_junction.compile("junction")
+        return seq if not return_cls else standardized_junction
 
     if log_failures:
         _utils.warn_failure(
             reason_for_failure=invalid_reason,
-            original_input=seq,
+            original_input=original_input,
             attempted_fix=standardized_junction.corrected_seq,
             species=species,
             logger=logger,
         )
+
+    if return_cls:
+        return standardized_junction
 
     if on_fail == "reject":
         return None
