@@ -13,7 +13,7 @@ class StandardizedSymbol(ABC):
     """
 
     @abstractmethod
-    def __init__(self) -> None:
+    def __init__(self, symbol: str) -> None:
         pass
 
     # @abstractmethod
@@ -55,6 +55,8 @@ class StandardizedReceptorGeneSymbol(StandardizedSymbol):
 
         self._gene_name, self._allele_designation = self._parse_symbol(symbol)
         self.allow_subgroup = self._allele_designation is None and allow_subgroup
+
+        # todo: allow subgroup not exposed to the user, always allow, but ensure it is only allowed if ther is no allele
 
         self._resolve_gene_name()
         self._compile_result()
@@ -115,6 +117,11 @@ class StandardizedReceptorGeneSymbol(StandardizedSymbol):
         gene_name = self._gene_name if self._gene_name in self._valid_gene_dictionary else None
         subgroup_name = self._gene_name.split("-")[0]
         subgroup_name = subgroup_name if subgroup_name in self._valid_subgroups else None
+
+        # todo a test:
+        #   if the allele is garbage, but can i get the gene out? even though it is 'failed' still get the gene?
+        # todo maybe not necessary to be 'success' for subgroup?
+        # deal with enforce funcitonal: something can be a gene but not funcitonal??
 
         self.result =  ReceptorGeneResult(original_input=self.original_symbol,
                                           error=self.get_reason_why_invalid(),

@@ -3,15 +3,14 @@ from tidytcells import _utils
 from tidytcells._utils.result import ReceptorGeneResult
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
-    StandardizedSymbol,
-    StandardizedHomoSapiensIgSymbol,
+    StandardizedHomoSapiensIgSymbol, StandardizedReceptorGeneSymbol,
 )
 from typing import Dict, Optional, Type
 
 logger = logging.getLogger(__name__)
 
 
-SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[StandardizedSymbol]] = {
+SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[StandardizedReceptorGeneSymbol]] = {
     "homosapiens": StandardizedHomoSapiensIgSymbol,
 }
 

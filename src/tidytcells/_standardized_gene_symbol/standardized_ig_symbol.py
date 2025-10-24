@@ -69,7 +69,6 @@ class StandardizedIgSymbol(StandardizedReceptorGeneSymbol):
             return
 
 
-
     def _fix_common_errors_in_ig_gene_name(self) -> None:
         self._gene_name = self._gene_name.replace(".", "-")
         self._gene_name = re.sub(r"(?<!\/)-?OR", "/OR", self._gene_name)

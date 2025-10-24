@@ -1,5 +1,4 @@
 import pytest
-from tidytcells import aa
 from tidytcells._utils.alignment import get_compatible_symbols
 
 

@@ -30,8 +30,46 @@ class Result(ABC):
 
 
 class MhGeneResult(Result):
-    def __init__(self, original_input, error, gene_name=None, allele_designation=None, subgroup_name=None):
+    def __init__(self, original_input, error, gene_name=None, allele_designation=None):
         super().__init__(original_input, error)
+        self._gene_name = gene_name
+        self._allele_designation = allele_designation
+
+        self._highest_precision = self._gene_name
+
+        if self._gene_name is not None and self._allele_designation is not None and len(self._allele_designation) > 0:
+            self._highest_precision = f'{self._gene_name}*{":".join(self._allele_designation)}'
+
+    @property
+    def attempted_fix(self):
+        if self.failed:
+            return self._highest_precision
+
+    @property
+    def highest_precision(self):
+        if self.success:
+            return self._highest_precision
+
+    @property
+    def allele(self):
+        if self.success and self._allele_designation is not None and self._gene_name is not None:
+            return f'{self._gene_name}*{":".join(self._allele_designation)}'
+
+    @property
+    def gene(self):
+        if self.success and self._gene_name is not None:
+            return self._gene_name
+
+
+
+class HLAGeneResult(MhGeneResult):
+    def __init__(self, original_input, error, gene_name=None, allele_designation=None):
+        super().__init__(original_input, error, gene_name, allele_designation)
+
+    @property
+    def protein(self):
+        if self.success and self._allele_designation is not None and self._gene_name is not None:
+            return f'{self._gene_name}*{":".join(self._allele_designation[:2])}'
 
 
 class ReceptorGeneResult(Result):
@@ -63,7 +101,7 @@ class ReceptorGeneResult(Result):
 
     @property
     def allele(self):
-        if self.success and self._allele_designation is not None:
+        if self.success and self._allele_designation is not None and self._gene_name is not None:
             return f"{self._gene_name}*{self._allele_designation}"
 
     @property
@@ -84,6 +122,11 @@ class JunctionResult(Result):
         self._corrected_junction = corrected_junction
 
     @property
+    def attempted_fix(self):
+        if self.failed:
+            return self._corrected_junction
+
+    @property
     def junction(self):
         if self.success:
             return self._corrected_junction
@@ -93,8 +136,3 @@ class JunctionResult(Result):
         if self.success:
             if self._corrected_junction is not None and len(self._corrected_junction) > 2:
                 return self._corrected_junction[1:-1]
-
-    @property
-    def attempted_fix(self):
-        if self.failed:
-            return self._corrected_junction

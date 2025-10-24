@@ -1,5 +1,6 @@
 import logging
-from tidytcells import aa, _utils
+from tidytcells import _utils
+from tidytcells._resources import AMINO_ACIDS
 from tidytcells._utils.result import JunctionResult
 from tidytcells._utils.alignment import get_is_valid_locus_gene_fn
 from tidytcells._utils.parameter import Parameter
@@ -306,10 +307,17 @@ def standardize(
 
     species = _utils.clean_and_lowercase(species)
     original_input = seq
-    seq = aa.standardize(seq=seq, on_fail="reject", log_failures=log_failures)
 
-    if seq is None:
-        return JunctionResult(original_input, 'Not a valid amino acid sequence')
+    seq = seq.upper().strip()
+
+    for char in seq:
+        if char not in AMINO_ACIDS:
+            if log_failures:
+                logger.warning(
+                    f'Failed to standardize {original_input}. Not a valid amino acid sequence, found: {char}'
+                )
+            return JunctionResult(original_input, f'Not a valid amino acid sequence, found: {char}')
+
 
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
