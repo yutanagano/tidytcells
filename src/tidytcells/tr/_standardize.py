@@ -1,6 +1,6 @@
 import logging
 from tidytcells import _utils
-from tidytcells._standardized_results.StandardizedResult import StandardizedReceptorGeneResult
+from tidytcells._utils.result import ReceptorGeneResult
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
     StandardizedSymbol,
@@ -29,7 +29,7 @@ def standardize(
     log_failures: Optional[str] = None,
     gene: Optional[str] = None,
     suppress_warnings: Optional[bool] = None,
-) -> StandardizedReceptorGeneResult:
+) -> ReceptorGeneResult:
     """
     Attempt to standardize a TR gene / allele symbol to be IMGT-compliant.
 
@@ -234,7 +234,7 @@ def standardize(
 
     if species == "any":
         best_attempt_species = None
-        best_attempt_result = StandardizedReceptorGeneResult(symbol, f'Failed with any species')
+        best_attempt_result = ReceptorGeneResult(symbol, f'Failed with any species')
 
         for (
                 species,
@@ -263,7 +263,7 @@ def standardize(
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
             _utils.warn_unsupported_species(species, "TR", logger)
-        return StandardizedReceptorGeneResult(symbol, f'Unsupported species: {species}')
+        return ReceptorGeneResult(symbol, f'Unsupported species: {species}')
 
     StandardizedTrSymbolClass = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]
     tr_standardizer = StandardizedTrSymbolClass(symbol,

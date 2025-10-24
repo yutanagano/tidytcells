@@ -1,10 +1,9 @@
 from abc import abstractmethod
-import itertools
 import re
-from typing import Dict, Optional, List
+from typing import Dict, Optional
 from tidytcells import _utils
 from tidytcells._standardized_gene_symbol import StandardizedSymbol
-from tidytcells._standardized_results.StandardizedResult import StandardizedReceptorGeneResult
+from tidytcells._utils.result import ReceptorGeneResult
 
 
 class IgSymbolParser:
@@ -182,9 +181,9 @@ class StandardizedIgSymbol(StandardizedSymbol):
         subgroup_name = self._gene_name.split("-")[0]
         subgroup_name = subgroup_name if subgroup_name in self._valid_subgroups else None
 
-        self.result =  StandardizedReceptorGeneResult(original_input=self.original_symbol,
-                                                      error=self.get_reason_why_invalid(),
-                                                      allele_designation=self._allele_designation,
-                                                      gene_name=gene_name,
-                                                      subgroup_name=subgroup_name)
+        self.result =  ReceptorGeneResult(original_input=self.original_symbol,
+                                          error=self.get_reason_why_invalid(),
+                                          allele_designation=self._allele_designation,
+                                          gene_name=gene_name,
+                                          subgroup_name=subgroup_name)
 

@@ -1,6 +1,6 @@
 from logging import Logger
 
-from tidytcells._standardized_results.StandardizedResult import StandardizedResult
+from tidytcells._utils.result import Result
 
 
 def warn_failure(
@@ -19,7 +19,7 @@ def warn_failure(
 
 
 def warn_result_failure(
-    result: StandardizedResult,
+    result: Result,
     species: str,
     logger: Logger,
 ):

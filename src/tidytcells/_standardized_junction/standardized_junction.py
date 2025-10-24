@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Dict
 
-from tidytcells._standardized_results.StandardizedResult import StandardizedJunctionResult
+from tidytcells._utils.result import JunctionResult
 from tidytcells._utils.alignment import *
 
 
@@ -48,7 +47,7 @@ class StandardizedJunction(ABC):
         self.reasons_invalid = []
         self._resolve_juncton()
 
-        self.result = StandardizedJunctionResult(self.orig_seq, "; ".join(self.reasons_invalid), self.corrected_seq)
+        self.result = JunctionResult(self.orig_seq, "; ".join(self.reasons_invalid), self.corrected_seq)
 
 
     def _resolve_juncton(self):

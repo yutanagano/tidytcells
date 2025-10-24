@@ -1,13 +1,12 @@
 import logging
 from tidytcells import _utils
-from tidytcells._standardized_results.StandardizedResult import StandardizedReceptorGeneResult
+from tidytcells._utils.result import ReceptorGeneResult
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
     StandardizedSymbol,
     StandardizedHomoSapiensIgSymbol,
 )
-from typing import Dict, Optional, Type, Literal
-
+from typing import Dict, Optional, Type
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +26,7 @@ def standardize(
     log_failures: Optional[bool] = None,
     gene: Optional[str] = None,
     suppress_warnings: Optional[bool] = None,
-) -> StandardizedReceptorGeneResult:
+) -> ReceptorGeneResult:
     """
     Attempt to standardize a IG gene / allele symbol to be IMGT-compliant.
 
@@ -215,7 +214,7 @@ def standardize(
 
     if species == "any":
         best_attempt_species = None
-        best_attempt_result = StandardizedReceptorGeneResult(symbol, f'Failed with any species')
+        best_attempt_result = ReceptorGeneResult(symbol, f'Failed with any species')
 
         for (
             species,
@@ -244,7 +243,7 @@ def standardize(
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
             _utils.warn_unsupported_species(species, "IG", logger)
-        return StandardizedReceptorGeneResult(symbol, f'Unsupported species: {species}')
+        return ReceptorGeneResult(symbol, f'Unsupported species: {species}')
 
     StandardizedIgSymbolClass = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]
     ig_standardizer = StandardizedIgSymbolClass(symbol,

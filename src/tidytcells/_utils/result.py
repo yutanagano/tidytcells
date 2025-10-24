@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class StandardizedResult(ABC):
+class Result(ABC):
 
     def __init__(self, original_input: str, error: str):
         self._original_input = original_input
@@ -29,12 +29,12 @@ class StandardizedResult(ABC):
         pass
 
 
-class StandardizedMhResult(StandardizedResult):
+class MhGeneResult(Result):
     def __init__(self, original_input, error, gene_name=None, allele_designation=None, subgroup_name=None):
         super().__init__(original_input, error)
 
 
-class StandardizedReceptorGeneResult(StandardizedResult):
+class ReceptorGeneResult(Result):
 
     def __init__(self, original_input, error, gene_name=None, allele_designation=None, subgroup_name=None):
         super().__init__(original_input, error)
@@ -77,9 +77,9 @@ class StandardizedReceptorGeneResult(StandardizedResult):
             return self._subgroup_name
 
 
-class StandardizedJunctionResult(StandardizedResult):
+class JunctionResult(Result):
 
-    def __init__(self, original_input, error, corrected_junction):
+    def __init__(self, original_input, error, corrected_junction=None):
         super().__init__(original_input, error)
         self._corrected_junction = corrected_junction
 

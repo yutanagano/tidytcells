@@ -1,6 +1,6 @@
 import logging
 from tidytcells import aa, _utils
-from tidytcells._standardized_results.StandardizedResult import StandardizedJunctionResult
+from tidytcells._utils.result import JunctionResult
 from tidytcells._utils.alignment import get_is_valid_locus_gene_fn
 from tidytcells._utils.parameter import Parameter
 from tidytcells._standardized_junction import (
@@ -10,7 +10,7 @@ from tidytcells._standardized_junction import (
     StandardizedMusMusculusTrJunction,
 )
 
-from typing import Dict, Optional, Type, Literal
+from typing import Dict, Optional, Type
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ def standardize(
     # j_strict: Optional[bool] = None,
     # strict: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,
-) -> StandardizedJunctionResult:
+) -> JunctionResult:
     """
     Ensures that a string value looks like a valid junction (CDR3) amino acid
     sequence.
@@ -309,13 +309,13 @@ def standardize(
     seq = aa.standardize(seq=seq, on_fail="reject", log_failures=log_failures)
 
     if seq is None:
-        return StandardizedJunctionResult(original_input, 'Not a valid amino acid sequence', None)
+        return JunctionResult(original_input, 'Not a valid amino acid sequence')
 
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
             _utils.warn_unsupported_species(species, "junction", logger)
 
-        return StandardizedJunctionResult(original_input, f'Unsupported species: {species}', None)
+        return JunctionResult(original_input, f'Unsupported species: {species}')
 
 
     if locus[0:2] not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
@@ -324,7 +324,7 @@ def standardize(
                 f'Unsupported locus: "{locus}" for species "{species}". ' f"Skipping {type} standardisation."
             )
 
-        return StandardizedJunctionResult(original_input, f'Unsupported locus: "{locus}" for species "{species}"', None)
+        return JunctionResult(original_input, f'Unsupported locus: "{locus}" for species "{species}"')
 
 
     StandardizedJunctionClass = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][locus[0:2]]
