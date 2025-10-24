@@ -1,4 +1,4 @@
-from .standardized_gene_symbol import StandardizedSymbol
+from .standardized_gene_symbol import StandardizedSymbol, StandardizedReceptorGeneSymbol
 
 from .standardized_homo_sapiens_tr_symbol import StandardizedHomoSapiensTrSymbol
 from .standardized_homo_sapiens_ig_symbol import StandardizedHomoSapiensIgSymbol

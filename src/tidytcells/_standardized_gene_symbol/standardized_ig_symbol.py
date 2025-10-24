@@ -2,7 +2,7 @@ from abc import abstractmethod
 import re
 from typing import Dict, Optional
 from tidytcells import _utils
-from tidytcells._standardized_gene_symbol import StandardizedSymbol
+from tidytcells._standardized_gene_symbol import StandardizedReceptorGeneSymbol
 from tidytcells._utils.result import ReceptorGeneResult
 
 
@@ -25,40 +25,13 @@ class IgSymbolParser:
             self.allele_designation = None
 
 
-class StandardizedIgSymbol(StandardizedSymbol):
-    @property
-    @abstractmethod
-    def _synonym_dictionary(self) -> Dict[str, str]:
-        pass
+class StandardizedIgSymbol(StandardizedReceptorGeneSymbol):
 
-    @property
-    @abstractmethod
-    def _valid_ig_dictionary(self) -> Dict[str, Dict[str, str]]:
-        pass
-
-    @property
-    def _valid_subgroups_without_genes(self):
-        return {key.split("-")[0] for key in self._valid_ig_dictionary if "-" in key}
-
-    @property
-    def _valid_subgroups(self):
-        return {key.split("-")[0] for key in self._valid_ig_dictionary}
-
-    def __init__(self, symbol: str, enforce_functional: bool, allow_subgroup: bool) -> None:
-        self.original_symbol = symbol
-        self.enforce_functional = enforce_functional
-
-        self._parse_ig_symbol(symbol)
-        self.allow_subgroup = self._allele_designation is None and allow_subgroup
-
-        self._resolve_gene_name()
-        self._compile_result()
-
-    def _parse_ig_symbol(self, ig_symbol: str) -> None:
+    def _parse_symbol(self, ig_symbol: str) -> tuple[Optional[str], Optional[str]]:
         cleaned_ig_symbol = self._safe_clean_ig_symbol(ig_symbol)
         parsed_ig_symbol = IgSymbolParser(cleaned_ig_symbol)
-        self._gene_name = parsed_ig_symbol.gene_name
-        self._allele_designation = parsed_ig_symbol.allele_designation
+
+        return parsed_ig_symbol.gene_name, parsed_ig_symbol.allele_designation
 
     def _safe_clean_ig_symbol(self, ig_symbol: str) -> str:
         cleaned_ig_symbol = _utils.clean_and_uppercase(ig_symbol)
@@ -96,17 +69,6 @@ class StandardizedIgSymbol(StandardizedSymbol):
             return
 
 
-    def _has_valid_gene_name(self) -> bool:
-        if self._gene_name in self._valid_ig_dictionary:
-            return True
-
-        if self.allow_subgroup and self._gene_name in self._valid_subgroups_without_genes:
-            return True
-
-        return False
-
-    def _is_synonym(self) -> bool:
-        return self._gene_name in self._synonym_dictionary
 
     def _fix_common_errors_in_ig_gene_name(self) -> None:
         self._gene_name = self._gene_name.replace(".", "-")
@@ -138,52 +100,8 @@ class StandardizedIgSymbol(StandardizedSymbol):
             without_dash1 += self._gene_name[current_str_idx:]
 
             # only keep without_dash1 if this is a valid *gene* (don't convert from gene to subgroup)
-            if without_dash1 in self._valid_ig_dictionary:
+            if without_dash1 in self._valid_gene_dictionary:
                 self._gene_name = without_dash1
 
-    def get_reason_why_invalid(self) -> Optional[str]:
-        if not self._gene_name in self._valid_ig_dictionary:
-            if self._gene_name in self._valid_subgroups_without_genes:
-                if self.allow_subgroup:
-                    return None
-                else:
-                    return "Symbol is a subgroup (not a gene)"
 
-            return "Unrecognized gene name"
-
-        if self._allele_designation:
-            allele_valid = (
-                self._allele_designation in self._valid_ig_dictionary[self._gene_name]
-            )
-
-            if not allele_valid:
-                return "Nonexistent allele for recognized gene"
-
-            if (
-                self.enforce_functional
-                and self._valid_ig_dictionary[self._gene_name][self._allele_designation]
-                != "F"
-            ):
-                return "Nonfunctional allele"
-
-            return None
-
-        if (
-            self.enforce_functional
-            and not "F" in self._valid_ig_dictionary[self._gene_name].values()
-        ):
-            return "Gene has no functional alleles"
-
-        return None
-
-    def _compile_result(self):
-        gene_name = self._gene_name if self._gene_name in self._valid_ig_dictionary else None
-        subgroup_name = self._gene_name.split("-")[0]
-        subgroup_name = subgroup_name if subgroup_name in self._valid_subgroups else None
-
-        self.result =  ReceptorGeneResult(original_input=self.original_symbol,
-                                          error=self.get_reason_why_invalid(),
-                                          allele_designation=self._allele_designation,
-                                          gene_name=gene_name,
-                                          subgroup_name=subgroup_name)
 

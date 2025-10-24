@@ -2,7 +2,7 @@ from abc import abstractmethod
 import re
 from typing import Dict, Optional
 from tidytcells import _utils
-from tidytcells._standardized_gene_symbol import StandardizedSymbol
+from tidytcells._standardized_gene_symbol import StandardizedReceptorGeneSymbol
 from tidytcells._utils.result import ReceptorGeneResult
 
 
@@ -25,40 +25,13 @@ class TrSymbolParser:
             self.allele_designation = None
 
 
-class StandardizedTrSymbol(StandardizedSymbol):
-    @property
-    @abstractmethod
-    def _synonym_dictionary(self) -> Dict[str, str]:
-        pass
+class StandardizedTrSymbol(StandardizedReceptorGeneSymbol):
 
-    @property
-    @abstractmethod
-    def _valid_tr_dictionary(self) -> Dict[str, Dict[int, str]]:
-        pass
-
-    @property
-    def _valid_subgroups_without_genes(self):
-        return {key.split("-")[0] for key in self._valid_tr_dictionary if "-" in key}
-
-    @property
-    def _valid_subgroups(self):
-        return {key.split("-")[0] for key in self._valid_tr_dictionary}
-
-    def __init__(self, symbol: str, enforce_functional: bool, allow_subgroup: bool) -> None:
-        self.original_symbol = symbol
-        self.enforce_functional = enforce_functional
-
-        self._parse_tr_symbol(symbol)
-        self.allow_subgroup = self._allele_designation is None and allow_subgroup
-
-        self._resolve_gene_name()
-        self._compile_result()
-
-    def _parse_tr_symbol(self, tr_symbol: str) -> None:
+    def _parse_symbol(self, tr_symbol: str) -> tuple[Optional[str], Optional[str]]:
         cleaned_tr_symbol = _utils.clean_and_uppercase(tr_symbol)
         parsed_tr_symbol = TrSymbolParser(cleaned_tr_symbol)
-        self._gene_name = parsed_tr_symbol.gene_name
-        self._allele_designation = parsed_tr_symbol.allele_designation
+
+        return parsed_tr_symbol.gene_name, parsed_tr_symbol.allele_designation
 
     def _resolve_gene_name(self) -> None:
         if self._has_valid_gene_name():
@@ -89,18 +62,6 @@ class StandardizedTrSymbol(StandardizedSymbol):
         if self._has_valid_gene_name():
             return
 
-    def _has_valid_gene_name(self) -> bool:
-        if self._gene_name in self._valid_tr_dictionary:
-            return True
-
-        if self.allow_subgroup and self._gene_name in self._valid_subgroups_without_genes:
-            return True
-
-        return False
-
-    def _is_synonym(self) -> bool:
-        return self._gene_name in self._synonym_dictionary
-
     def _fix_common_errors_in_tr_gene_name(self) -> None:
         self._gene_name = self._gene_name.replace("TCR", "TR")
         self._gene_name = self._gene_name.replace("S", "-")
@@ -116,7 +77,7 @@ class StandardizedTrSymbol(StandardizedSymbol):
                 dv_segment = "DV" + split_gene_name.pop()
                 self._gene_name = "/".join([*split_gene_name, dv_segment])
             else:
-                for valid_gene_name in self._valid_tr_dictionary:
+                for valid_gene_name in self._valid_gene_dictionary:
                     if valid_gene_name.startswith(self._gene_name + "/DV"):
                         self._gene_name = valid_gene_name
                         return
@@ -124,7 +85,7 @@ class StandardizedTrSymbol(StandardizedSymbol):
     def _try_resolving_trav_designation_from_trdv_info(self) -> None:
         if "DV" in self._gene_name:
             if self._gene_name.startswith("TRDV"):
-                for valid_gene in self._valid_tr_dictionary:
+                for valid_gene in self._valid_gene_dictionary:
                     dv_segment = self._gene_name[2:]
                     if re.match(rf"^TRAV\d+(-\d)?\/{dv_segment}$", valid_gene):
                         self._gene_name = valid_gene
@@ -163,58 +124,11 @@ class StandardizedTrSymbol(StandardizedSymbol):
             self._gene_name = without_dash1
 
             # only keep without_dash1 if this is a valid *gene* (don't convert from gene to subgroup)
-            if self._gene_name in self._valid_tr_dictionary:
+            if self._gene_name in self._valid_gene_dictionary:
                 return
 
             self._try_resolving_trdv_designation_from_trav_info()
-            if self._gene_name in self._valid_tr_dictionary:
+            if self._gene_name in self._valid_gene_dictionary:
                 return
 
         self._gene_name = orig_gene_name
-
-
-    def get_reason_why_invalid(self) -> Optional[str]:
-        if not self._gene_name in self._valid_tr_dictionary:
-            if self._gene_name in self._valid_subgroups_without_genes:
-                if self.allow_subgroup:
-                    return None
-                else:
-                    return "Symbol is a subgroup (not a gene)"
-
-            return "Unrecognized gene name"
-
-        if self._allele_designation:
-            allele_valid = (
-                self._allele_designation in self._valid_tr_dictionary[self._gene_name]
-            )
-
-            if not allele_valid:
-                return "Nonexistent allele for recognized gene"
-
-            if (
-                self.enforce_functional
-                and self._valid_tr_dictionary[self._gene_name][self._allele_designation]
-                != "F"
-            ):
-                return "Nonfunctional allele"
-
-            return None
-
-        if (
-            self.enforce_functional
-            and not "F" in self._valid_tr_dictionary[self._gene_name].values()
-        ):
-            return "Gene has no functional alleles"
-
-        return None
-
-    def _compile_result(self):
-        gene_name = self._gene_name if self._gene_name in self._valid_tr_dictionary else None
-        subgroup_name = self._gene_name.split("-")[0]
-        subgroup_name = subgroup_name if subgroup_name in self._valid_subgroups else None
-
-        self.result = ReceptorGeneResult(original_input=self.original_symbol,
-                                         error=self.get_reason_why_invalid(),
-                                         allele_designation=self._allele_designation,
-                                         gene_name=gene_name,
-                                         subgroup_name=subgroup_name)
