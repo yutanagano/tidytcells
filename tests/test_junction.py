@@ -11,19 +11,21 @@ class Teststandardize:
                 ("CSARDPGDDKPQHF", "TR"),
                 ("CAALRATGGNNKLTF", "TR"),
                 ("CVVAVSNFGNEKLTF", "TR"),
-                ("CAASASFGDNSKLIW", "IG"), # todo deal with IG FR3-IMGT
+                ("CAASASFGDNSKLIW", "IG"),
         ),
     )
     def test_already_correct(self, seq, locus):
         result = junction.standardize(seq=seq, locus=locus)
 
-        assert result == seq
+        assert result.junction == seq
 
     @pytest.mark.parametrize("seq", ("123456", "ASDFGHJKL", "A?AAAA", "AAAXAA"))
     def test_various_rejections(self, seq, caplog):
         result = junction.standardize(seq=seq, locus="TR")
-        assert "not a valid amino acid sequence" in caplog.text
-        assert result is None
+        assert "Not a valid amino acid sequence" in caplog.text
+        assert "Not a valid amino acid sequence" in result.error
+        assert result.junction is None
+        assert result.failed
 
     @pytest.mark.parametrize(
         ("seq", "expected"),
@@ -38,32 +40,31 @@ class Teststandardize:
     def test_various_corrections(self, seq, expected):
         result = junction.standardize(seq=seq, locus="TR")
 
-        assert result == expected
+        assert result.junction == expected
 
     @pytest.mark.parametrize("seq", (None, 1, True, 5.4))
     def test_bad_input_type(self, seq):
         with pytest.raises(TypeError):
             junction.standardize(seq=seq, locus="TR")
 
-    # @pytest.mark.parametrize("seq", ("ASQY", "CASQY", "ASQYF", "ASQYW"))
-    # def test_strict(self, seq, caplog):
-    #     result = junction.standardize(seq=seq, strict=True, locus="TR")
-    #     assert "not a valid junction" in caplog.text
-    #     assert result is None
-
     def test_standardize(self):
         result = junction.standardize(seq="CASSPGGADRRIDGYTF", locus="TR")
 
-        assert result == "CASSPGGADRRIDGYTF"
+        assert result.junction == "CASSPGGADRRIDGYTF"
+        assert result.success
+        assert result.error is None
 
     def test_log_failures(self, caplog):
         junction.standardize(seq="123456", log_failures=False, locus="TR")
         assert len(caplog.records) == 0
 
     def test_on_fail(self, caplog):
-        result = junction.standardize("foobarbaz", locus="TR", on_fail="keep")
+        result = junction.standardize("foobarbaz", locus="TR")
         assert "Failed to standardize foobarbaz" in caplog.text
-        assert result == "foobarbaz"
+        assert "Not a valid amino acid sequence" in result.error
+        assert result.junction == None
+        assert result.cdr3 == None
+        assert result.original_input == "foobarbaz"
 
     def test_bad_locus(self, caplog):
         with pytest.raises(ValueError):
@@ -71,25 +72,31 @@ class Teststandardize:
 
     def test_j_symbol_fail(self, caplog):
         result = junction.standardize(
-            "AAAAAA", j_symbol="TRAJ", on_fail="keep", locus="TR"
+            "AAAAAA", j_symbol="TRAJ", locus="TR"
         )
 
         assert "J side reconstruction unsuccessful" in caplog.text
-        assert result == "AAAAAA"
+        assert "J side reconstruction unsuccessful" in result.error
+        assert result.original_input == "AAAAAA"
+        assert result.junction == None
+        assert result.failed
 
     def test_j_symbol_fail_locus(self):
         with pytest.raises(
             ValueError, match='"j_symbol" IGH is not a valid J gene for "locus" TR'
         ):
             junction.standardize(
-                "AAAAAA", j_symbol="IGH", species="musmusculus", on_fail="keep", locus="TR"
+                "AAAAAA", j_symbol="IGH", species="musmusculus", locus="TR"
             )
 
     def test_j_symbol_fail_species(self,caplog):
-        junction.standardize(
-            "AAAAAA", j_symbol="IGHJ", species="musmusculus", on_fail="keep", locus="IG"
+        result = junction.standardize(
+            "AAAAAA", j_symbol="IGHJ", species="musmusculus", locus="IG"
         )
         assert "Unsupported" in caplog.text
+        assert "Unsupported" in result.error
+        assert result.junction is None
+        assert result.failed
 
 
     @pytest.mark.parametrize(
@@ -123,5 +130,14 @@ class Teststandardize:
     def test_various_examples(self, seq, j_symbol, v_symbol, locus, species, expected):
         result = junction.standardize(seq=seq, j_symbol=j_symbol, v_symbol=v_symbol, species=species, locus=locus, allow_c_correction=True, allow_v_reconstruction=True, allow_j_reconstruction=True)
 
-        assert result == expected
+        assert result.junction == expected
+
+        if expected is not None:
+            assert result.cdr3 == expected[1:-1]
+            assert result.success
+            assert result.error is None
+        else:
+            assert result.failed
+            assert result.error is not None
+            assert len(result.error) > 0
 

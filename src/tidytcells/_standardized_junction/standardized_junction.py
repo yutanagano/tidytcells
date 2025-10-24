@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Dict
+
+from tidytcells._standardized_results.StandardizedResult import StandardizedJunctionResult
 from tidytcells._utils.alignment import *
 
 
@@ -43,8 +45,10 @@ class StandardizedJunction(ABC):
         self.corrected_first_aa = False
         self.corrected_last_aa = False
 
-        self.reason_invalid = []
+        self.reasons_invalid = []
         self._resolve_juncton()
+
+        self.result = StandardizedJunctionResult(self.orig_seq, "; ".join(self.reasons_invalid), self.corrected_seq)
 
 
     def _resolve_juncton(self):
@@ -58,19 +62,7 @@ class StandardizedJunction(ABC):
         self.corrected_seq = self.correct_seq_v_side(self.corrected_seq)
 
         if len(self.corrected_seq) < 4:
-            self.reason_invalid.append("junction too short")
-
-    @property
-    def j_alignment_success(self):
-        return len(self.j_alignments) > 0
-
-    @property
-    def v_alignment_success(self):
-        return len(self.v_alignments) > 0
-
-    @property
-    def success(self):
-        return self.get_reason_why_invalid() is None
+            self.reasons_invalid.append("junction too short")
 
     def get_aa_dict_from_symbol(self, gene) -> dict:
         symbol = self.locus[0:2]
@@ -83,13 +75,13 @@ class StandardizedJunction(ABC):
 
         if "*" in symbol:
             if gene not in symbol:
-                self.reason_invalid.append(f"not a {gene} gene: {symbol}")
+                self.reasons_invalid.append(f"not a {gene} gene: {symbol}")
                 return dict()
 
             if symbol in  self._sequence_dictionary:
                 return {symbol: self._sequence_dictionary[symbol]}
             else:
-                self.reason_invalid.append("no sequence information known for " + symbol)
+                self.reasons_invalid.append("no sequence information known for " + symbol)
 
         enforce_functional = self.enforce_functional_v if gene == "V" else self.enforce_functional_j
 
@@ -139,7 +131,7 @@ class StandardizedJunction(ABC):
             if len(self.j_aa_dict) == 0:
                 err += ": no known sequence information"
 
-            self.reason_invalid.append(err)
+            self.reasons_invalid.append(err)
 
         return best_alignments
 
@@ -167,7 +159,7 @@ class StandardizedJunction(ABC):
             if len(self.v_aa_dict) == 0:
                 err += ": no known sequence information"
 
-            self.reason_invalid.append(err)
+            self.reasons_invalid.append(err)
 
         return best_alignments
 
@@ -211,11 +203,11 @@ class StandardizedJunction(ABC):
                     results = {s for s in results if s[-1] in ("F", "W")}
 
             if len(results) > 1:
-                self.reason_invalid.append(f"J side reconstruction ambiguous: {results}")
+                self.reasons_invalid.append(f"J side reconstruction ambiguous: {results}")
                 return seq
 
         if len(results) == 0:
-            self.reason_invalid.append(f"J side reconstruction unsuccessful.")
+            self.reasons_invalid.append(f"J side reconstruction unsuccessful.")
             return seq
 
         return results.pop()
@@ -248,11 +240,11 @@ class StandardizedJunction(ABC):
             return "C" + seq
 
         if len(results) == 0:
-            self.reason_invalid.append(f"V side reconstruction unsuccessful.")
+            self.reasons_invalid.append(f"V side reconstruction unsuccessful.")
             return seq
 
         if len(results) > 1:
-            self.reason_invalid.append(f"V side reconstruction ambiguous: {results}")
+            self.reasons_invalid.append(f"V side reconstruction ambiguous: {results}")
             return seq
 
         return results.pop()
@@ -265,20 +257,20 @@ class StandardizedJunction(ABC):
         # todo optional: check if the same locus is used for V and J.
         #  however, the difficulty is that multiple alignments (of different loci) are possible
 
-        if len(self.reason_invalid) == 0:
+        if len(self.reasons_invalid) == 0:
             return None
 
-        return ", ".join(self.reason_invalid)
+        return ", ".join(self.reasons_invalid)
 
-    def compile(self, region: str = "junction") -> str:
-        """
-        Compile a complete string representation of the gene.
-        The argument given to precision will determine the amount of specificity given in the compiled string.
-        """
-        if self.get_reason_why_invalid() is None:
-            if region.lower() == "junction":
-                return self.corrected_seq
-
-            if region.lower() == "cdr3":
-                return self.corrected_seq[1:-1]
-
+    # def compile(self, region: str = "junction") -> str:
+    #     """
+    #     Compile a complete string representation of the gene.
+    #     The argument given to precision will determine the amount of specificity given in the compiled string.
+    #     """
+    #     if self.get_reason_why_invalid() is None:
+    #         if region.lower() == "junction":
+    #             return self.corrected_seq
+    #
+    #         if region.lower() == "cdr3":
+    #             return self.corrected_seq[1:-1]
+    #

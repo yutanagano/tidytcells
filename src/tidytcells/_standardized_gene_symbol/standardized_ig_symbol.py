@@ -4,6 +4,7 @@ import re
 from typing import Dict, Optional, List
 from tidytcells import _utils
 from tidytcells._standardized_gene_symbol import StandardizedSymbol
+from tidytcells._standardized_results.StandardizedResult import StandardizedReceptorGeneResult
 
 
 class IgSymbolParser:
@@ -37,13 +38,22 @@ class StandardizedIgSymbol(StandardizedSymbol):
         pass
 
     @property
-    def _valid_subgroups(self):
+    def _valid_subgroups_without_genes(self):
         return {key.split("-")[0] for key in self._valid_ig_dictionary if "-" in key}
 
-    def __init__(self, symbol: str, allow_subgroup: bool = False) -> None:
-        self.allow_subgroup = allow_subgroup
+    @property
+    def _valid_subgroups(self):
+        return {key.split("-")[0] for key in self._valid_ig_dictionary}
+
+    def __init__(self, symbol: str, enforce_functional: bool, allow_subgroup: bool) -> None:
+        self.original_symbol = symbol
+        self.enforce_functional = enforce_functional
+
         self._parse_ig_symbol(symbol)
+        self.allow_subgroup = self._allele_designation is None and allow_subgroup
+
         self._resolve_gene_name()
+        self._compile_result()
 
     def _parse_ig_symbol(self, ig_symbol: str) -> None:
         cleaned_ig_symbol = self._safe_clean_ig_symbol(ig_symbol)
@@ -91,7 +101,7 @@ class StandardizedIgSymbol(StandardizedSymbol):
         if self._gene_name in self._valid_ig_dictionary:
             return True
 
-        if self.allow_subgroup and self._gene_name in self._valid_subgroups:
+        if self.allow_subgroup and self._gene_name in self._valid_subgroups_without_genes:
             return True
 
         return False
@@ -132,15 +142,15 @@ class StandardizedIgSymbol(StandardizedSymbol):
             if without_dash1 in self._valid_ig_dictionary:
                 self._gene_name = without_dash1
 
-    def get_reason_why_invalid(self, enforce_functional: bool = False) -> Optional[str]:
+    def get_reason_why_invalid(self) -> Optional[str]:
         if not self._gene_name in self._valid_ig_dictionary:
-            if self._gene_name in self._valid_subgroups:
+            if self._gene_name in self._valid_subgroups_without_genes:
                 if self.allow_subgroup:
                     return None
                 else:
-                    return "is subgroup"
+                    return "Symbol is a subgroup (not a gene)"
 
-            return "unrecognized gene name"
+            return "Unrecognized gene name"
 
         if self._allele_designation:
             allele_valid = (
@@ -148,30 +158,33 @@ class StandardizedIgSymbol(StandardizedSymbol):
             )
 
             if not allele_valid:
-                return "nonexistent allele for recognized gene"
+                return "Nonexistent allele for recognized gene"
 
             if (
-                enforce_functional
+                self.enforce_functional
                 and self._valid_ig_dictionary[self._gene_name][self._allele_designation]
                 != "F"
             ):
-                return "nonfunctional allele"
+                return "Nonfunctional allele"
 
             return None
 
         if (
-            enforce_functional
+            self.enforce_functional
             and not "F" in self._valid_ig_dictionary[self._gene_name].values()
         ):
-            return "gene has no functional alleles"
+            return "Gene has no functional alleles"
 
         return None
 
-    def compile(self, precision: str = "allele") -> str:
-        if precision == "allele" and self._allele_designation is not None:
-            return f"{self._gene_name}*{self._allele_designation}"
+    def _compile_result(self):
+        gene_name = self._gene_name if self._gene_name in self._valid_ig_dictionary else None
+        subgroup_name = self._gene_name.split("-")[0]
+        subgroup_name = subgroup_name if subgroup_name in self._valid_subgroups else None
 
-        if precision == "subgroup" and "-" in self._gene_name:
-            return self._gene_name.split("-")[0]
+        self.result =  StandardizedReceptorGeneResult(original_input=self.original_symbol,
+                                                      error=self.get_reason_why_invalid(),
+                                                      allele_designation=self._allele_designation,
+                                                      gene_name=gene_name,
+                                                      subgroup_name=subgroup_name)
 
-        return self._gene_name

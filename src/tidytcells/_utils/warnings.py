@@ -1,5 +1,7 @@
 from logging import Logger
 
+from tidytcells._standardized_results.StandardizedResult import StandardizedResult
+
 
 def warn_failure(
     reason_for_failure: str,
@@ -15,6 +17,17 @@ def warn_failure(
 
     logger.warning(warning_message)
 
+
+def warn_result_failure(
+    result: StandardizedResult,
+    species: str,
+    logger: Logger,
+):
+    warn_failure(reason_for_failure=result.error,
+                 original_input=result.original_input,
+                 attempted_fix=result.attempted_fix,
+                 species=species,
+                 logger=logger)
 
 def warn_unsupported_species(species: str, type: str, logger: Logger):
     logger.warning(

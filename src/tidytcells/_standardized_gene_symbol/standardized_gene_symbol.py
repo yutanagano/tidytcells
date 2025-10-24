@@ -8,7 +8,7 @@ class StandardizedSymbol(ABC):
     """
 
     @abstractmethod
-    def __init__(self, symbol: str, allow_subgroup: bool) -> None:
+    def __init__(self, symbol: str, enforce_functional: bool, allow_subgroup: bool) -> None:
         pass
 
     @abstractmethod
@@ -17,11 +17,4 @@ class StandardizedSymbol(ABC):
         If the gene cannot be standardized (it is invalid), this method returns a string outlining the reason why (nonexistent gene, not functional, etc.).
         Returns None if standardisation was successful.
         If enforce_functional is set to True, then symbols of valid but non-functional genes will be rejected.
-        """
-
-    @abstractmethod
-    def compile(self, precision: str = "allele") -> str:
-        """
-        Compile a complete string representation of the gene.
-        The argument given to precision will determine the amount of specificity given in the compiled string.
         """

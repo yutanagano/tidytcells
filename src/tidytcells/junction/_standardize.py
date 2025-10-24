@@ -1,5 +1,6 @@
 import logging
 from tidytcells import aa, _utils
+from tidytcells._standardized_results.StandardizedResult import StandardizedJunctionResult
 from tidytcells._utils.alignment import get_is_valid_locus_gene_fn
 from tidytcells._utils.parameter import Parameter
 from tidytcells._standardized_junction import (
@@ -34,13 +35,12 @@ def standardize(
     allow_j_reconstruction: Optional[bool] = None,
     # allow_uncertain_118: Optional[bool] = None,
     # fix_missing_conserved: Optional[bool] = None,
-    on_fail: Optional[Literal["reject", "keep"]] = None,
+    # on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[bool] = None,
     # j_strict: Optional[bool] = None,
     # strict: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,
-    return_cls: Optional[bool] = None,
-) -> Optional[str]:
+) -> StandardizedJunctionResult:
     """
     Ensures that a string value looks like a valid junction (CDR3) amino acid
     sequence.
@@ -287,12 +287,12 @@ def standardize(
     #     .throw_error_if_not_of_type(bool)
     #     .value
     # )
-    on_fail = (
-        Parameter(on_fail, "on_fail")
-        .set_default("reject")
-        .throw_error_if_not_of_type(str)
-        .value
-    )
+    # on_fail = (
+    #     Parameter(on_fail, "on_fail")
+    #     .set_default("reject")
+    #     .throw_error_if_not_of_type(str)
+    #     .value
+    # )
     suppress_warnings_inverted = (
         not suppress_warnings if suppress_warnings is not None else None
     )
@@ -303,30 +303,20 @@ def standardize(
         .throw_error_if_not_of_type(bool)
         .value
     )
-    return_cls = (
-        Parameter(return_cls, "return_cls")
-        .set_default(False)
-        .throw_error_if_not_of_type(bool)
-        .value
-    )
 
     species = _utils.clean_and_lowercase(species)
     original_input = seq
     seq = aa.standardize(seq=seq, on_fail="reject", log_failures=log_failures)
 
     if seq is None:
-        if on_fail == "reject":
-            return None
-        return original_input if not return_cls else None
+        return StandardizedJunctionResult(original_input, 'Not a valid amino acid sequence', None)
 
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
             _utils.warn_unsupported_species(species, "junction", logger)
 
-        if on_fail == "reject":
-            return None
+        return StandardizedJunctionResult(original_input, f'Unsupported species: {species}', None)
 
-        return original_input if not return_cls else None
 
     if locus[0:2] not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
         if log_failures:
@@ -334,43 +324,26 @@ def standardize(
                 f'Unsupported locus: "{locus}" for species "{species}". ' f"Skipping {type} standardisation."
             )
 
-        if on_fail == "reject":
-            return None
-
-        return original_input if not return_cls else None
+        return StandardizedJunctionResult(original_input, f'Unsupported locus: "{locus}" for species "{species}"', None)
 
 
     StandardizedJunctionClass = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][locus[0:2]]
-    standardized_junction = StandardizedJunctionClass(seq=seq, locus=locus, j_symbol=j_symbol, v_symbol=v_symbol,
+    result = StandardizedJunctionClass(seq=seq, locus=locus, j_symbol=j_symbol, v_symbol=v_symbol,
                                                       allow_c_correction=allow_c_correction,
                                                       allow_fw_correction=allow_fw_correction,
                                                       enforce_functional_v=enforce_functional_v,
                                                       enforce_functional_j=enforce_functional_j,
                                                       allow_v_reconstruction=allow_v_reconstruction,
-                                                      allow_j_reconstruction=allow_j_reconstruction)
+                                                      allow_j_reconstruction=allow_j_reconstruction).result
 
-    invalid_reason = standardized_junction.get_reason_why_invalid()
-
-    if invalid_reason is None:
-        seq = standardized_junction.compile("junction")
-        return seq if not return_cls else standardized_junction
-
-    if log_failures:
-        _utils.warn_failure(
-            reason_for_failure=invalid_reason,
-            original_input=original_input,
-            attempted_fix=standardized_junction.corrected_seq,
+    if result.failed and log_failures:
+        _utils.warn_result_failure(
+            result=result,
             species=species,
             logger=logger,
         )
 
-    if return_cls:
-        return standardized_junction
-
-    if on_fail == "reject":
-        return None
-
-    return seq
+    return result
 
 
 def standardise(*args, **kwargs) -> Optional[str]:

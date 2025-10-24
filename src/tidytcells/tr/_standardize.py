@@ -1,5 +1,6 @@
 import logging
 from tidytcells import _utils
+from tidytcells._standardized_results.StandardizedResult import StandardizedReceptorGeneResult
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
     StandardizedSymbol,
@@ -23,12 +24,12 @@ def standardize(
     species: Optional[str] = None,
     enforce_functional: Optional[bool] = None,
     allow_subgroup: Optional[bool] = None,
-    precision: Optional[Literal["allele", "gene", "subgroup"]] = None,
+    # precision: Optional[Literal["allele", "gene", "subgroup"]] = None,
     on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[str] = None,
     gene: Optional[str] = None,
     suppress_warnings: Optional[bool] = None,
-) -> Optional[str]:
+) -> StandardizedReceptorGeneResult:
     """
     Attempt to standardize a TR gene / allele symbol to be IMGT-compliant.
 
@@ -205,18 +206,18 @@ def standardize(
         .throw_error_if_not_of_type(bool)
         .value
     )
-    precision = (
-        Parameter(precision, "precision")
-        .set_default("allele")
-        .throw_error_if_not_one_of("allele", "gene", "subgroup")
-        .value
-    )
-    on_fail = (
-        Parameter(on_fail, "on_fail")
-        .set_default("reject")
-        .throw_error_if_not_one_of("reject", "keep")
-        .value
-    )
+    # precision = (
+    #     Parameter(precision, "precision")
+    #     .set_default("allele")
+    #     .throw_error_if_not_one_of("allele", "gene", "subgroup")
+    #     .value
+    # )
+    # on_fail = (
+    #     Parameter(on_fail, "on_fail")
+    #     .set_default("reject")
+    #     .throw_error_if_not_one_of("reject", "keep")
+    #     .value
+    # )
     suppress_warnings_inverted = (
         not suppress_warnings if suppress_warnings is not None else None
     )
@@ -228,69 +229,55 @@ def standardize(
         .value
     )
 
-    allow_subgroup = True if precision == "subgroup" else allow_subgroup
+    # allow_subgroup = True if precision == "subgroup" else allow_subgroup
     species = _utils.clean_and_lowercase(species)
 
     if species == "any":
-        best_attempt_invalid_reason = None
-        best_attempt_standardised_symbol = None
         best_attempt_species = None
+        best_attempt_result = StandardizedReceptorGeneResult(symbol, f'Failed with any species')
 
         for (
-            species,
-            StandardizedTrSymbolClass,
+                species,
+                StandardizedTrSymbolClass,
         ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
-            standardized_tr_symbol = StandardizedTrSymbolClass(symbol, allow_subgroup)
-            invalid_reason = standardized_tr_symbol.get_reason_why_invalid(
-                enforce_functional
-            )
+            tr_standardizer = StandardizedTrSymbolClass(symbol,
+                                                        enforce_functional=enforce_functional,
+                                                        allow_subgroup=allow_subgroup)
 
-            if invalid_reason is None:
-                return standardized_tr_symbol.compile(precision)
+            if tr_standardizer.result.success:
+                return tr_standardizer.result
 
             if species == "homosapiens":
-                best_attempt_invalid_reason = invalid_reason
-                best_attempt_standardised_symbol = standardized_tr_symbol
+                best_attempt_result = tr_standardizer.result
                 best_attempt_species = species
 
         if log_failures:
-            _utils.warn_failure(
-                reason_for_failure=best_attempt_invalid_reason,
-                original_input=symbol,
-                attempted_fix=best_attempt_standardised_symbol.compile("allele"),
+            _utils.warn_result_failure(
+                result=best_attempt_result,
                 species=best_attempt_species,
                 logger=logger,
             )
-        if on_fail == "reject":
-            return None
-        return symbol
+
+        return best_attempt_result
 
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
             _utils.warn_unsupported_species(species, "TR", logger)
-        return symbol
+        return StandardizedReceptorGeneResult(symbol, f'Unsupported species: {species}')
 
     StandardizedTrSymbolClass = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]
-    standardized_tr_symbol = StandardizedTrSymbolClass(symbol, allow_subgroup)
+    tr_standardizer = StandardizedTrSymbolClass(symbol,
+                                                enforce_functional=enforce_functional,
+                                                allow_subgroup=allow_subgroup)
 
-    invalid_reason = standardized_tr_symbol.get_reason_why_invalid(enforce_functional)
-
-    if invalid_reason is None:
-        return standardized_tr_symbol.compile(precision)
-
-    if log_failures:
-        _utils.warn_failure(
-            reason_for_failure=invalid_reason,
-            original_input=symbol,
-            attempted_fix=standardized_tr_symbol.compile("allele"),
+    if tr_standardizer.result.failed and log_failures:
+        _utils.warn_result_failure(
+            result=tr_standardizer.result,
             species=species,
             logger=logger,
         )
 
-    if on_fail == "reject":
-        return None
-
-    return symbol
+    return tr_standardizer.result
 
 
 def standardise(*args, **kwargs) -> Optional[str]:

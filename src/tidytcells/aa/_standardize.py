@@ -102,7 +102,7 @@ def standardize(
         if char not in AMINO_ACIDS:
             if log_failures:
                 logger.warning(
-                    f"Failed to standardize {original_input}: not a valid amino acid sequence."
+                    f"Failed to standardize {original_input}: Not a valid amino acid sequence."
                 )
             if on_fail == "reject":
                 return None

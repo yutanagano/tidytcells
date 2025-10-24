@@ -12,7 +12,7 @@ class TestStandardise:
     @pytest.mark.parametrize("seq", ("123456", "ASDFGHJKL", "A?AAAA", "AAAXAA"))
     def test_various_rejections(self, seq, caplog):
         result = aa.standardize(seq=seq)
-        assert "not a valid amino acid" in caplog.text
+        assert "Not a valid amino acid" in caplog.text
         assert result == None
 
     @pytest.mark.parametrize(("seq", "expected"), (("klgak", "KLGAK"),))
