@@ -87,7 +87,7 @@ def standardize(
         .value
     )
     log_failures = (
-        Parameter(log_failures, "suppress_warnings")
+        Parameter(log_failures, "log_failures")
         .set_default(True)
         .resolve_with_alias(suppress_warnings, "suppress_warnings")
         .throw_error_if_not_of_type(bool)
