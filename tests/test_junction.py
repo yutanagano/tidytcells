@@ -4,116 +4,141 @@ from tidytcells import junction
 
 class Teststandardize:
     @pytest.mark.parametrize(
-        "seq",
+        ("seq", "locus"),
         (
-            "CASSPGGADRRIDGYTF",
-            "CASSLMPGQGSYEQYF",
-            "CSARDPGDDKPQHF",
-            "CAALRATGGNNKLTF",
-            "CVVAVSNFGNEKLTF",
-            "CAASASFGDNSKLIW",
+                ("CASSPGGADRRIDGYTF", "TR"),
+                ("CASSLMPGQGSYEQYF", "TR"),
+                ("CSARDPGDDKPQHF", "TR"),
+                ("CAALRATGGNNKLTF", "TR"),
+                ("CVVAVSNFGNEKLTF", "TR"),
+                ("CAASASFGDNSKLIW", "IG"),
         ),
     )
-    def test_already_correct(self, seq):
-        result = junction.standardize(seq=seq)
+    def test_already_correct(self, seq, locus):
+        result = junction.standardize(seq=seq, locus=locus)
 
-        assert result == seq
+        assert result.junction == seq
 
     @pytest.mark.parametrize("seq", ("123456", "ASDFGHJKL", "A?AAAA", "AAAXAA"))
     def test_various_rejections(self, seq, caplog):
-        result = junction.standardize(seq=seq)
-        assert "not a valid amino acid sequence" in caplog.text
-        assert result is None
+        result = junction.standardize(seq=seq, locus="TR")
+        assert "Not a valid amino acid sequence" in caplog.text
+        assert "Not a valid amino acid sequence" in result.error
+        assert result.junction is None
+        assert result.failed
 
     @pytest.mark.parametrize(
         ("seq", "expected"),
         (
             ("casqyf", "CASQYF"),
             ("ASQY", "CASQYF"),
-            ("CASQY", "CCASQYF"),
-            ("ASQYF", "CASQYFF"),
+            ("ASQGELF", "CASQGELFF"),
+            ("CASQY", "CASQYF"),
+            ("ASQYF", "CASQYF"),
         ),
     )
     def test_various_corrections(self, seq, expected):
-        result = junction.standardize(seq=seq)
+        result = junction.standardize(seq=seq, locus="TR")
 
-        assert result == expected
+        assert result.junction == expected
 
     @pytest.mark.parametrize("seq", (None, 1, True, 5.4))
     def test_bad_input_type(self, seq):
         with pytest.raises(TypeError):
-            junction.standardize(seq=seq)
-
-    @pytest.mark.parametrize("seq", ("ASQY", "CASQY", "ASQYF", "ASQYW"))
-    def test_strict(self, seq, caplog):
-        result = junction.standardize(seq=seq, strict=True)
-        assert "not a valid junction" in caplog.text
-        assert result is None
+            junction.standardize(seq=seq, locus="TR")
 
     def test_standardize(self):
-        result = junction.standardize(seq="CASSPGGADRRIDGYTF")
+        result = junction.standardize(seq="CASSPGGADRRIDGYTF", locus="TR")
 
-        assert result == "CASSPGGADRRIDGYTF"
+        assert result.junction == "CASSPGGADRRIDGYTF"
+        assert result.success
+        assert result.error is None
 
     def test_log_failures(self, caplog):
-        junction.standardize(seq="123456", log_failures=False)
+        junction.standardize(seq="123456", log_failures=False, locus="TR")
         assert len(caplog.records) == 0
 
     def test_on_fail(self, caplog):
-        result = junction.standardize("foobarbaz", on_fail="keep")
+        result = junction.standardize("foobarbaz", locus="TR")
         assert "Failed to standardize foobarbaz" in caplog.text
-        assert result == "foobarbaz"
+        assert "Not a valid amino acid sequence" in result.error
+        assert result.junction == None
+        assert result.cdr3 == None
+        assert result.original_input == "foobarbaz"
 
-    @pytest.mark.parametrize(
-        ("seq", "j_symbol", "species", "expected"),
-        (
-            ("AELNAGNNRKLI", "TRAJ38*01", "homosapiens", "CAELNAGNNRKLIW"),
-            ("AELNAGNNRKLI", "TRAJ38*01", "musmusculus", "CAELNAGNNRKLIW"),
-            ("AELNAGNNRKLI", None, "homosapiens", "CAELNAGNNRKLIF"),
-            ("AELNAGNNRKLI", None, "musmusculus", "CAELNAGNNRKLIF"),
-            ("AELNAGNNRKLI", None, "musmusculus", "CAELNAGNNRKLIF"),
-            ("AAAAWF", "IGHJ5*01", "homosapiens", "CAAAAWFW"),
-            ("AAAAWF", None, "homosapiens", "CAAAAWFF"),
-            ("AAAAAA", "IGHJ5", "homosapiens", "CAAAAAAW"),
-            (
-                "AAAAAA",
-                "IGHJ",
-                "homosapiens",
-                "CAAAAAAW",
-            ),  # all of IGH have W, all of IGL have F
-            ("AAAAAA", "IGLJ", "homosapiens", "CAAAAAAF"),
-            ("AAAAAA", "TRAJ", "homosapiens", "CAAAAAAF"),  # but TRA is ambiguous
-            (
-                "AAAAAA",
-                "TRAJ35",
-                "homosapiens",
-                "CAAAAAAC",
-            ),  # non-canonical C ending for TRAJ35*01 human
-            ("AAAAAA", "TRAJ35", "musmusculus", "CAAAAAAF"),  # ...but not for mouse
-        ),
-    )
-    def test_j_symbol(self, seq, j_symbol, species, expected):
-        result = junction.standardize(seq=seq, j_symbol=j_symbol, species=species)
-
-        assert result == expected
-
-    def test_j_symbol_ambiguous_default(self, caplog):
-        result = junction.standardize(
-            "AAAAAA", j_symbol="TRAJ", on_fail="keep", j_strict=False
-        )
-        assert result == "CAAAAAAF"
+    def test_bad_locus(self, caplog):
+        with pytest.raises(ValueError):
+            junction.standardize("AELNAGNNRKLI", locus="TRB", j_symbol="TRA")
 
     def test_j_symbol_fail(self, caplog):
         result = junction.standardize(
-            "AAAAAA", j_symbol="TRAJ", on_fail="keep", j_strict=True
+            "AAAAAA", j_symbol="TRAJ", locus="TR"
         )
-        assert "conserved residue at position 118 was ambiguous" in caplog.text
-        assert result == "AAAAAA"
 
-    def test_j_symbol_fail_species(self):
+        assert "J side reconstruction unsuccessful" in caplog.text
+        assert "J side reconstruction unsuccessful" in result.error
+        assert result.original_input == "AAAAAA"
+        assert result.junction == None
+        assert result.failed
+
+    def test_j_symbol_fail_locus(self):
         with pytest.raises(
-            ValueError, match="not supported for IG genes of species musmusculus"
+            ValueError, match='"j_symbol" IGH is not a valid J gene for "locus" TR'
         ):
             junction.standardize(
-                "AAAAAA", j_symbol="IGH", species="musmusculus", on_fail="keep"
+                "AAAAAA", j_symbol="IGH", species="musmusculus", locus="TR"
             )
+
+    def test_j_symbol_fail_species(self,caplog):
+        result = junction.standardize(
+            "AAAAAA", j_symbol="IGHJ", species="musmusculus", locus="IG"
+        )
+        assert "Unsupported" in caplog.text
+        assert "Unsupported" in result.error
+        assert result.junction is None
+        assert result.failed
+
+
+    @pytest.mark.parametrize(
+        ("seq", "j_symbol", "v_symbol", "locus", "species", "expected"),
+        (
+                ("CASSPGVFGANVLTFG", None, None, "TR", "homosapiens", "CASSPGVFGANVLTF"),
+                ("AELNAGNNR", "TRAJ38*01", None, "TR", "homosapiens", "CAELNAGNNRKLIW"),
+                ("WASSPGVFGANVLTFG", None, None, "TR", "homosapiens", "CASSPGVFGANVLTF"),
+                ("RASSPGVFGANVLTFG", None, None, "TR", "homosapiens", "CASSPGVFGANVLTF"),
+                ("SASSPGVFGANVLTFG", None, "TRBV20-1", "TR", "homosapiens", "CSASSPGVFGANVLTF"),
+                ("SASSPGVFGANVLTFG", None, None, "TR", "homosapiens", "CASSPGVFGANVLTF"),
+                ("DASSPGVFGANVLTFG", None, None, "TR", "homosapiens", None), # do not correct D to C (only W/S/R/G/Y/F/A)
+                ("MRESENMDSNYQYVF", None, None, "TRA", "homosapiens", "CAMRESENMDSNYQYVF"),
+                ("AELNAGNNRKLI", "TRAJ38*01", None, "TR", "homosapiens", "CAELNAGNNRKLIW"), # for human this is CAE-
+                ("AELNAGNNRKLI", "TRAJ38*01", None, "TR", "musmusculus", "CAAELNAGNNRKLIW"), # functional mouse gene best match contributes CAAE-
+                ("AELNAGNNRKLI", "TRAJ38*01", "TRAV5-2*01", "TR", "musmusculus", "CAELNAGNNRKLIW"), # specifying a specific allele which contributes CAE- but is pseudogene overrides 'enforce_functional'
+                ("YFCAVVFNMDSNYQLIWGLGTSL", "TRAJ38*01", "TRAV", "TR", "homosapiens", "CAVVFNMDSNYQLIW"),
+                ("YFCAVVFNMDSNYQLIWGLGTSL", None, None, "TRA", "homosapiens", "CAVVFNMDSNYQLIW"),
+                ("YFCAVVFNMDSNYQLIWLLLL", "TRAJ38*01", None, "TR", "homosapiens", None), # J anchor invalid, no output
+                ("VYYCARFNMDSNYQYFQHWGQGTLVTVSS", "IGHJ", "IGHV", "IG", "homosapiens", "CARFNMDSNYQYFQHW"),
+                ("YFCAELNAGNNVLH", "TRAJ35", None, "TR", "homosapiens", "CAELNAGNNVLHC"),
+                ("AGGYQNFYFGKGTMLLVSP", None, None, "TR", "homosapiens", "CAGGYQNFYF"),
+                ("VVNRGTGGFKTIFGAG", None, None, "TR", "homosapiens", "CVVNRGTGGFKTIF"),
+                ("DSSIYLCSVEATRADTQYFGPGTRLTVL", None, None, "TR", "homosapiens", "CSVEATRADTQYF"),
+                ("ASSTRSSGEL", None, None, "TR", "homosapiens", "CASSTRSSGELFF"),
+                ("YSTDSSGDIWV", None, None, "IG", "homosapiens", "CYSTDSSGDIWVF"),
+                ("QQYGSSPLT", "IGKJ4", "IGKV3", "IG", "homosapiens", "CQQYGSSPLTF"),
+                ("CASTGSYGYTFGSGTRLTV", None, None, "TR", "homosapiens", "CASTGSYGYTF"),
+                ("ASRPVAG", None, None, "TR", "homosapiens", None),
+        )
+    )
+    def test_various_examples(self, seq, j_symbol, v_symbol, locus, species, expected):
+        result = junction.standardize(seq=seq, j_symbol=j_symbol, v_symbol=v_symbol, species=species, locus=locus, allow_c_correction=True, allow_v_reconstruction=True, allow_j_reconstruction=True, enforce_functional_j=True)
+
+        assert result.junction == expected
+
+        if expected is not None:
+            assert result.cdr3 == expected[1:-1]
+            assert result.success
+            assert result.error is None
+        else:
+            assert result.failed
+            assert result.error is not None
+            assert len(result.error) > 0
+

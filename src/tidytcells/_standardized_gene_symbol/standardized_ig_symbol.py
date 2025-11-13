@@ -1,9 +1,9 @@
 from abc import abstractmethod
-import itertools
 import re
-from typing import Dict, Optional, List
+from typing import Dict, Optional
 from tidytcells import _utils
-from tidytcells._standardized_gene_symbol import StandardizedSymbol
+from tidytcells._standardized_gene_symbol import StandardizedReceptorGeneSymbol
+from tidytcells._utils.result import ReceptorGeneResult
 
 
 class IgSymbolParser:
@@ -25,26 +25,13 @@ class IgSymbolParser:
             self.allele_designation = None
 
 
-class StandardizedIgSymbol(StandardizedSymbol):
-    @property
-    @abstractmethod
-    def _synonym_dictionary(self) -> Dict[str, str]:
-        pass
+class StandardizedIgSymbol(StandardizedReceptorGeneSymbol):
 
-    @property
-    @abstractmethod
-    def _valid_ig_dictionary(self) -> Dict[str, Dict[str, str]]:
-        pass
-
-    def __init__(self, symbol: str) -> None:
-        self._parse_ig_symbol(symbol)
-        self._resolve_gene_name()
-
-    def _parse_ig_symbol(self, ig_symbol: str) -> None:
+    def _parse_symbol(self, ig_symbol: str) -> tuple[Optional[str], Optional[str]]:
         cleaned_ig_symbol = self._safe_clean_ig_symbol(ig_symbol)
         parsed_ig_symbol = IgSymbolParser(cleaned_ig_symbol)
-        self._gene_name = parsed_ig_symbol.gene_name
-        self._allele_designation = parsed_ig_symbol.allele_designation
+
+        return parsed_ig_symbol.gene_name, parsed_ig_symbol.allele_designation
 
     def _safe_clean_ig_symbol(self, ig_symbol: str) -> str:
         cleaned_ig_symbol = _utils.clean_and_uppercase(ig_symbol)
@@ -60,7 +47,7 @@ class StandardizedIgSymbol(StandardizedSymbol):
 
         return cleaned_ig_symbol
 
-    def _resolve_gene_name(self, skip_dash1_section: bool = False) -> None:
+    def _resolve_gene_name(self) -> None:
         if self._has_valid_gene_name():
             return
 
@@ -77,93 +64,43 @@ class StandardizedIgSymbol(StandardizedSymbol):
             if self._has_valid_gene_name():
                 return
 
-        if not skip_dash1_section:
-            original = self._gene_name
-            for variant in self._generate_dash1_variants():
-                self._gene_name = variant
-                self._resolve_gene_name(skip_dash1_section=True)
-                if self._has_valid_gene_name():
-                    return
-            self._gene_name = original
+        self._try_removing_dash1()
+        if self._has_valid_gene_name():
+            return
 
-    def _has_valid_gene_name(self) -> bool:
-        return self._gene_name in self._valid_ig_dictionary
-
-    def _is_synonym(self) -> bool:
-        return self._gene_name in self._synonym_dictionary
 
     def _fix_common_errors_in_ig_gene_name(self) -> None:
         self._gene_name = self._gene_name.replace(".", "-")
         self._gene_name = re.sub(r"(?<!\/)-?OR", "/OR", self._gene_name)
         self._gene_name = re.sub(r"(?<!\d)0+", "", self._gene_name)
 
-    def _generate_dash1_variants(self) -> List[str]:
-        all_gene_nums = [
-            (m.group(0), m.start(0), m.end(0))
-            for m in re.finditer(r"\d+(-\d+)?", self._gene_name)
-        ]
+    def _try_removing_dash1(self):
+        if "-1" in self._gene_name:
+            all_gene_nums = [
+                    (m.group(0), m.start(0), m.end(0))
+                    for m in re.finditer(r"\d+(-\d+)?", self._gene_name)
+                ]
 
-        dash1_candidates = []
-        for numstr, start_idx, end_idx in all_gene_nums:
-            fm = re.fullmatch(r"(\d+)(-1)?", numstr)
-            if not fm:
-                continue
-            dash1_candidates.append((fm.group(1), start_idx, end_idx))
+            dash1_candidates = []
+            for numstr, start_idx, end_idx in all_gene_nums:
+                fm = re.fullmatch(r"(\d+)(-1)?", numstr)
+                if not fm:
+                    continue
+                dash1_candidates.append((fm.group(1), start_idx, end_idx))
 
-        dash1_variants = []
-        for comb in itertools.product(("dash", "nodash"), repeat=len(dash1_candidates)):
-            num_comb_zip = zip(dash1_candidates, comb)
             current_str_idx = 0
-            working_variant = ""
+            without_dash1 = ""
 
-            for (numstr, start_idx, end_idx), status in num_comb_zip:
-                working_variant += self._gene_name[current_str_idx:start_idx]
-
-                if status == "dash":
-                    working_variant += f"{numstr}-1"
-                else:
-                    working_variant += numstr
-
+            for numstr, start_idx, end_idx in dash1_candidates:
+                without_dash1 += self._gene_name[current_str_idx:start_idx]
+                without_dash1 += numstr
                 current_str_idx = end_idx
 
-            working_variant += self._gene_name[current_str_idx:]
+            without_dash1 += self._gene_name[current_str_idx:]
 
-            if working_variant != self._gene_name:
-                dash1_variants.append(working_variant)
+            # only keep without_dash1 if this is a valid *gene* (don't convert from gene to subgroup)
+            if without_dash1 in self._valid_gene_dictionary:
+                self._gene_name = without_dash1
 
-        return dash1_variants
 
-    def get_reason_why_invalid(self, enforce_functional: bool = False) -> Optional[str]:
-        if not self._gene_name in self._valid_ig_dictionary:
-            return "unrecognized gene name"
 
-        if self._allele_designation:
-            allele_valid = (
-                self._allele_designation in self._valid_ig_dictionary[self._gene_name]
-            )
-
-            if not allele_valid:
-                return "nonexistent allele for recognized gene"
-
-            if (
-                enforce_functional
-                and self._valid_ig_dictionary[self._gene_name][self._allele_designation]
-                != "F"
-            ):
-                return "nonfunctional allele"
-
-            return None
-
-        if (
-            enforce_functional
-            and not "F" in self._valid_ig_dictionary[self._gene_name].values()
-        ):
-            return "gene has no functional alleles"
-
-        return None
-
-    def compile(self, precision: str = "allele") -> str:
-        if precision == "allele" and self._allele_designation is not None:
-            return f"{self._gene_name}*{self._allele_designation}"
-
-        return self._gene_name

@@ -5,6 +5,7 @@ from typing import List, Optional
 from tidytcells import _utils
 from tidytcells._standardized_gene_symbol import StandardizedSymbol
 from tidytcells._resources import VALID_HOMOSAPIENS_MH, HOMOSAPIENS_MH_SYNONYMS
+from tidytcells._utils.result import HLAGeneResult
 
 
 class HlaSymbolParser:
@@ -60,8 +61,10 @@ class StandardizedHlaSymbol(StandardizedSymbol):
     def __init__(self, symbol: str) -> None:
         self._parse_hla_symbol(symbol)
         self._resolve_errors()
+        self._compile_result()
 
     def _parse_hla_symbol(self, hla_symbol: str) -> None:
+        self.original_symbol = hla_symbol
         cleaned_hla_symbol = _utils.clean_and_uppercase(hla_symbol)
         parsed_hla_symbol = HlaSymbolParser(cleaned_hla_symbol)
         self._gene_name = parsed_hla_symbol.gene_name
@@ -154,12 +157,12 @@ class StandardizedHlaSymbol(StandardizedSymbol):
 
         self._allele_designation = original
 
-    def get_reason_why_invalid(self, enforce_functional: bool = False) -> Optional[str]:
+    def get_reason_why_invalid(self) -> Optional[str]:
         if self._gene_name == "B2M" and not self._allele_designation:
             return None
 
         if not self._gene_name in VALID_HOMOSAPIENS_MH:
-            return "unrecognized gene name"
+            return "Unrecognized gene name"
 
         # Verify allele designators up to the level of the protein (or G/P)
         allele_designation = self._allele_designation.copy()
@@ -171,7 +174,7 @@ class StandardizedHlaSymbol(StandardizedSymbol):
             try:
                 current_root = current_root[allele_designation.pop(0)]
             except KeyError:
-                return "nonexistent allele for recognized gene"
+                return "Nonexistent allele for recognized gene"
 
         # If there are designator fields past the protein level, just make sure
         # they look like legitimate designator field values
@@ -179,14 +182,14 @@ class StandardizedHlaSymbol(StandardizedSymbol):
             further_designators = self._allele_designation[2:]
 
             if len(further_designators) > 2:
-                return "too many allele designators"
+                return "Too many allele designators"
 
             for field in further_designators:
                 if not field.isdigit():
-                    return "non-numerical allele designators"
+                    return "Non-numerical allele designators"
 
                 if len(field) < 2:
-                    return "non-2-digit allele designators"
+                    return "Non-2-digit allele designators"
 
         return None
 
@@ -198,12 +201,10 @@ class StandardizedHlaSymbol(StandardizedSymbol):
             -1
         ].endswith("P")
 
-    def compile(self, precision: str = "allele") -> str:
-        if self._allele_designation:
-            if precision == "allele":
-                return f'{self._gene_name}*{":".join(self._allele_designation)}'
 
-            if precision == "protein":
-                return f'{self._gene_name}*{":".join(self._allele_designation[:2])}'
+    def _compile_result(self):
+        self.result = HLAGeneResult(original_input=self.original_symbol,
+                                    error=self.get_reason_why_invalid(),
+                                    gene_name=self._gene_name,
+                                    allele_designation=self._allele_designation)
 
-        return self._gene_name

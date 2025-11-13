@@ -4,6 +4,7 @@ from typing import Optional
 from tidytcells import _utils
 from tidytcells._resources import VALID_MUSMUSCULUS_MH, MUSMUSCULUS_MH_SYNONYMS
 from tidytcells._standardized_gene_symbol import StandardizedSymbol
+from tidytcells._utils.result import MhGeneResult
 
 
 class MhSymbolParser:
@@ -27,8 +28,10 @@ class MhSymbolParser:
 
 class StandardizedMusMusculusMhSymbol(StandardizedSymbol):
     def __init__(self, symbol: str) -> None:
+        self.original_symbol = symbol
         self._parse_mh_symbol(symbol)
         self._resolve_errors()
+        self._compile_result()
 
     def _parse_mh_symbol(self, mh_symbol: str) -> None:
         cleaned_mh_symbol = _utils.clean_and_uppercase(mh_symbol)
@@ -50,7 +53,7 @@ class StandardizedMusMusculusMhSymbol(StandardizedSymbol):
 
     def get_reason_why_invalid(self, enforce_functional: bool = False) -> Optional[str]:
         if not self._gene_name in VALID_MUSMUSCULUS_MH:
-            return "unrecognized gene name"
+            return "Unrecognized gene name"
 
         return None
 
@@ -59,3 +62,9 @@ class StandardizedMusMusculusMhSymbol(StandardizedSymbol):
             return f"{self._gene_name}*{self._allele_designation}"
 
         return self._gene_name
+
+    def _compile_result(self):
+        self.result = MhGeneResult(original_input=self.original_symbol,
+                                    error=self.get_reason_why_invalid(),
+                                    gene_name=self._gene_name,
+                                    allele_designation=self._allele_designation)

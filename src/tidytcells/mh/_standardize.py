@@ -8,6 +8,7 @@ from tidytcells._standardized_gene_symbol import (
 )
 from typing import Dict, Optional, Type, Literal
 
+from tidytcells._utils.result import MhGeneResult
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[StandardizedSymbol]] =
 def standardize(
     symbol: Optional[str] = None,
     species: Optional[str] = None,
-    precision: Optional[Literal["allele", "protein", "gene"]] = None,
+    # precision: Optional[Literal["allele", "protein", "gene"]] = None,
     on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[bool] = None,
     gene: Optional[str] = None,
@@ -168,18 +169,18 @@ def standardize(
         .throw_error_if_not_of_type(str)
         .value
     )
-    precision = (
-        Parameter(precision, "precision")
-        .set_default("allele")
-        .throw_error_if_not_one_of("allele", "protein", "gene")
-        .value
-    )
-    on_fail = (
-        Parameter(on_fail, "on_fail")
-        .set_default("reject")
-        .throw_error_if_not_one_of("reject", "keep")
-        .value
-    )
+    # precision = (
+    #     Parameter(precision, "precision")
+    #     .set_default("allele")
+    #     .throw_error_if_not_one_of("allele", "protein", "gene")
+    #     .value
+    # )
+    # on_fail = (
+    #     Parameter(on_fail, "on_fail")
+    #     .set_default("reject")
+    #     .throw_error_if_not_one_of("reject", "keep")
+    #     .value
+    # )
     suppress_warnings_inverted = (
         not suppress_warnings if suppress_warnings is not None else None
     )
@@ -194,65 +195,52 @@ def standardize(
     species = _utils.clean_and_lowercase(species)
 
     if species == "any":
-        best_attempt_invalid_reason = None
-        best_attempt_standardised_symbol = None
         best_attempt_species = None
+        best_attempt_result = MhGeneResult(symbol, f'Failed with any species')
+
+        # best_attempt_invalid_reason = None
+        # best_attempt_standardised_symbol = None
+        # best_attempt_species = None
 
         for (
             species,
             StandardizedMhSymbolClass,
         ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
-            standardized_tr_symbol = StandardizedMhSymbolClass(symbol)
-            invalid_reason = standardized_tr_symbol.get_reason_why_invalid()
+            mh_standardizer = StandardizedMhSymbolClass(symbol)
 
-            if invalid_reason is None:
-                return standardized_tr_symbol.compile(precision)
+            if mh_standardizer.result.success:
+                return mh_standardizer.result
 
             if species == "homosapiens":
-                best_attempt_invalid_reason = invalid_reason
-                best_attempt_standardised_symbol = standardized_tr_symbol
+                best_attempt_result = mh_standardizer.result
                 best_attempt_species = species
 
         if log_failures:
-            _utils.warn_failure(
-                reason_for_failure=best_attempt_invalid_reason,
-                original_input=symbol,
-                attempted_fix=best_attempt_standardised_symbol.compile("allele"),
+            _utils.warn_result_failure(
+                result=best_attempt_result,
                 species=best_attempt_species,
                 logger=logger,
             )
 
-        if on_fail == "reject":
-            return None
-
-        return symbol
+        return best_attempt_result
 
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
             _utils.warn_unsupported_species(species, "MH", logger)
-        return symbol
+        return MhGeneResult(symbol, f'Unsupported species: {species}')
 
     StandardizedMhSymbolClass = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]
-    standardized_mh_symbol = StandardizedMhSymbolClass(symbol)
+    mh_standardizer = StandardizedMhSymbolClass(symbol)
 
-    invalid_reason = standardized_mh_symbol.get_reason_why_invalid()
-
-    if invalid_reason is None:
-        return standardized_mh_symbol.compile(precision)
-
-    if log_failures:
-        _utils.warn_failure(
-            reason_for_failure=invalid_reason,
-            original_input=symbol,
-            attempted_fix=standardized_mh_symbol.compile("allele"),
+    if mh_standardizer.result.failed and log_failures:
+        _utils.warn_result_failure(
+            result=mh_standardizer.result,
             species=species,
             logger=logger,
         )
 
-    if on_fail == "reject":
-        return None
+    return mh_standardizer.result
 
-    return symbol
 
 
 def standardise(*args, **kwargs) -> Optional[str]:
