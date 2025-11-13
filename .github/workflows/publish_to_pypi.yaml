@@ -17,7 +17,7 @@ jobs:
       - name: build wheel and source tarball
         run: python3 -m build
       - name: store distribution packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: python-package-distributions
           path: dist/
@@ -32,7 +32,7 @@ jobs:
       id-token: write
     steps:
       - name: download dists
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: python-package-distributions
           path: dist/
