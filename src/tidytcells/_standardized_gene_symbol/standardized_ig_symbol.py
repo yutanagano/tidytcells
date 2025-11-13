@@ -1,7 +1,7 @@
 from abc import abstractmethod
 import itertools
 import re
-from typing import Dict, Optional, List
+from typing import Dict, Optional, Set
 from tidytcells import _utils
 from tidytcells._standardized_gene_symbol import StandardizedSymbol
 
@@ -37,8 +37,9 @@ class StandardizedIgSymbol(StandardizedSymbol):
         pass
 
     @property
-    def _valid_subgroups(self):
-        return {key.split("-")[0] for key in self._valid_ig_dictionary if "-" in key}
+    @abstractmethod
+    def _valid_subgroup_dictionary(self) -> Set[str]:
+        pass
 
     def __init__(self, symbol: str, allow_subgroup: bool = False) -> None:
         self._allow_subgroup = allow_subgroup
@@ -90,7 +91,7 @@ class StandardizedIgSymbol(StandardizedSymbol):
         if self._gene_name in self._valid_ig_dictionary:
             return True
 
-        if self._allow_subgroup and self._gene_name in self._valid_subgroups:
+        if self._allow_subgroup and self._gene_name in self._valid_subgroup_dictionary:
             return True
 
         return False
@@ -147,7 +148,7 @@ class StandardizedIgSymbol(StandardizedSymbol):
 
     def get_reason_why_invalid(self, enforce_functional: bool = False) -> Optional[str]:
         if not self._gene_name in self._valid_ig_dictionary:
-            if self._gene_name in self._valid_subgroups:
+            if self._gene_name in self._valid_subgroup_dictionary:
                 if self._allow_subgroup:
                     return None
                 else:
