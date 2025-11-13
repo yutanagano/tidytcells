@@ -1,7 +1,7 @@
 from abc import abstractmethod
 import itertools
 import re
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Set
 from tidytcells import _utils
 from tidytcells._standardized_gene_symbol import StandardizedSymbol
 
@@ -37,8 +37,9 @@ class StandardizedTrSymbol(StandardizedSymbol):
         pass
 
     @property
-    def _valid_subgroups(self):
-        return {key.split("-")[0] for key in self._valid_tr_dictionary if "-" in key}
+    @abstractmethod
+    def _valid_subgroup_dictionary(self) -> Set[str]:
+        pass
 
     def __init__(self, symbol: str, allow_subgroup: bool = False) -> None:
         self.allow_subgroup = allow_subgroup
@@ -84,7 +85,7 @@ class StandardizedTrSymbol(StandardizedSymbol):
         if self._gene_name in self._valid_tr_dictionary:
             return True
 
-        if self.allow_subgroup and self._gene_name in self._valid_subgroups:
+        if self.allow_subgroup and self._gene_name in self._valid_subgroup_dictionary:
             return True
 
         return False
@@ -131,9 +132,9 @@ class StandardizedTrSymbol(StandardizedSymbol):
 
         if "-1" in self._gene_name:
             all_gene_nums = [
-                    (m.group(0), m.start(0), m.end(0))
-                    for m in re.finditer(r"\d+(-\d+)?", self._gene_name)
-                ]
+                (m.group(0), m.start(0), m.end(0))
+                for m in re.finditer(r"\d+(-\d+)?", self._gene_name)
+            ]
 
             dash1_candidates = []
             for numstr, start_idx, end_idx in all_gene_nums:
@@ -163,11 +164,9 @@ class StandardizedTrSymbol(StandardizedSymbol):
 
         self._gene_name = orig_gene_name
 
-
-
     def get_reason_why_invalid(self, enforce_functional: bool = False) -> Optional[str]:
         if not self._gene_name in self._valid_tr_dictionary:
-            if self._gene_name in self._valid_subgroups:
+            if self._gene_name in self._valid_subgroup_dictionary:
                 if self.allow_subgroup:
                     return None
                 else:
