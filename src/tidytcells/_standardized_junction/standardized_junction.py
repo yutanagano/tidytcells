@@ -186,8 +186,7 @@ class StandardizedJunction(ABC):
                     start_j_idx = end_j_idx - reconstruction_length
 
                     reconstructed_aas = alignment_details["j_region"][start_j_idx:end_j_idx]
-                    new_seq = seq + reconstructed_aas
-                    results.add(new_seq)
+                    results.add(seq + reconstructed_aas)
 
         if len(results) > 1:
             # When Junction-reconstruction results are ambiguous (different J's)
