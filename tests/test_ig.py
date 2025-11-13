@@ -23,10 +23,9 @@ class TestStandardize:
         ("symbol", "expected"),
         (
             ("IGHV1/OR15-1*01", "IGHV1/OR15-1*01"),
-            ("IGHV6", "IGHV6-1"),
+            ("IGHV6-1", "IGHV6-1"),
             ("LV2-18", "IGLV2-18"),
-            ("IGLV(VI)-22", "IGLV(VI)-22-1"),
-        ),
+        )
     )
     def test_any_species(self, symbol, expected):
         result = ig.standardize(symbol, species="any")
@@ -60,11 +59,50 @@ class TestStandardize:
 
         assert result == expected
 
+
+    @pytest.mark.filterwarnings("ignore:Failed to standardize")
+    @pytest.mark.parametrize(
+        ("symbol", "expected", "allow_subgroup"),
+        (
+            ("IGLV6-57", "IGLV6-57", True),
+            ("IGLV6-57", "IGLV6-57", False),
+            ("IGLV6", "IGLV6", True),
+            ("IGLV6", None, False),
+        ),
+    )
+    def test_allow_subgroup(self, symbol, expected, allow_subgroup):
+        result = ig.standardize(
+            symbol=symbol, species="homosapiens", allow_subgroup=allow_subgroup,
+        )
+
+        assert result == expected
+
+
+    @pytest.mark.filterwarnings("ignore:Failed to standardize")
+    @pytest.mark.parametrize(
+        ("symbol", "expected"),
+        (
+            ("IGHV5-10-1*01", "IGHV5-10-1*01"),
+            ("IGHV5-10-1", "IGHV5-10-1"),
+            ("IGHJ1-1", "IGHJ1"),
+            ("IGHJ1-1*01", "IGHJ1*01"),
+            ("IGHJ4-1*02", "IGHJ4*02"),
+            ("IGLV(VI)-22-1-1", "IGLV(VI)-22-1"),
+        ),
+    )
+    def test_remove_illegal_dash1(self, symbol, expected, ):
+        result = ig.standardize(
+            symbol=symbol, species="homosapiens",
+        )
+
+        assert result == expected
+
     @pytest.mark.parametrize(
         ("symbol", "expected", "precision"),
         (
             ("IGLV7-43*01", "IGLV7-43*01", "allele"),
             ("IGLV8-61*01", "IGLV8-61", "gene"),
+            ("IGLV8-61*01", "IGLV8", "subgroup"),
         ),
     )
     def test_precision(self, symbol, expected, precision):

@@ -8,7 +8,7 @@ class StandardizedSymbol(ABC):
     """
 
     @abstractmethod
-    def __init__(self, symbol: str) -> None:
+    def __init__(self, symbol: str, allow_subgroup: bool) -> None:
         pass
 
     @abstractmethod
