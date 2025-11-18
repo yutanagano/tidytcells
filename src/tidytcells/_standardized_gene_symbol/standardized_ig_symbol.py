@@ -1,9 +1,7 @@
-from abc import abstractmethod
 import re
-from typing import Dict, Optional
+from typing import Tuple, Optional
 from tidytcells import _utils
 from tidytcells._standardized_gene_symbol import StandardizedReceptorGeneSymbol
-from tidytcells._utils.result import ReceptorGeneResult
 
 
 class IgSymbolParser:
@@ -27,7 +25,7 @@ class IgSymbolParser:
 
 class StandardizedIgSymbol(StandardizedReceptorGeneSymbol):
 
-    def _parse_symbol(self, ig_symbol: str) -> tuple[Optional[str], Optional[str]]:
+    def _parse_symbol(self, ig_symbol: str) -> Tuple[Optional[str], Optional[str]]:
         cleaned_ig_symbol = self._safe_clean_ig_symbol(ig_symbol)
         parsed_ig_symbol = IgSymbolParser(cleaned_ig_symbol)
 

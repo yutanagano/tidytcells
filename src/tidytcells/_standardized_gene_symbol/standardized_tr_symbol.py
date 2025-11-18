@@ -1,9 +1,7 @@
-from abc import abstractmethod
 import re
-from typing import Dict, Optional
+from typing import Tuple, Optional
 from tidytcells import _utils
 from tidytcells._standardized_gene_symbol import StandardizedReceptorGeneSymbol
-from tidytcells._utils.result import ReceptorGeneResult
 
 
 class TrSymbolParser:
@@ -27,7 +25,7 @@ class TrSymbolParser:
 
 class StandardizedTrSymbol(StandardizedReceptorGeneSymbol):
 
-    def _parse_symbol(self, tr_symbol: str) -> tuple[Optional[str], Optional[str]]:
+    def _parse_symbol(self, tr_symbol: str) -> Tuple[Optional[str], Optional[str]]:
         cleaned_tr_symbol = _utils.clean_and_uppercase(tr_symbol)
         parsed_tr_symbol = TrSymbolParser(cleaned_tr_symbol)
 

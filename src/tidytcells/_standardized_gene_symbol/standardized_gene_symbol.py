@@ -1,7 +1,5 @@
-from abc import ABC, abstractmethod
-from typing import Optional
+from abc import ABC
 from abc import abstractmethod
-import re
 from typing import Dict, Optional, Tuple
 
 from tidytcells._utils.result import ReceptorGeneResult
@@ -47,14 +45,11 @@ class StandardizedReceptorGeneSymbol(StandardizedSymbol):
 
         self._gene_name, self._allele_designation = self._parse_symbol(symbol)
         self.allow_subgroup = self._allele_designation is None and allow_subgroup
-
-        # todo: allow subgroup not exposed to the user, always allow, but ensure it is only allowed if ther is no allele
-
         self._resolve_gene_name()
         self._compile_result()
 
     @abstractmethod
-    def _parse_symbol(self, symbol: str) -> tuple[Optional[str], Optional[str]]:
+    def _parse_symbol(self, symbol: str) -> Tuple[Optional[str], Optional[str]]:
         pass
 
     @abstractmethod
