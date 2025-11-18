@@ -33,11 +33,11 @@ class MhGeneResult(Result):
     def __init__(self, original_input, error, gene_name=None, allele_designation=None):
         super().__init__(original_input, error)
         self._gene_name = gene_name
-        self._allele_designation = allele_designation
+        self._allele_designation = allele_designation if allele_designation is not None and len(allele_designation) > 0 else None
 
         self._highest_precision = self._gene_name
 
-        if self._gene_name is not None and self._allele_designation is not None and len(self._allele_designation) > 0:
+        if self._gene_name is not None and self._allele_designation is not None:
             self._highest_precision = f'{self._gene_name}*{":".join(self._allele_designation)}'
 
     @property

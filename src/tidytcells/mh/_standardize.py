@@ -22,14 +22,13 @@ SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[StandardizedSymbol]] =
 def standardize(
     symbol: Optional[str] = None,
     species: Optional[str] = None,
-    # precision: Optional[Literal["allele", "protein", "gene"]] = None,
-    on_fail: Optional[Literal["reject", "keep"]] = None,
+    database: Optional[str] = None,
     log_failures: Optional[bool] = None,
     gene: Optional[str] = None,
     suppress_warnings: Optional[bool] = None,
 ) -> Optional[str]:
     """
-    Attempt to standardize an MH gene / allele symbol to be IMGT-compliant.
+    Attempt to standardize an MH gene / allele symbol to be IMGT-compliant. # todo update docs once MRO mapping available
 
     .. topic:: Supported species
 
@@ -39,7 +38,8 @@ def standardize(
     .. note::
         This function will only verify the validity of an MH gene/allele up to the level of the protein.
         Any further precise allele designations will not be verified, apart from the requirement that the format (colon-separated numbers) look valid.
-        The reasons for this is firstly because new alleles at that level are added to the IMGT list quite often and so accurate verification is difficult, secondly because people rarely need verification to such a precise level, and finally because such verification costs more computational effort with diminishing returns.
+        The reasons for this is firstly because new alleles at that level are added to the IMGT list quite often and so accurate verification is difficult,
+        secondly because people rarely need verification to such a precise level, and finally because such verification costs more computational effort with diminishing returns.
 
     :param symbol:
         Potentially non-standardized MH gene / allele symbol.
@@ -55,20 +55,11 @@ def standardize(
 
     :type species:
         str
-    :param precision:
-        The maximum level of precision to standardize to.
-        ``"allele"`` standardizes to the maximum precision possible.
-        ``"protein"`` keeps allele designators up to the level of the protein.
-        ``"gene"`` standardizes only to the level of the gene.
-        Defaults to ``"allele"``.
-    :type precision:
-        str
-    :param on_fail:
-        Behaviour when standardization fails.
-        If set to ``"reject"``, returns ``None`` on failure.
-        If set to ``"keep"``, returns the original input.
-        Defaults to ``"reject"``.
-    :type on_fail:
+    :param database:
+        Which gene database to use. Defaults to ``"MRO"``, alternatively, ``"IMGT"`` can be selected.
+        Note that IMGT uses a non-standard representation of mouse MH genes, and using MRO is therefore recommended.
+        See also: https://github.com/IEDB/MRO
+    :type database:
         str
     :param log_failures:
         Report standardisation failures through logging (at level ``WARNING``).
@@ -86,50 +77,78 @@ def standardize(
         bool
 
     :return:
-        If the specified `species` is supported, and `symbol` could be standardized, then return the standardized symbol.
-        If `species` is unsupported, then the function does not attempt to standardize, and returns the unaltered `symbol` string.
-        Else follows the behvaiour as set by `on_fail`.
+        This method will return a MhGeneResult object with the following attributes:
+            - success (bool): True if the standardiation was successful, False otherwise.
+            - failed (bool): the inverse of success.
+            - allele (str): the standardized symbol at the allele level, if standardisation to this level was successful, otherwise None.
+            - protein (str): the standardized symbol at the protein level, if standardisation to this level was successful, otherwise None. This is only available for human data.
+            - gene (str): the standardized symbol at the gene level, if standardisation was successful, otherwise None.
+            - highest_precision (str): the most precise version of the standardized symbol (allele > gene) if standardisation was successful, otherwise None.
+            - error (str): the error message, only if standardisation failed, otherwise None.
+            - attempted_fix (str): the best attempt at fixing the input symbol, only of standardisation failed, otherwise None.
+            - original_input (str): the original input symbol.
     :rtype:
-        Optional[str]
+        MhGeneResult
+
 
     .. topic:: Example usage
 
-        Input strings will intelligently be corrected to IMGT-compliant symbols.
+        MH standardised results will be returned as a MhGeneResult (or HLAGeneResult for human genes).
+        When standardisation is a success, attributes 'allele', 'protein' and 'gene' can be used to retrieve the corrected information.
+        >>> result = tt.mh.standardize("HLA-DRB3*01:01:02:01")
+        >>> result.success
+        True
+        >>> result.allele
+        'HLA-DRB3*01:01:02:01'
+        >>> result.protein
+        'HLA-DRB3*01:01'
+        >>> result.gene
+        'HLA-DRB3'
 
-        >>> tt.mh.standardize("A1")
+
+        Attributes 'allele', 'protein' and 'gene' only return a result if the symbol could be standardised up to that level.
+        Attribute 'highest_precision' is never None for a successful standardisation, and always returns the most
+        detailed available result between 'allele', 'protein' and 'gene'.
+        >>> tt.mh.standardize("HLA-DRB3*01:01:02:01").highest_precision
+        'HLA-DRB3*01:01:02:01'
+        >>> tt.mh.standardize("HLA-DRB3").allele
+        None
+        >>> tt.mh.standardize("HLA-DRB3").gene
+        'HLA-DRB3'
+        >>> tt.mh.standardize("HLA-DRB3").highest_precision
+        'HLA-DRB3'
+
+        Non-standardised input strings will intelligently be corrected to IMGT-compliant symbols.
+        >>> tt.mh.standardize("A1").allele
         'HLA-A*01'
 
-        The `precision` setting can truncate unnecessary information.
-
-        >>> tt.mh.standardize("HLA-A*01", precision="gene")
-        'HLA-A'
-
-        *Mus musculus* is a supported species.
-
-        >>> tt.mh.standardize("CRW2", species="musmusculus")
+        *Mus musculus* is a supported species. # todo update example with MRO
+        >>> tt.mh.standardize("CRW2", species="musmusculus").gene
         'MH1-M5'
 
     .. topic:: Decision Logic
 
-        To provide an easy way to gauge the scope and limitations of standardization, below is a simplified overview of the decision logic employed when attempting to standardize an MH symbol.
+        #todo: update decision logic once mouse is updated with MRO mapping
+
+        To provide an easy way to gauge the scope and limitations of standardisation, below is a simplified overview of the decision logic employed when attempting to standardize an MH symbol.
         For more detail, please refer to the `source code <https://github.com/yutanagano/tidytcells>`_.
 
         .. code-block:: none
 
-            IF the specified species is not supported for standardization:
+            IF the specified species is not supported for standardisation:
                 RETURN original symbol without modification
 
             ELSE:
-                // attempt standardization
+                // attempt standardisation
                 {
                     IF symbol is already in IMGT-compliant form:
-                        set standardization status as successful
-                        skip rest of standardization
+                        set standardisation status as successful
+                        skip rest of standardisation
 
                     IF symbol is a known deprecated symbol:
                         overwrite symbol with current IMGT-compliant symbol
-                        set standardization status as successful
-                        skip rest of standardization
+                        set standardisation status as successful
+                        skip rest of standardisation
 
                     // the rest is only applicable when species is set to homo sapiens
                     add "HLA-" to the beginning of the symbol if necessary                  //e.g. A -> HLA-A
@@ -137,26 +156,26 @@ def standardize(
                     add back forgotten asterisks if necessary                               //e.g. HLA-A01 -> HLA-A*01
                     add back forgotten colons if necessary                                  //e.g. HLA-A*0101 -> HLA-A*01:01
                     If symbol is now in IMGT-compliant form:
-                        set standardization status as successful
-                        skip rest of standardization
+                        set standardisation status as successful
+                        skip rest of standardisation
 
                     try adding or subtracting leading zeros from allele designation numbers //e.g. HLA-A*001 -> HLA-A*01
                     If symbol is now in IMGT-compliant form:
-                        set standardization status as successful
-                        skip rest of standardization
+                        set standardisation status as successful
+                        skip rest of standardisation
 
-                    set standardization status as failed
+                    set standardisation status as failed
                 }
 
-                IF standardization status is set to successful:
-                    RETURN standardized symbol
+                RETURN MhGeneResult
 
-                ELSE:
-                    IF on_fail is set to "reject":
-                        RETURN None
-                    IF on_fail is set to "keep":
-                        RETURN original symbol without modification
     """
+    symbol = (
+        Parameter(symbol, "symbol")
+        .resolve_with_alias(gene, "gene")
+        .throw_error_if_not_of_type(str)
+        .value
+    )
     symbol = (
         Parameter(symbol, "symbol")
         .resolve_with_alias(gene, "gene")
@@ -169,18 +188,12 @@ def standardize(
         .throw_error_if_not_of_type(str)
         .value
     )
-    # precision = (
-    #     Parameter(precision, "precision")
-    #     .set_default("allele")
-    #     .throw_error_if_not_one_of("allele", "protein", "gene")
-    #     .value
-    # )
-    # on_fail = (
-    #     Parameter(on_fail, "on_fail")
-    #     .set_default("reject")
-    #     .throw_error_if_not_one_of("reject", "keep")
-    #     .value
-    # )
+    database = (
+        Parameter(database, "species")
+        .set_default("MRO")
+        .throw_error_if_not_one_of("MRO", "IMGT")
+        .value
+    )
     suppress_warnings_inverted = (
         not suppress_warnings if suppress_warnings is not None else None
     )
@@ -197,10 +210,6 @@ def standardize(
     if species == "any":
         best_attempt_species = None
         best_attempt_result = MhGeneResult(symbol, f'Failed with any species')
-
-        # best_attempt_invalid_reason = None
-        # best_attempt_standardised_symbol = None
-        # best_attempt_species = None
 
         for (
             species,

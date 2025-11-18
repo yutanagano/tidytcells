@@ -60,7 +60,7 @@ class StandardizedJunction(ABC):
         self.corrected_seq = self.correct_seq_j_side(self.corrected_seq)
         self.corrected_seq = self.correct_seq_v_side(self.corrected_seq)
 
-        if len(self.corrected_seq) < 4:
+        if len(self.corrected_seq) < 6:
             self.reasons_invalid.append("junction too short")
 
     def get_aa_dict_from_symbol(self, gene) -> dict:
@@ -90,37 +90,28 @@ class StandardizedJunction(ABC):
 
         return aas_per_gene
 
+    def correct_sequencing_err(self, best_alignments, conserved_aa):
+        best_score = -1 if len(best_alignments) == 0 else best_alignments[0]["score"]
+        corrected_seq = self.orig_seq[:-1] + conserved_aa
+        corr_best_alignments = align_j_regions(corrected_seq, self.j_aa_dict, self.min_j_score + 1,
+                                               self.mismatch_penalty, max_mismatches=0)
+        corr_best_score = -1 if len(corr_best_alignments) == 0 else corr_best_alignments[0]["score"]
+
+        if corr_best_score > best_score:
+            self.corrected_seq = corrected_seq
+            self.corrected_last_aa = True
+            return corr_best_alignments
+
+        return best_alignments
+
     def align_j(self):
         best_alignments = align_j_regions(self.orig_seq, self.j_aa_dict, self.min_j_score, self.mismatch_penalty, self.max_j_mismatches)
 
-        if self.allow_fw_correction and self.orig_seq[-1] in FW_MISMATCH_AAS:
+        if self.allow_fw_correction and self.orig_seq[-1] in F_MISMATCH_AAS:
+            best_alignments = self.correct_sequencing_err(best_alignments, conserved_aa="F")
 
-            # todo fill in part with F/W
-            #   one solution:
-
-            # TRY F FIRST # todo add some locus restriction??
-            best_score = -1 if len(best_alignments) == 0 else best_alignments[0]["score"]
-            corrected_seq = self.orig_seq[:-1] + "F"
-            corr_best_alignments = align_j_regions(corrected_seq, self.j_aa_dict, self.min_j_score+1,
-                                                   self.mismatch_penalty, max_mismatches=0)
-            corr_best_score = -1 if len(corr_best_alignments) == 0 else corr_best_alignments[0]["score"]
-
-            if corr_best_score > best_score:
-                self.corrected_seq = corrected_seq
-                self.corrected_last_aa = True
-                best_alignments = corr_best_alignments
-
-            # THEN TRY W (basically, if F doesnt align) # todo add some locus restriction
-            best_score = -1 if len(best_alignments) == 0 else best_alignments[0]["score"]
-            corrected_seq = self.orig_seq[:-1] + "W"
-            corr_best_alignments = align_j_regions(corrected_seq, self.j_aa_dict, self.min_j_score+1,
-                                                   self.mismatch_penalty, max_mismatches=0)
-            corr_best_score = -1 if len(corr_best_alignments) == 0 else corr_best_alignments[0]["score"]
-
-            if corr_best_score > best_score:
-                self.corrected_seq = corrected_seq
-                self.corrected_last_aa = True
-                best_alignments = corr_best_alignments # todo check all these cases
+        if self.allow_fw_correction and self.orig_seq[-1] in W_MISMATCH_AAS:
+            best_alignments = self.correct_sequencing_err(best_alignments, conserved_aa="W")
 
         if len(best_alignments) == 0:
             err = "J alignment unsuccessful"
@@ -260,15 +251,3 @@ class StandardizedJunction(ABC):
 
         return ", ".join(self.reasons_invalid)
 
-    # def compile(self, region: str = "junction") -> str:
-    #     """
-    #     Compile a complete string representation of the gene.
-    #     The argument given to precision will determine the amount of specificity given in the compiled string.
-    #     """
-    #     if self.get_reason_why_invalid() is None:
-    #         if region.lower() == "junction":
-    #             return self.corrected_seq
-    #
-    #         if region.lower() == "cdr3":
-    #             return self.corrected_seq[1:-1]
-    #

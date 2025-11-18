@@ -66,7 +66,7 @@ class TestStandardize:
         assert len(caplog.records) == 0
 
     def test_on_fail(self, caplog):
-        result = mh.standardize("foobarbaz", on_fail="keep")
+        result = mh.standardize("foobarbaz")
         assert "Failed to standardize" in caplog.text
         assert result.original_input == "foobarbaz"
         assert result.failed

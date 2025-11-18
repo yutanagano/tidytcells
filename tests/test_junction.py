@@ -104,7 +104,8 @@ class Teststandardize:
         (
                 ("CASSPGVFGANVLTFG", None, None, "TR", "homosapiens", "CASSPGVFGANVLTF"),
                 ("AELNAGNNR", "TRAJ38*01", None, "TR", "homosapiens", "CAELNAGNNRKLIW"),
-                ("WASSPGVFGANVLTFG", None, None, "TR", "homosapiens", "CASSPGVFGANVLTF"),
+                ("CASSPGVFGANVLTL", None, None, "TR", "homosapiens", "CASSPGVFGANVLTF"), # fw mismatch
+                ("WASSPGVFGANVLTFG", None, None, "TR", "homosapiens", "CASSPGVFGANVLTF"), # C mismatch
                 ("RASSPGVFGANVLTFG", None, None, "TR", "homosapiens", "CASSPGVFGANVLTF"),
                 ("SASSPGVFGANVLTFG", None, "TRBV20-1", "TR", "homosapiens", "CSASSPGVFGANVLTF"),
                 ("SASSPGVFGANVLTFG", None, None, "TR", "homosapiens", "CASSPGVFGANVLTF"),
@@ -126,12 +127,20 @@ class Teststandardize:
                 ("QQYGSSPLT", "IGKJ4", "IGKV3", "IG", "homosapiens", "CQQYGSSPLTF"),
                 ("CASTGSYGYTFGSGTRLTV", None, None, "TR", "homosapiens", "CASTGSYGYTF"),
                 ("ASRPVAG", None, None, "TR", "homosapiens", None),
+                ("csadaf", None, None, "TR", "homosapiens", "CSADAF"),
+                ("yicsadafg", None, None, "TR", "homosapiens", "CSADAF"),
+                ("csadkli", "TRAJ38", None, "TR", "homosapiens", "CSADKLIW"),
+                ("csadkli", "TRAJ37", None, "TR", "homosapiens", "CSADKLIF"),
+                ("CSYAYVF", None, "IGLV2-11", "IG", "homosapiens", "CCSYAYVF"),
+                ("SYAYVF", None, "IGLV2-11", "IG", "homosapiens", "CCSYAYVF"),
+                ("CSYAYVF", None, "IGLV2-14", "IG", "homosapiens", "CSYAYVF"),
+                ("MRESENMD", None, None, "TRA", "homosapiens", "CAMRESENMDSSYKLIF")
         )
     )
     def test_various_examples(self, seq, j_symbol, v_symbol, locus, species, expected):
-        result = junction.standardize(seq=seq, j_symbol=j_symbol, v_symbol=v_symbol, species=species, locus=locus, allow_c_correction=True, allow_v_reconstruction=True, allow_j_reconstruction=True, enforce_functional_j=True)
+        result = junction.standardize(seq=seq, j_symbol=j_symbol, v_symbol=v_symbol, species=species, locus=locus, allow_c_correction=True, allow_fw_correction=True, allow_v_reconstruction=True, allow_j_reconstruction=True, enforce_functional_j=True)
 
-        assert result.junction == expected
+        assert result.junction == expected, result.error + result.attempted_fix
 
         if expected is not None:
             assert result.cdr3 == expected[1:-1]

@@ -34,92 +34,90 @@ def standardize(
     enforce_functional_j: Optional[bool] = None,
     allow_v_reconstruction: Optional[bool] = None,
     allow_j_reconstruction: Optional[bool] = None,
-    # allow_uncertain_118: Optional[bool] = None,
-    # fix_missing_conserved: Optional[bool] = None,
-    # on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[bool] = None,
-    # j_strict: Optional[bool] = None,
-    # strict: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,
 ) -> JunctionResult:
     """
-    Ensures that a string value looks like a valid junction (CDR3) amino acid
-    sequence.
-
-    A valid junction sequence must:
-
-    1. Be a valid amino acid sequence
-    2. Begin with a cysteine (C)
-    3. End with a phenylalanine (F), tryptophan (W) or cysteine (C) in a way
-       consistent with `j_symbol` if supplied
+    Corrects a given CDR3/Junction sequence into a valid
+    and complete Junction sequence, based on alignment to V and J genes.
+    This may include recovery of incorrectly trimmed amino acids,
+    correction of sequencing errors in the conserved start and end positions,
+    or trimming of unnecessary amino acids at the beginning and end of the sequence.
 
     :param seq:
         The junction sequence.
     :type seq:
         str
     :param locus:
-        String value representing the locus (TRA, TRB, IGH, IGL, etc; TR or IG may be used if a more precise locus is unknown).
-        If supplied, this is used to inform conserved trailing
-        amino acid identification and trimming.
+        String value representing the locus (TRA, TRB, IGH, IGL, etc;
+        TR or IG may be used if a more precise locus is unknown).
+        This is used to select an applicable subset of V and J genes for junction correction.
     :type locus:
         str
     :param j_symbol:
-        The TR/IG J symbol used to determine the correct conserved trailing # todo change this
-        amino acid at position 118 (F / W / C). If the symbol does not resolve
-        to a single allele but all productive alleles consistent with the
-        symbol have the same conserved residue, this will be set as the
-        expected ending residue. If the supplied symbol does not map to any
-        (group of) known J alleles, the function will raise a ``ValueError``.
+        The TR/IG J symbol used to correct the end of the junction sequence.
+        If a specific J allele is supplied (e.g., human TRAJ1*01),
+        the junction is corrected according to the known sequence
+        for this J allele. If a less precise gene or subgroup is given
+        (e.g., human TRAJ23 which has multiple alleles),
+        all associated allele sequences will be tested for the best alignment.
+        If no J symbol is given, all J genes for the given species + locus will be tested.
     :type j_symbol:
         str
-    :param j_symbol:
-        The TR/IG V symbol ....
-    :type j_symbol:
+    :param v_symbol:
+        The TR/IG V symbol used to correct the start of the junction sequence.
+        If a specific V allele is supplied (e.g., human TRAV1-1*01),
+        the junction is corrected according to the known sequence
+        for this V allele. If a less precise gene or subgroup is given
+        (e.g., human TRAV1-1 which has multiple alleles, or TRAV1 which has multiple genes),
+        all associated allele sequences will be tested for the best alignment.
+        If no V symbol is given, all V genes for the given species + locus will be tested.
+    :type v_symbol:
         str
     :param species:
-        The species that produced the underlying receptor. Defaults to
-        ``homosapiens``.
+        The species that produced the underlying receptor. Defaults to ``homosapiens``.
     :type species:
         str
-    :param allow_uncertain_118:
-        If ``False``, standardization immediately fails if the expected
-        conserved trailing amino acid at position 118 cannot be determined with
-        certainty using `j_symbol`, or if `j_symbol` is not supplied. If
-        ``True``, in the event of an uncertain residue at position 118, either
-        F or W is accepted, and if a trailing residue must be appended (see
-        parameter `fix_missing_conserved`), an F will be added. Defaults to
-        ``True``.
-    :type allow_uncertain_118:
+    :param allow_c_correction:
+        Whether to allow the first amino acid in the input sequence to be corrected to 'C'
+        if it is a potential sequencing error (only "W", "S", "R", "G", "Y", "F")
+        and correction improves the V gene alignment. Defaults to ``False``.
+    :type allow_c_correction:
         bool
-    :param fix_missing_conserved:
-        If ``False``, standardization immediately fails for any input sequence
-        that does not start and end with the expected conserved residues. If
-        ``True``, any inputs that are valid amino acid sequences but do not
-        start and end as expected are corrected by adding a C at the beginning
-        and the expected trailing residue (see `allow_uncertain_118`) at the
-        end. Defaults to ``True``.
-    :type fix_missing_conserved:
+    :param allow_fw_correction:
+        Whether to allow the last amino acid in the input sequence to be corrected to 'F' or 'W'
+        if it is a potential sequencing error (only "I", "L", "V", "Y", "S", "C", "G",  "R")
+        and correction improves the J gene alignment. Defaults to ``False``.
+    :type allow_fw_correction:
         bool
-    :param on_fail:
-        Behaviour when standardization fails. If set to ``"reject"``, returns
-        ``None`` on failure. If set to ``"keep"``, returns the original input.
-        Defaults to ``"reject"``.
-    :type on_fail:
-        str
+    :param enforce_functional_v:
+        Only consider V genes which are annotated to be 'functional' (excluding ORFs and pseudogenes).
+        Defaults to ``True``.
+    :type enforce_functional_v:
+        bool
+    :param enforce_functional_j:
+        Only consider V genes which are annotated to be 'functional' (excluding ORFs and pseudogenes).
+        Due to its shorter size it can be difficult to determine whether a J gene is truly functional,
+        and including ORFs/pseudogenes is therefore recommended for J genes but not for V genes.
+        Defaults to ``False``.
+    :type enforce_functional_j:
+        bool
+    :param allow_v_reconstruction:
+        Whether to allow more than just the 1 conserved C amino acid to be re-constructed from the V gene.
+        It is recommended to only set this value to True if V symbol information is supplied.
+        Defaults to ``False``.
+    :type allow_v_reconstruction:
+        bool
+    :param allow_j_reconstruction:
+        Whether to allow more than just the 1 conserved F / W / C amino acid to be re-constructed from the J gene.
+        It is recommended to only set this value to True if J symbol information is supplied.
+        Defaults to ``False``.
+    :type allow_j_reconstruction:
+        bool
     :param log_failures:
         Report standardisation failures through logging (at level ``WARNING``).
         Defaults to ``True``.
     :type log_failures:
-        bool
-    :param j_strict:
-        Inverse setting to `allow_uncertain_118`. Deprecated in favor of
-        `allow_uncertain_118`.
-    :type j_strict:
-        bool
-    :param strict:
-        Inverse setting to `fix_missing_conserved`. Deprecated in favor of
-        `fix_missing_conserved`.
-    :type strict:
         bool
     :param suppress_warnings:
         Disable warnings that are usually logged when standardisation fails.
@@ -128,85 +126,178 @@ def standardize(
         bool
 
     :return:
-        If possible, a standardized version of the input string is returned. If
-        the input string cannot be standardized, the function follows the
-        behaviour as set by `on_fail`.
+        This method will return a JunctionResult object with the following attributes:
+            - success (bool): True if the standardiation was successful, False otherwise.
+            - failed (bool): the inverse of success.
+            - junction (str): the IMGT-junction, including conserved leading C and trailing F / W / C if the standardiation was successful, otherwise None.
+            - cdr3 (str): the IMGT-CDR3, excluding conserved leading C and trailing F / W / C if the standardiation was successful, otherwise None.
+            - error (str): the error message, only if standardisation failed, otherwise None.
+            - attempted_fix (str): the best attempt at fixing the input sequence, only of standardisation failed, otherwise None.
+            - original_input (str): the original input sequence.
     :rtype:
-        Optional[str]
+        JunctionResult
 
     .. topic:: Example usage
 
-        Strings that look like junction sequences will be accepted, and
-        returned in capitalised form.
+        Strings that look like junction sequences will be accepted and corrected to capitalised form.
+        Use attributes 'junction' and 'cdr3' to retrieve the corrected sequences.
 
-        >>> tt.junction.standardize("csadaf")
+        >>> result = tt.junction.standardize("csadaf", locus="TR")
+        >>> result.junction
         'CSADAF'
+        >>> result.cdr3
+        'SADA'
+        >>> result.success
+        True
+        >>> result.failed
+        False
 
         Strings that are valid amino acid sequences but do not start and end
-        with the appropriate residues will have a C and the appropriate
-        conserved trailing residue at position 118 (defaults to F) appended to
-        its beginning and end as required.
-
-        >>> tt.junction.standardize("sada")
+        with the appropriate residues can be corrected based on V/J gene or locus information.
+        When no gene information is provided, all possible genes for a given locus are tried.
+        >>> tt.junction.standardize("sada", locus="TR").junction
         'CSADAF'
+
+        When the provided sequence is too long, it will be trimmed
+        >>> tt.junction.standardize("yicsadafg", locus="TR").junction
+        'CSADAF'
+
+        Sequences which cannot be standardized to junctions (no matches with V/J genes) will be rejected.
+        The result object will provide an error message and attempted partial fix.
+        >>> result = tt.junction.standardize("ASWEHGH", locus="TR")
+        >>> print(result.junction)
+        None
+        >>> result.failed
+        True
+        >>> result.success
+        False
+        >>> result.error
+        'J alignment unsuccessful; J side reconstruction unsuccessful.'
+        >>> result.attempted_fix
+        'CASWEHGH'
 
         The conserved trailing residue can be intelligently inferred if
         `j_symbol` is supplied.
+        >>> tt.junction.standardize("CSADKLI", locus="TR" j_symbol="TRAJ38").junction
+        'CSADKLIW'
+        >>> tt.junction.standardize("CSADKLI", locus="TR" j_symbol="TRAJ37").junction
+        'CSADKLIF'
 
-        >>> tt.junction.standardize("sada", j_symbol="TRAJ38*01")
-        'CSADAW'
+        Missing conserved leading C residues can be inferred from the `v_symbol`, even
+        when the provided sequence already starts with a C.
+        >>> tt.junction.standardize("CSYAYVF", locus="IG" v_symbol="IGLV2-11").junction
+        'CCSYAYVF'
+        >>> tt.junction.standardize("CSYAYVF", locus="IG" v_symbol="IGLV2-11").cdr3
+        'CSYAYV'
+        >>> tt.junction.standardize("CSYAYVF", locus="IG" v_symbol="IGLV2-14").junction
+        'CSYAYVF'
 
-        Furthermore, setting `fix_missing_conserved` to ``False`` will cause
-        these cases to be rejected.
+        Auotmatic correction of sequencing errors in the leading/trailing amino acid may be
+        enabled with `allow_c_correction` and `allow_fw_correction`. This will only correct
+        amino acids which could have occurred with 1 nucleotide difference in the codon.
+        >>> tt.junction.standardize("WASSPGVFGANVLTF", locus="TR", allow_c_correction=True).junction
+        'CASSPGVFGANVLTF'
 
-        >>> result = tt.junction.standardize("sada", fix_missing_conserved=False)
-        Input sadaf was rejected as it is not a valid junction sequence.
-        >>> print(result)
-        None
+        Reconstruction of more than 1 amino acid can be enabled with `allow_v_reconstruction`
+        and `allow_j_reconstruction`. Since this option potentially adds many amino acids to the
+        provided sequence, it is recommended to set `v_symbol` and `j_symbol` to as detailed
+        information as possible to ensure correct results.
+        >>> tt.junction.standardize("MRESENMD", locus="TR", \
+                                    allow_v_reconstruction=True, allow_j_reconstruction=True, \
+                                    v_symbol="TRAV14/DV4", j_symbol="TRAJ12").junction
+        'CAMRESENMDSSYKLIF'
+
 
     .. topic:: Decision Logic
 
         To provide an easy way to gauge the scope and limitations of
-        standardization, below is a simplified overview of the decision logic
+        standardisation, below is a simplified overview of the decision logic
         employed when attempting to standardize a junction sequence. For more
         detail, please refer to the
         `source code <https://github.com/yutanagano/tidytcells>`_.
 
         .. code-block:: none
 
-            IF input sequence contains non-amino acid symbols:
-                set standardization status to failed
-                skip rest of standardization
 
-            // inferred using J symbol if supplied
-            IF expected trailing residue at position 118 uncertain:
-                {
-                    IF allow_uncertain_118:
-                        accept either F or W
-                    ELSE:
-                        set standardization status to failed
-                        skip rest of standardization
-                }
+            0. sanity-check input
+            Skip standardisation if invalid parameters are passed (invalid amino acids in sequence, invalid species, etc)
 
-            IF input sequence starts (C) and ends (F / W / C) as expected:
-                set standardization status to successful
+            1. select candidate V/J genes
+            Retrieve all possible V and J genes based on the provided `locus`, `j_symbol`, `v_symbol` and `enforce_functional_v`, `enforce_functional_j`
+
+            IF an allele-level V/J symbol is provided for which no sequence information is known:
+                set standardisation status as failed (no sequence information known for <symbol>)
+
+            2. align sequence to V/J genes
+            Attempt to align to each of the retrieved V and J gene sequences through a sliding window approach:
+                - Allow any number of amino acids to be removed from V gene C-terminus or J gene N-terminus (simulating junction site deletion)
+                - Keep only V genes with at least 1 amino acid overlap with the sequence and with C as conserved amino acid
+                - Keep only J genes with at least 2 amino acids overlap and at most 1 mismatch within the alignment
+                - Keep only V and J alignments with the highest overlap score (+1 score for match, -1.5 penalty for mismatch, 0 score for terminal overhangs)
+
+            IF  (`allow_c_correction` is True AND sequence start is in ("W", "S", "R", "G", "Y", "F")) OR
+                (`allow_fw_correction` is True AND sequence end is in ("I", "L", "V", "Y", "S", "C", "G",  "R")):
+
+                Repeat alignments with 'sequencing error corrected' version of the sequence (start -> C; end -> F, then end -> W)
+                IF a higher alignment score is found with the corrected sequence compared to original:
+                    overwrite the original sequence with the corrected sequence
+                    keep only the best alignments associated with the corrected sequence
+
+            IF no alignments are found:
+                set standardisation status as failed (<V/J> alignment unsuccessful)
+
+            3. correct J side
+            FOR each successful J gene alignment:
+                compute the corrected sequence according to this alignment
+                IF the alignment matches perfectly up to the conserved amino acid:
+                    no J-side correction needed, skip to step 4.
+
+            IF any corrected sequences add only 1 terminal amino acid:
+                keep only these, drop all other corrected sequences
             ELSE:
-                {
-                    IF fix_missing_conserved:
-                        append expected starting and ending residues
-                        set standardization status to successful
-                    ELSE:
-                        set standardization status to failed
-                }
+                'trimming' corrections are kept or corrections adding >1 amino acid if `allow_j_reconstruction` is True.
 
-            IF standardization status is set to successful:
-                RETURN standardized sequence
+            IF `j_symbol` is None:
+                keep only corrections ending with canonical F / W conserved amino acids
 
+            IF one possible J side correction remains:
+                keep only this correction, skip to step 4
+
+            IF no J side corrections remain:
+                set standardisation status as failed (J side reconstruction unsuccessful)
+
+            IF multiple contradicting J side corrections remain:
+                set standardisation status as failed (J side reconstruction ambiguous)
+
+            4. correct V side
+            FOR each successful V gene alignment:
+                compute the corrected sequence according to this alignment
+                IF any alignment matches perfectly up to the conserved leading C:
+                    no V-side correction needed, skip to step 4.
+
+            IF any alignment adds only 1 leading C:
+                keep only these, drop all other corrected sequences
             ELSE:
-                IF on_fail is set to "reject":
-                    RETURN None
-                IF on_fail is set to "keep":
-                    RETURN original sequence
+                'trimming' corrections are kept or corrections adding >1 amino acid if `allow_c_reconstruction` is True.
+
+            IF one possible V side correction remains:
+                keep only this correction, skip to step 5
+
+            IF no V side corrections remain,:
+                set standardisation status as failed (V side reconstruction unsuccessful)
+
+            IF multiple contradicting V side corrections remain:
+                set standardisation status as failed (V side reconstruction ambiguous)
+
+            5. check length
+            IF the length of the remaining sequence is < 6:
+                set standardisation status as failed (junction too short)
+
+            6. finalisation
+            IF standardisation has not failed:
+                consider standardisation a success
+            RETURN JunctionResult
+
     """
     seq = Parameter(seq, "seq").throw_error_if_not_of_type(str).value
     locus = (
@@ -236,14 +327,6 @@ def standardize(
         .throw_error_if_not_of_type(str)
         .value
     )
-    # j_strict_inverted = not j_strict if j_strict is not None else None
-    # allow_uncertain_118 = (
-    #     Parameter(allow_uncertain_118, "allow_uncertain_118")
-    #     .set_default(True)
-    #     .resolve_with_alias(j_strict_inverted, "j_strict")
-    #     .throw_error_if_not_of_type(bool)
-    #     .value
-    # )
     allow_c_correction = (
         Parameter(allow_c_correction, "allow_c_correction")
         .set_default(False)
@@ -280,20 +363,6 @@ def standardize(
         .throw_error_if_not_of_type(bool)
         .value
     )
-    # strict_inverted = not strict if strict is not None else None
-    # fix_missing_conserved = (
-    #     Parameter(fix_missing_conserved, "fix_missing_conserved")
-    #     .set_default(True)
-    #     .resolve_with_alias(strict_inverted, "strict")
-    #     .throw_error_if_not_of_type(bool)
-    #     .value
-    # )
-    # on_fail = (
-    #     Parameter(on_fail, "on_fail")
-    #     .set_default("reject")
-    #     .throw_error_if_not_of_type(str)
-    #     .value
-    # )
     suppress_warnings_inverted = (
         not suppress_warnings if suppress_warnings is not None else None
     )

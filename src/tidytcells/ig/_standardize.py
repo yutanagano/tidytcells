@@ -20,8 +20,6 @@ def standardize(
     species: Optional[str] = None,
     enforce_functional: Optional[bool] = None,
     allow_subgroup: Optional[bool] = None,
-    # precision: Optional[Literal["allele", "gene", "subgroup"]] = None,
-    # on_fail: Optional[Literal["reject", "keep"]] = None,
     log_failures: Optional[bool] = None,
     gene: Optional[str] = None,
     suppress_warnings: Optional[bool] = None,
@@ -54,20 +52,6 @@ def standardize(
         Defaults to ``False``.
     :type allow_subgroup:
         bool
-    :param precision:
-        The maximum level of precision to standardize to.
-        ``"allele"`` standardizes to the maximum precision possible.
-        ``"gene"`` standardizes only to the level of the gene.
-        Defaults to ``"allele"``.
-    :type precision:
-        str
-    :param on_fail:
-        Behaviour when standardization fails.
-        If set to ``"reject"``, returns ``None`` on failure.
-        If set to ``"keep"``, returns the original input.
-        Defaults to ``"reject"``.
-    :type on_fail:
-        str
     :param log_failures:
         Report standardisation failures through logging (at level ``WARNING``).
         Defaults to ``True``.
@@ -84,82 +68,106 @@ def standardize(
         bool
 
     :return:
-        If the specified `species` is supported, and `symbol` could be standardized, then return the standardized symbol name.
-        If `species` is unsupported, then the function does not attempt to standardize , and returns the unaltered `symbol` string.
-        Else follows the behaviour as set by `on_fail`.
+        This method will return a ReceptorGeneResult object with the following attributes:
+            - success (bool): True if the standardiation was successful, False otherwise.
+            - failed (bool): the inverse of success.
+            - allele (str): the standardized symbol at the allele level, if standardisation to this level was successful, otherwise None.
+            - gene (str): the standardized symbol at the gene level, if standardisation to this level was successful, otherwise None.
+            - subgroup (str): the standardized symbol at the subgroup level, if standardisation was successful, otherwise None.
+            - highest_precision (str): the most precise version of the standardized symbol (allele > gene > subgroup) if standardisation was successful, otherwise None.
+            - error (str): the error message, only if standardisation failed, otherwise None.
+            - attempted_fix (str): the best attempt at fixing the input symbol, only of standardisation failed, otherwise None.
+            - original_input (str): the original input symbol.
     :rtype:
-        Optional[str]
+        ReceptorGeneResult
 
     .. topic:: Example usage
 
-        Input strings will intelligently be corrected to IMGT-compliant gene / allele symbols.
+        IG standardised results will be returned as a ReceptorGeneResult.
+        When standardisation is a success, attributes 'allele', 'gene' and 'subgroup' can be used to retrieve the corrected information.
+        >>> result = tt.ig.standardize("IGHV1-2*01")
+        >>> result.success
+        True
+        >>> result.allele
+        'IGHV1-2*01'
+        >>> result.gene
+        'IGHV1-2'
+        >>> result.subgroup
+        'IGHV1'
 
-        >>> tt.ig.standardize("lj1")
-        'IGLJ1'
+        Attributes 'allele', 'gene' and 'subgroup' only return a result if the symbol could be standardised up to that level.
+        Attribute 'highest_precision' is never None for a successful standardisation, and always returns the most
+        detailed available result between 'allele', 'gene' and 'subgroup'.
+        >>> tt.ig.standardize("IGHV1-2*01").highest_precision
+        'IGHV1-2*01'
+        >>> tt.ig.standardize("IGHV1-2").allele
+        None
+        >>> tt.ig.standardize("IGHV1-2").gene
+        'IGHV1-12'
+        >>> tt.ig.standardize("IGHV1-2").highest_precision
+        'IGHV1-12'
 
-        The `precision` setting can truncate unnecessary information.
-
-        >>> tt.ig.standardize("IGHV1-18*02", precision="gene")
-        'IGHV1-18'
+        Non-standardised input strings will intelligently be corrected to IMGT-compliant gene / allele symbols.
+        >>> tt.ig.standardize("hj1").highest_precision
+        'IGHJ1'
 
         The `enforce_functional` setting will cause non-functional genes or alleles to be rejected.
+        For failed standardisations, the 'error' attribute explains why the standardisation failed, and
+        the 'attempted_fix' attribute contains the best attempted result found during standardisation.
+        >>> result = tt.ig.standardize("ighV1-12", enforce_functional=True)
+        >>> result.success
+        False
+        >>> result.failed
+        True
+        >>> result.error
+        'Gene has no functional alleles'
+        >>> result.attempted_fix
+        'IGHV1-12'
 
-        >>> result = tt.ig.standardize("IGHV1-12", enforce_functional=True)
-        Failed to standardize "IGHV1-12" for species homosapiens: gene has no functional alleles. Attempted fix "IGHV1-12".
-        >>> print(result)
-        None
+        Known synonyms are included in the standardisation
+        >>> tt.ig.standardize("A10").highest_precision
+        'IGKV6D-21'
+
 
     .. topic:: Decision Logic
 
-        To provide an easy way to gauge the scope and limitations of standardization, below is a simplified overview of the decision logic employed when attempting to standardize a TR symbol.
+        To provide an easy way to gauge the scope and limitations of standardisation, below is a simplified overview of the decision logic employed when attempting to standardize a TR symbol.
         For more detail, please refer to the `source code <https://github.com/yutanagano/tidytcells>`_.
 
         .. code-block:: none
 
-            IF the specified species is not supported for standardization:
-                RETURN original symbol without modification
+            0. sanity-check input
+            Skip standardisation if invalid parameters are passed (invalid amino acids in sequence, invalid species, etc)
 
-            ELSE:
-                // attempt standardization
-                {
-                    IF symbol is already in IMGT-compliant form:
-                        set standardization status as successful
-                        skip rest of standardization
+            1. attempt standardisation
+            IF symbol is already in IMGT-compliant form:
+                set standardisation status as successful, skip to step 2
 
-                    IF symbol is a known deprecated symbol:
-                        overwrite symbol with current IMGT-compliant symbol
-                        set standardization status as successful
-                        skip rest of standardization
+            IF symbol is a known deprecated symbol:
+                overwrite symbol with current IMGT-compliant symbol
+                set standardisation status as successful, skip to step 2
 
-                    replace "." with "-"                                        //e.g. IGHV1.2 -> IGHV1-2
-                    add back any missing backslashes                            //e.g. IGHV1OR15-1 -> IGHV1/OR15-1
-                    remove any unnecessary trailing zeros                       //e.g. IGHV1-02 -> IGHV1-2
-                    IF symbol is now in IMGT-compliant form:
-                        set standardization status as successful
-                        skip rest of standardization
+            replace "." with "-"                                        //e.g. IGHV1.2 -> IGHV1-2
+            add back any missing backslashes                            //e.g. IGHV1OR15-1 -> IGHV1/OR15-1
+            remove any unnecessary trailing zeros                       //e.g. IGHV1-02 -> IGHV1-2
+            IF symbol is now in IMGT-compliant form:
+                set standardisation status as successful, skip to step 2
 
+            add "IG" to the beginning of the symbol if necessary        //e.g. HV1-18 -> IGHV1-18
+            IF symbol is now in IMGT-compliant form:
+                set standardisation status as successful, skip to step 2
 
-                    add "IG" to the beginning of the symbol if necessary   //e.g. HV1-18 -> IGHV1-18
-                    IF symbol is now in IMGT-compliant form:
-                        set standardization status as successful
-                        skip rest of standardization
+            try adding or removing "-1" from the end of the symbol      //e.g. IGHV6 -> IGHV6-1
+            IF symbol is now in IMGT-compliant form:
+                set standardisation status as successful, skip to step 2
 
-                    try adding or removing "-1" from the end of the symbol //e.g. IGHV6 -> IGHV6-1
-                    IF symbol is now in IMGT-compliant form:
-                        set standardization status as successful
-                        skip rest of standardization
+            set standardisation status as failed
 
-                    set standardization status as failed
-                }
+            2. finalisation
+            IF standardisation has not failed:
+                consider standardisation a success
 
-                IF standardization status is set to successful:
-                    RETURN standardized symbol
-
-                ELSE:
-                    IF on_fail is set to "reject":
-                        RETURN None
-                    IF on_fail is set to "keep":
-                        RETURN original symbol without modification
+            RETURN ReceptorGeneResult
     """
     symbol = (
         Parameter(symbol, "symbol")
@@ -185,18 +193,6 @@ def standardize(
         .throw_error_if_not_of_type(bool)
         .value
     )
-    # precision = (
-    #     Parameter(precision, "precision")
-    #     .set_default("allele")
-    #     .throw_error_if_not_one_of("allele", "gene", "subgroup")
-    #     .value
-    # )
-    # on_fail = (
-    #     Parameter(on_fail, "on_fail")
-    #     .set_default("reject")
-    #     .throw_error_if_not_one_of("reject", "keep")
-    #     .value
-    # )
     suppress_warnings_inverted = (
         not suppress_warnings if suppress_warnings is not None else None
     )
@@ -208,7 +204,6 @@ def standardize(
         .value
     )
 
-    # allow_subgroup = True if precision == "subgroup" else allow_subgroup
     species = _utils.clean_and_lowercase(species)
 
     if species == "any":
