@@ -71,10 +71,6 @@ def get_synonyms_data(valid_alleles: Iterable[str], is_tr: bool = True) -> dict:
 
     synonyms_dict = synonyms["Approved symbol"].to_dict()
 
-    # Remove ambiguous J1 and J2 (issue with both TCR and BCR)
-    synonyms_dict.pop("J1", None)
-    synonyms_dict.pop("J2", None)
-
     return synonyms_dict
 
 
