@@ -1,5 +1,8 @@
+from abc import abstractmethod
+import itertools
 import re
 from typing import Tuple, Optional
+from typing import Dict, Optional, List, Set
 from tidytcells import _utils
 from tidytcells._standardized_gene_symbol import StandardizedReceptorGeneSymbol
 
@@ -99,9 +102,9 @@ class StandardizedTrSymbol(StandardizedReceptorGeneSymbol):
 
         if "-1" in self._gene_name:
             all_gene_nums = [
-                    (m.group(0), m.start(0), m.end(0))
-                    for m in re.finditer(r"\d+(-\d+)?", self._gene_name)
-                ]
+                (m.group(0), m.start(0), m.end(0))
+                for m in re.finditer(r"\d+(-\d+)?", self._gene_name)
+            ]
 
             dash1_candidates = []
             for numstr, start_idx, end_idx in all_gene_nums:

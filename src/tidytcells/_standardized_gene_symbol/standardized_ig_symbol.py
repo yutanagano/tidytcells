@@ -1,4 +1,5 @@
 import re
+import itertools
 from typing import Tuple, Optional
 from tidytcells import _utils
 from tidytcells._standardized_gene_symbol import StandardizedReceptorGeneSymbol
@@ -66,39 +67,53 @@ class StandardizedIgSymbol(StandardizedReceptorGeneSymbol):
         if self._has_valid_gene_name():
             return
 
-
     def _fix_common_errors_in_ig_gene_name(self) -> None:
         self._gene_name = self._gene_name.replace(".", "-")
         self._gene_name = re.sub(r"(?<!\/)-?OR", "/OR", self._gene_name)
         self._gene_name = re.sub(r"(?<!\d)0+", "", self._gene_name)
 
     def _try_removing_dash1(self):
-        if "-1" in self._gene_name:
-            all_gene_nums = [
-                    (m.group(0), m.start(0), m.end(0))
-                    for m in re.finditer(r"\d+(-\d+)?", self._gene_name)
-                ]
+        if "-1" not in self._gene_name:
+            return
 
-            dash1_candidates = []
-            for numstr, start_idx, end_idx in all_gene_nums:
-                fm = re.fullmatch(r"(\d+)(-1)?", numstr)
-                if not fm:
-                    continue
-                dash1_candidates.append((fm.group(1), start_idx, end_idx))
+        original_gene_name = self._gene_name
 
+        all_gene_nums = [
+            (m.group(0), m.start(0), m.end(0))
+            for m in re.finditer(r"\d+(-\d+)?", self._gene_name)
+        ]
+
+        dash1_candidates = []
+        for numstr, start_idx, end_idx in all_gene_nums:
+            fm = re.fullmatch(r"(\d+)(-1)", numstr)
+            if not fm:
+                continue
+            dash1_candidates.append((fm.group(1), start_idx, end_idx))
+
+        dash1_variants = []
+        for comb in itertools.product(("keep", "remove"), repeat=len(dash1_candidates)):
+            num_comb_zip = zip(dash1_candidates, comb)
             current_str_idx = 0
-            without_dash1 = ""
+            working_variant = ""
 
-            for numstr, start_idx, end_idx in dash1_candidates:
-                without_dash1 += self._gene_name[current_str_idx:start_idx]
-                without_dash1 += numstr
+            for (numstr, start_idx, end_idx), status in num_comb_zip:
+                working_variant += self._gene_name[current_str_idx:start_idx]
+                if status == "keep":
+                    working_variant += f"{numstr}-1"
+                else:
+                    working_variant += numstr
                 current_str_idx = end_idx
 
-            without_dash1 += self._gene_name[current_str_idx:]
+            working_variant += self._gene_name[current_str_idx:]
 
-            # only keep without_dash1 if this is a valid *gene* (don't convert from gene to subgroup)
-            if without_dash1 in self._valid_gene_dictionary:
-                self._gene_name = without_dash1
+            if working_variant != original_gene_name:
+                dash1_variants.append(working_variant)
+
+        for variant in dash1_variants:
+            # specifically check _valid_gene_dictionary (don't convert from gene to subgroup)
+            if variant in self._valid_gene_dictionary:
+                self._gene_name = variant
+                return
 
 
 
