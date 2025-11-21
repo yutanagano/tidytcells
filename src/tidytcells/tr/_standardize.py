@@ -1,8 +1,9 @@
 import logging
 from tidytcells import _utils
+from tidytcells._utils.result import ReceptorGeneResult
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
-    StandardizedSymbol,
+    StandardizedReceptorGeneSymbol,
     StandardizedHomoSapiensTrSymbol,
     StandardizedMusMusculusTrSymbol,
 )
@@ -12,7 +13,7 @@ from typing import Dict, Optional, Type, Literal
 logger = logging.getLogger(__name__)
 
 
-SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[StandardizedSymbol]] = {
+SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[StandardizedReceptorGeneSymbol]] = {
     "homosapiens": StandardizedHomoSapiensTrSymbol,
     "musmusculus": StandardizedMusMusculusTrSymbol,
 }
@@ -22,12 +23,11 @@ def standardize(
     symbol: Optional[str] = None,
     species: Optional[str] = None,
     enforce_functional: Optional[bool] = None,
-    precision: Optional[Literal["allele", "gene"]] = None,
-    on_fail: Optional[Literal["reject", "keep"]] = None,
+    allow_subgroup: Optional[bool] = None,
     log_failures: Optional[str] = None,
     gene: Optional[str] = None,
     suppress_warnings: Optional[bool] = None,
-) -> Optional[str]:
+) -> ReceptorGeneResult:
     """
     Attempt to standardize a TR gene / allele symbol to be IMGT-compliant.
 
@@ -55,20 +55,12 @@ def standardize(
         Defaults to ``False``.
     :type enforce_functional:
         bool
-    :param precision:
-        The maximum level of precision to standardize to.
-        ``"allele"`` standardizes to the maximum precision possible.
-        ``"gene"`` standardizes only to the level of the gene.
-        Defaults to ``"allele"``.
-    :type precision:
-        str
-    :param on_fail:
-        Behaviour when standardization fails.
-        If set to ``"reject"``, returns ``None`` on failure.
-        If set to ``"keep"``, returns the original input.
-        Defaults to ``"reject"``.
-    :type on_fail:
-        str
+    :param allow_subgroup:
+        If ``True``, allows valid subgroups (as well as more specific gene/allele symbos) to pass standardisation.
+        If ``False``, the supplied symbol must point to at least a specific gene.
+        Defaults to ``False``.
+    :type allow_subgroup:
+        bool
     :param log_failures:
         Report standardisation failures through logging (at level ``WARNING``).
         Defaults to ``True``.
@@ -85,94 +77,117 @@ def standardize(
         bool
 
     :return:
-        If the specified `species` is supported, and `symbol` could be standardized, then return the standardized symbol name.
-        If `species` is unsupported, then the function does not attempt to standardize , and returns the unaltered `symbol` string.
-        Else follows the behaviour as set by `on_fail`.
+        This method will return a ReceptorGeneResult object with the following attributes:
+            - success (bool): True if the standardiation was successful, False otherwise.
+            - failed (bool): the inverse of success.
+            - allele (str): the standardized symbol at the allele level, if standardisation to this level was successful, otherwise None.
+            - gene (str): the standardized symbol at the gene level, if standardisation to this level was successful, otherwise None.
+            - subgroup (str): the standardized symbol at the subgroup level, if standardisation was successful, otherwise None.
+            - highest_precision (str): the most precise version of the standardized symbol (allele > gene > subgroup) if standardisation was successful, otherwise None.
+            - error (str): the error message, only if standardisation failed, otherwise None.
+            - attempted_fix (str): the best attempt at fixing the input symbol, only of standardisation failed, otherwise None.
+            - original_input (str): the original input symbol.
+            - species (str): the gene symbol species.
     :rtype:
-        Optional[str]
+        ReceptorGeneResult
 
     .. topic:: Example usage
 
-        Input strings will intelligently be corrected to IMGT-compliant gene / allele symbols.
+        TR standardised results will be returned as a ReceptorGeneResult.
+        When standardisation is a success, attributes 'allele', 'gene' and 'subgroup' can be used to retrieve the corrected information.
+        >>> result = tt.tr.standardize("TRAV1-1*01")
+        >>> result.success
+        True
+        >>> result.allele
+        'TRAV1-1*01'
+        >>> result.gene
+        'TRAV1-1'
+        >>> result.subgroup
+        'TRAV1'
 
-        >>> tt.tr.standardize("aj1")
+        Attributes 'allele', 'gene' and 'subgroup' only return a result if the symbol could be standardised up to that level.
+        Attribute 'highest_precision' is never None for a successful standardisation, and always returns the most
+        detailed available result between 'allele', 'gene' and 'subgroup'.
+        >>> tt.tr.standardize("TRAV1-1*01").highest_precision
+        'TRAV1-1*01'
+        >>> tt.tr.standardize("TRAV1-1").allele
+        None
+        >>> tt.tr.standardize("TRAV1-1").gene
+        'TRAV1-1'
+        >>> tt.tr.standardize("TRAV1-1").highest_precision
+        'TRAV1-1'
+
+        Non-standardised input strings will intelligently be corrected to IMGT-compliant gene / allele symbols.
+        >>> tt.tr.standardize("aj1").gene
         'TRAJ1'
 
-        The `precision` setting can truncate unnecessary information.
-
-        >>> tt.tr.standardize("TRBV6-4*01", precision="gene")
-        'TRBV6-4'
-
         The `enforce_functional` setting will cause non-functional genes or alleles to be rejected.
+        For failed standardisations, the 'error' attribute explains why the standardisation failed, and
+        the 'attempted_fix' attribute contains the best attempted result found during standardisation.
+        >>> result = tt.tr.standardize("tcrBV1", enforce_functional=True)
+        >>> result.success
+        False
+        >>> result.failed
+        True
+        >>> result.error
+        'Gene has no functional alleles'
+        >>> result.attempted_fix
+        'TRBV1'
 
-        >>> result = tt.tr.standardize("TRBV1", enforce_functional=True)
-        Failed to standardize "TRBV1" for species homosapiens: gene has no functional alleles. Attempted fix "TRBV1".
-        >>> print(result)
-        None
+        Known synonyms are included in the standardisation
+        >>> tt.tr.standardize("V4P").highest_precision
+        'TRGV11'
 
         *Mus musculus* is a supported species.
-
-        >>> tt.tr.standardize("TCRBV22S1A2N1T", species="musmusculus")
-        'TRBV2'
+        >>> tt.tr.standardize("TRBV1", species="musmusculus").gene
+        'TRBV1'
 
     .. topic:: Decision Logic
 
-        To provide an easy way to gauge the scope and limitations of standardization, below is a simplified overview of the decision logic employed when attempting to standardize a TR symbol.
+        To provide an easy way to gauge the scope and limitations of standardisation, below is a simplified overview of the decision logic employed when attempting to standardize a TR symbol.
         For more detail, please refer to the `source code <https://github.com/yutanagano/tidytcells>`_.
 
         .. code-block:: none
 
-            IF the specified species is not supported for standardization:
-                RETURN original symbol without modification
+            0. sanity-check input
+            Skip standardisation if invalid parameters are passed (invalid amino acids in sequence, invalid species, etc)
 
-            ELSE:
-                // attempt standardization
-                {
-                    IF symbol is already in IMGT-compliant form:
-                        set standardization status as successful
-                        skip rest of standardization
+            1. attempt standardisation
+            IF symbol is already in IMGT-compliant form:
+                set standardisation status as successful, skip to step 2
 
-                    IF symbol is a known deprecated symbol:
-                        overwrite symbol with current IMGT-compliant symbol
-                        set standardization status as successful
-                        skip rest of standardization
+            IF symbol is a known deprecated symbol:
+                overwrite symbol with current IMGT-compliant symbol
+                set standardisation status as successful, skip to step 2.
 
-                    replace "TCR" with "TR"                                     //e.g. TCRAV1-1 -> TRAV1-1
-                    replace "S" with "-"                                        //e.g. TRAV1S1 -> TRAV1-1
-                    replace "." with "-"                                        //e.g. TRAV1.1 -> TRAV1-1
-                    add back any missing backslashes                            //e.g. TRAV14DV4 -> TRAV14/DV4
-                    remove any unnecessary trailing zeros                       //e.g. TRAV1-01 -> TRAV1-1
-                    IF symbol is now in IMGT-compliant form:
-                        set standardization status as successful
-                        skip rest of standardization
+            replace "TCR" with "TR"                                     //e.g. TCRAV1-1 -> TRAV1-1
+            replace "S" with "-"                                        //e.g. TRAV1S1 -> TRAV1-1
+            replace "." with "-"                                        //e.g. TRAV1.1 -> TRAV1-1
+            add back any missing backslashes                            //e.g. TRAV14DV4 -> TRAV14/DV4
+            remove any unnecessary trailing zeros                       //e.g. TRAV1-01 -> TRAV1-1
+            IF symbol is now in IMGT-compliant form:
+                set standardisation status as successful, skip to step 2
 
 
-                    add "TR" to the beginning of the symbol if necessary   //e.g. AV1-1 -> TRAV1-1
-                    IF symbol is now in IMGT-compliant form:
-                        set standardization status as successful
-                        skip rest of standardization
+            add "TR" to the beginning of the symbol if necessary        //e.g. AV1-1 -> TRAV1-1
+            IF symbol is now in IMGT-compliant form:
+                set standardisation status as successful, skip to step 2
 
-                    resolve compound TRAV/TRDV designation if necessary         //e.g. TRDV4 -> TRAV14/DV4 or TRAV14 -> TRAV14/DV4
-                    IF symbol is now in IMGT-compliant form:
-                        set standardization as successful
-                        skip rest of standardization
+            resolve compound TRAV/TRDV designation if necessary         //e.g. TRDV4 -> TRAV14/DV4 or TRAV14 -> TRAV14/DV4
+            IF symbol is now in IMGT-compliant form:
+                set standardisation status as successful, skip to step 2
 
-                    try adding or removing "-1" from the end of the symbol //e.g. TRAV1 -> TRAV1-1
-                    IF symbol is now in IMGT-compliant form:
-                        set standardization status as successful
-                        skip rest of standardization
+            try removing "-1" from the end of the symbol                //e.g. TRAV1-1 -> TRAV1
+            IF symbol is now a valid IMGT-compliant *gene* (do not correct to subgroup):
+                set standardisation status as successful, skip to step 2
 
-                    set standardization status as failed
-                }
+            set standardisation status as failed
 
-                IF standardization status is set to successful:
-                    RETURN standardized symbol
+            2. finalisation
+            IF standardisation has not failed:
+                consider standardisation a success
 
-                ELSE:
-                    IF on_fail is set to "reject":
-                        RETURN None
-                    IF on_fail is set to "keep":
-                        RETURN original symbol without modification
+            RETURN ReceptorGeneResult
     """
     symbol = (
         Parameter(symbol, "symbol")
@@ -192,16 +207,10 @@ def standardize(
         .throw_error_if_not_of_type(bool)
         .value
     )
-    precision = (
-        Parameter(precision, "precision")
-        .set_default("allele")
-        .throw_error_if_not_one_of("allele", "gene")
-        .value
-    )
-    on_fail = (
-        Parameter(on_fail, "on_fail")
-        .set_default("reject")
-        .throw_error_if_not_one_of("reject", "keep")
+    allow_subgroup = (
+        Parameter(allow_subgroup, "allow_subgroup")
+        .set_default(False)
+        .throw_error_if_not_of_type(bool)
         .value
     )
     suppress_warnings_inverted = (
@@ -218,65 +227,49 @@ def standardize(
     species = _utils.clean_and_lowercase(species)
 
     if species == "any":
-        best_attempt_invalid_reason = None
-        best_attempt_standardised_symbol = None
-        best_attempt_species = None
+        best_attempt_result = ReceptorGeneResult(symbol, f'Failed with any species')
 
         for (
-            species,
-            StandardizedTrSymbolClass,
+                species,
+                StandardizedTrSymbolClass,
         ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
-            standardized_tr_symbol = StandardizedTrSymbolClass(symbol)
-            invalid_reason = standardized_tr_symbol.get_reason_why_invalid(
-                enforce_functional
-            )
+            tr_standardizer = StandardizedTrSymbolClass(symbol,
+                                                        enforce_functional=enforce_functional,
+                                                        allow_subgroup=allow_subgroup)
 
-            if invalid_reason is None:
-                return standardized_tr_symbol.compile(precision)
+            if tr_standardizer.result.success:
+                return tr_standardizer.result
 
             if species == "homosapiens":
-                best_attempt_invalid_reason = invalid_reason
-                best_attempt_standardised_symbol = standardized_tr_symbol
-                best_attempt_species = species
+                best_attempt_result = tr_standardizer.result
 
         if log_failures:
-            _utils.warn_failure(
-                reason_for_failure=best_attempt_invalid_reason,
-                original_input=symbol,
-                attempted_fix=best_attempt_standardised_symbol.compile("allele"),
-                species=best_attempt_species,
+            _utils.warn_result_failure(
+                result=best_attempt_result,
+                species=best_attempt_result.species,
                 logger=logger,
             )
-        if on_fail == "reject":
-            return None
-        return symbol
+
+        return best_attempt_result
 
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
             _utils.warn_unsupported_species(species, "TR", logger)
-        return symbol
+        return ReceptorGeneResult(symbol, f'Unsupported species: {species}')
 
     StandardizedTrSymbolClass = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]
-    standardized_tr_symbol = StandardizedTrSymbolClass(symbol)
+    tr_standardizer = StandardizedTrSymbolClass(symbol,
+                                                enforce_functional=enforce_functional,
+                                                allow_subgroup=allow_subgroup)
 
-    invalid_reason = standardized_tr_symbol.get_reason_why_invalid(enforce_functional)
-
-    if invalid_reason is None:
-        return standardized_tr_symbol.compile(precision)
-
-    if log_failures:
-        _utils.warn_failure(
-            reason_for_failure=invalid_reason,
-            original_input=symbol,
-            attempted_fix=standardized_tr_symbol.compile("allele"),
-            species=species,
+    if tr_standardizer.result.failed and log_failures:
+        _utils.warn_result_failure(
+            result=tr_standardizer.result,
+            species=tr_standardizer.result.species,
             logger=logger,
         )
 
-    if on_fail == "reject":
-        return None
-
-    return symbol
+    return tr_standardizer.result
 
 
 def standardise(*args, **kwargs) -> Optional[str]:
