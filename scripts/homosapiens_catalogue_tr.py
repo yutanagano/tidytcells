@@ -67,7 +67,8 @@ def get_synonyms_data(valid_alleles: Iterable[str], is_tr: bool = True) -> dict:
     synonyms.index = synonyms.index.str.upper()
 
     # Remove any synonyms that are also names of other valid genes
-    synonyms = synonyms[synonyms.index.map(lambda x: x not in valid_alleles)]
+    alleles_without_locus = {name[3:] for name in valid_alleles}
+    synonyms = synonyms[synonyms.index.map(lambda x: x not in valid_alleles and x not in alleles_without_locus)]
 
     synonyms_dict = synonyms["Approved symbol"].to_dict()
 
