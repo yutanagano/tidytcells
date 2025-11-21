@@ -14,7 +14,6 @@ def main() -> None:
 
     print("Fetching TR gene sequence data from IMGT...")
     sequence_data = script_utility.get_tr_aa_sequence_data("Homo+sapiens")
-    sequence_data["TRAJ35*01"]["J-CYS"] = "C"
     script_utility.save_as_json(sequence_data, "homosapiens_tr_aa_sequences.json")
 
 

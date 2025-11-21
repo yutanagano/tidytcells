@@ -142,6 +142,7 @@ def get_j_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
     if species == "Homo+sapiens":
         if "TRA" in gene_groups:
             data["TRAJ35*01"]["J-CYS"] = "C"
+            data["TRAJ35*01"]["J-MOTIF"] = "CGSG"
         if "TRB" in gene_groups:
             data["TRBJ2-7*02"]["J-VAL"] = "V"
 
