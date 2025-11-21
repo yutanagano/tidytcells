@@ -16,6 +16,11 @@ class StandardizedJunction(ABC):
 
     @property
     @abstractmethod
+    def _species(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
     def _sequence_dictionary(self) -> Dict[str, Dict]:
         pass
 
@@ -47,7 +52,7 @@ class StandardizedJunction(ABC):
         self.reasons_invalid = []
         self._resolve_juncton()
 
-        self.result = JunctionResult(self.orig_seq, "; ".join(self.reasons_invalid), self.corrected_seq)
+        self.result = JunctionResult(self.orig_seq, "; ".join(self.reasons_invalid), self.corrected_seq, self._species)
 
 
     def _resolve_juncton(self):

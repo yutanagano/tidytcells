@@ -3,7 +3,7 @@ from tidytcells import _utils
 from tidytcells._utils.result import ReceptorGeneResult
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
-    StandardizedHomoSapiensIgSymbol, StandardizedReceptorGeneSymbol,
+    StandardizedHomoSapiensIgSymbol, StandardizedMusMusculusIgSymbol, StandardizedReceptorGeneSymbol,
 )
 from typing import Dict, Optional, Type
 
@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[StandardizedReceptorGeneSymbol]] = {
     "homosapiens": StandardizedHomoSapiensIgSymbol,
+    "musmusculus": StandardizedMusMusculusIgSymbol,
 }
 
 
@@ -30,15 +31,19 @@ def standardize(
     .. topic:: Supported species
 
         - ``"homosapiens"``
+        - ``"musmusculus"``
 
     :param symbol:
         Potentially non-standardized IG gene / allele symbol.
     :type symbol:
         str
     :param species:
-        Can be specified to standardise to a IG symbol that is known to be valid for that species (see above for supported species).
-        Currently, only *Homo sapiens* is supported, but this parameter has been kept to keep the interface compatible with that of its sister function in :py:mod:`tidytcells.tr`.
+        Can be specified to standardise to an IG symbol that is known to be valid for that species (see above for supported species).
+        If set to ``"any"``, then first attempts standardisation for *Homo sapiens*, then *Mus musculus*.
         Defaults to ``"homosapiens"``.
+
+        .. note::
+            From version 3, the default behaviour will change to ``"any"``.
     :type species:
         str
     :param enforce_functional:
@@ -78,6 +83,7 @@ def standardize(
             - error (str): the error message, only if standardisation failed, otherwise None.
             - attempted_fix (str): the best attempt at fixing the input symbol, only of standardisation failed, otherwise None.
             - original_input (str): the original input symbol.
+            - species (str): the gene symbol species.
     :rtype:
         ReceptorGeneResult
 
@@ -128,6 +134,9 @@ def standardize(
         >>> tt.ig.standardize("A10").highest_precision
         'IGKV6D-21'
 
+        *Mus musculus* is a supported species.
+        >>> tt.ig.standardize("IGHV2-2", species="musmusculus").gene
+        'IGHV2-2'
 
     .. topic:: Decision Logic
 
@@ -157,7 +166,7 @@ def standardize(
             IF symbol is now in IMGT-compliant form:
                 set standardisation status as successful, skip to step 2
 
-            try adding or removing "-1" from the end of the symbol      //e.g. IGHV6 -> IGHV6-1
+            try removing "-1" from the end of the symbol                //e.g. IGHJ1-1 -> IGHJ1
             IF symbol is now in IMGT-compliant form:
                 set standardisation status as successful, skip to step 2
 
@@ -207,7 +216,6 @@ def standardize(
     species = _utils.clean_and_lowercase(species)
 
     if species == "any":
-        best_attempt_species = None
         best_attempt_result = ReceptorGeneResult(symbol, f'Failed with any species')
 
         for (
@@ -223,12 +231,11 @@ def standardize(
 
             if species == "homosapiens":
                 best_attempt_result = ig_standardizer.result
-                best_attempt_species = species
 
         if log_failures:
             _utils.warn_result_failure(
                 result=best_attempt_result,
-                species=best_attempt_species,
+                species=best_attempt_result.species,
                 logger=logger,
             )
 
@@ -247,7 +254,7 @@ def standardize(
     if ig_standardizer.result.failed and log_failures:
         _utils.warn_result_failure(
             result=ig_standardizer.result,
-            species=species,
+            species=ig_standardizer.result.species,
             logger=logger,
         )
 

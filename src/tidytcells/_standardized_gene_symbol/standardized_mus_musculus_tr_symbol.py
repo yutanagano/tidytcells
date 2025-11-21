@@ -5,6 +5,7 @@ from tidytcells._resources import VALID_MUSMUSCULUS_TR
 
 
 class StandardizedMusMusculusTrSymbol(StandardizedTrSymbol):
+    _species = "musmusculus"
     _synonym_dictionary = dict()
     _valid_gene_dictionary = VALID_MUSMUSCULUS_TR
     _valid_subgroups = {

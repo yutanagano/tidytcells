@@ -9,6 +9,7 @@ from tidytcells._standardized_junction import (
     StandardizedHomoSapiensTrJunction,
     StandardizedHomoSapiensIgJunction,
     StandardizedMusMusculusTrJunction,
+    StandardizedMusMusculusIgJunction,
 )
 
 from typing import Dict, Optional, Type
@@ -19,7 +20,8 @@ logger = logging.getLogger(__name__)
 SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Dict[str, Type[StandardizedJunction]]] = {
     "homosapiens": {"TR": StandardizedHomoSapiensTrJunction,
                     "IG": StandardizedHomoSapiensIgJunction},
-    "musmusculus": {"TR": StandardizedMusMusculusTrJunction},
+    "musmusculus": {"TR": StandardizedMusMusculusTrJunction,
+                    "IG": StandardizedMusMusculusIgJunction},
 }
 
 def standardize(
@@ -134,6 +136,7 @@ def standardize(
             - error (str): the error message, only if standardisation failed, otherwise None.
             - attempted_fix (str): the best attempt at fixing the input sequence, only of standardisation failed, otherwise None.
             - original_input (str): the original input sequence.
+            - species (str): the species used for the gene lookup to validate the CDR3 junction.
     :rtype:
         JunctionResult
 

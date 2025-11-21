@@ -35,6 +35,11 @@ class StandardizedReceptorGeneSymbol(StandardizedSymbol):
     def _valid_subgroups(self) -> Set[str]:
         pass
 
+    @property
+    @abstractmethod
+    def _species(self) -> str:
+        pass
+
     def __init__(self, symbol: str, enforce_functional: bool, allow_subgroup: bool) -> None:
         self.original_symbol = symbol
         self.enforce_functional = enforce_functional
@@ -105,4 +110,5 @@ class StandardizedReceptorGeneSymbol(StandardizedSymbol):
                                           error=self.get_reason_why_invalid(),
                                           allele_designation=self._allele_designation,
                                           gene_name=gene_name,
-                                          subgroup_name=subgroup_name)
+                                          subgroup_name=subgroup_name,
+                                          species=self._species)

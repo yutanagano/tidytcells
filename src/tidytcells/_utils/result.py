@@ -74,11 +74,12 @@ class HLAGeneResult(MhGeneResult):
 
 class ReceptorGeneResult(Result):
 
-    def __init__(self, original_input, error, gene_name=None, allele_designation=None, subgroup_name=None):
+    def __init__(self, original_input, error, gene_name=None, allele_designation=None, subgroup_name=None, species=None):
         super().__init__(original_input, error)
         self._gene_name = gene_name
         self._allele_designation = allele_designation
         self._subgroup_name = subgroup_name
+        self._species = species
 
         self._highest_precision = None
 
@@ -114,12 +115,17 @@ class ReceptorGeneResult(Result):
         if self.success:
             return self._subgroup_name
 
+    @property
+    def species(self):
+        return self._species
+
 
 class JunctionResult(Result):
 
-    def __init__(self, original_input, error, corrected_junction=None):
+    def __init__(self, original_input, error, corrected_junction=None, species=None):
         super().__init__(original_input, error)
         self._corrected_junction = corrected_junction
+        self._species = species
 
     @property
     def attempted_fix(self):
@@ -136,3 +142,7 @@ class JunctionResult(Result):
         if self.success:
             if self._corrected_junction is not None and len(self._corrected_junction) > 2:
                 return self._corrected_junction[1:-1]
+
+    @property
+    def species(self):
+        return self._species

@@ -10,8 +10,9 @@ class TestStandardize:
         assert "Unsupported" in caplog.text
         assert "Unsupported" in result.error
         assert result.original_input == "foobarbaz"
-        assert result.highest_precision == None
+        assert result.highest_precision is None
         assert result.failed
+        assert result.species is None
 
     @pytest.mark.parametrize("symbol", (1234, None))
     def test_bad_type(self, symbol):
@@ -23,6 +24,8 @@ class TestStandardize:
         assert result.success
         assert result.error is None
         assert result.highest_precision == "TRBV20/OR9-2*01"
+        assert result.species == "homosapiens"
+
 
     @pytest.mark.parametrize(
         ("symbol", "expected"),
@@ -112,6 +115,8 @@ class TestStandardize:
 
         assert result.success
         assert result.highest_precision == expected
+        assert result.species == "homosapiens"
+
 
     # ("IGLV7-43*01", True, "IGLV7-43*01", "IGLV7-43", "IGLV7", "IGLV7-43*01"),
     # ("IGLV7-43*01", False, "IGLV7-43*01", "IGLV7-43", "IGLV7", "IGLV7-43*01"),
@@ -203,6 +208,7 @@ class TestStandardizeHomoSapiens:
         result = tr.standardize(symbol=symbol, species=species)
 
         assert result.highest_precision == expected
+        assert result.species == species
 
 
 class TestStandardizeMusMusculus:
@@ -211,13 +217,15 @@ class TestStandardizeMusMusculus:
         result = tr.standardize(symbol=symbol, species="musmusculus")
 
         assert result.highest_precision == symbol
+        assert result.species == "musmusculus"
 
     @pytest.mark.parametrize("symbol", ("foobar", "noice"))
-    def test_inivalid_tr(self, symbol, caplog):
+    def test_invalid_tr(self, symbol, caplog):
         result = tr.standardize(symbol=symbol, species="musmusculus")
         assert "Failed to standardize" in caplog.text
         assert result.failed
         assert result.highest_precision is None
+        assert result.species == "musmusculus"
 
 
 class TestQuery:

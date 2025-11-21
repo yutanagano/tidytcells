@@ -9,8 +9,16 @@ class IgSymbolParser:
     gene_name: str
     allele_designation: Optional[str]
 
-    def __init__(self, ig_symbol: str) -> None:
-        parse_attempt = re.match(r"^([A-Z0-9\-\.\(\)\/ab]+)(\*(\d+))?", ig_symbol)
+    def __init__(self, ig_symbol: str, species="homosapiens") -> None:
+        if species == "homosapiens":
+            pattern = r"^([A-Z0-9\-\.\(\)\/ab]+)(\*(\d+))?"
+        elif species == "musmusculus":
+            pattern = r"^([A-Z0-9\-\.\(\)\/]+[abcdef]?)(\*(\d+))?"
+        else:
+            pattern = r"^([A-Z0-9\-\.\(\)\/]+)(\*(\d+))?"
+
+
+        parse_attempt = re.match(pattern, ig_symbol)
 
         if parse_attempt:
             self.gene_name = parse_attempt.group(1)
@@ -28,7 +36,7 @@ class StandardizedIgSymbol(StandardizedReceptorGeneSymbol):
 
     def _parse_symbol(self, ig_symbol: str) -> Tuple[Optional[str], Optional[str]]:
         cleaned_ig_symbol = self._safe_clean_ig_symbol(ig_symbol)
-        parsed_ig_symbol = IgSymbolParser(cleaned_ig_symbol)
+        parsed_ig_symbol = IgSymbolParser(cleaned_ig_symbol, species=self._species)
 
         return parsed_ig_symbol.gene_name, parsed_ig_symbol.allele_designation
 
@@ -36,13 +44,22 @@ class StandardizedIgSymbol(StandardizedReceptorGeneSymbol):
         cleaned_ig_symbol = _utils.clean_and_uppercase(ig_symbol)
 
         # Deal with lowercase a/b in genes like IGHD1/OR15-1a*01
-        match = re.search(r"(.*?OR15-\d)([AB])", cleaned_ig_symbol)
-        if match:
-            cleaned_ig_symbol = (
-                match.group(1)
-                + match.group(2).lower()
-                + cleaned_ig_symbol[match.end() :]
-            )
+        if self._species == "homosapiens":
+            match = re.search(r"(.*?OR15-\d)([AB])", cleaned_ig_symbol)
+            if match:
+                cleaned_ig_symbol = (
+                    match.group(1)
+                    + match.group(2).lower()
+                    + cleaned_ig_symbol[match.end() :]
+                )
+        elif self._species == "musmusculus":
+            match = re.search(r"(IGKV\d+-)([ABCDEF])", cleaned_ig_symbol)
+            if match:
+                cleaned_ig_symbol = (
+                        match.group(1)
+                        + match.group(2).lower()
+                        + cleaned_ig_symbol[match.end():]
+                )
 
         return cleaned_ig_symbol
 

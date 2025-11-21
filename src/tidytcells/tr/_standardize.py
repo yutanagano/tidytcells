@@ -87,6 +87,7 @@ def standardize(
             - error (str): the error message, only if standardisation failed, otherwise None.
             - attempted_fix (str): the best attempt at fixing the input symbol, only of standardisation failed, otherwise None.
             - original_input (str): the original input symbol.
+            - species (str): the gene symbol species.
     :rtype:
         ReceptorGeneResult
 
@@ -226,7 +227,6 @@ def standardize(
     species = _utils.clean_and_lowercase(species)
 
     if species == "any":
-        best_attempt_species = None
         best_attempt_result = ReceptorGeneResult(symbol, f'Failed with any species')
 
         for (
@@ -242,12 +242,11 @@ def standardize(
 
             if species == "homosapiens":
                 best_attempt_result = tr_standardizer.result
-                best_attempt_species = species
 
         if log_failures:
             _utils.warn_result_failure(
                 result=best_attempt_result,
-                species=best_attempt_species,
+                species=best_attempt_result.species,
                 logger=logger,
             )
 
@@ -266,7 +265,7 @@ def standardize(
     if tr_standardizer.result.failed and log_failures:
         _utils.warn_result_failure(
             result=tr_standardizer.result,
-            species=species,
+            species=tr_standardizer.result.species,
             logger=logger,
         )
 

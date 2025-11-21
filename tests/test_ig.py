@@ -1,6 +1,6 @@
 import pytest
 from tidytcells import ig
-from tidytcells._resources import VALID_HOMOSAPIENS_IG
+from tidytcells._resources import VALID_HOMOSAPIENS_IG, VALID_MUSMUSCULUS_IG
 
 
 class TestStandardize:
@@ -10,8 +10,9 @@ class TestStandardize:
         assert "Unsupported" in caplog.text
         assert "Unsupported" in result.error
         assert result.original_input == "foobarbaz"
-        assert result.highest_precision == None
+        assert result.highest_precision is None
         assert result.failed
+        assert result.species is None
 
     @pytest.mark.parametrize("symbol", (1234, None))
     def test_bad_type(self, symbol):
@@ -23,6 +24,7 @@ class TestStandardize:
         assert result.success
         assert result.error is None
         assert result.highest_precision == "IGHV1/OR15-1*01"
+        assert result.species == "homosapiens"
 
     @pytest.mark.parametrize(
         ("symbol", "expected"),
@@ -69,6 +71,7 @@ class TestStandardize:
 
         assert result.highest_precision == expected
         assert result.allele == expected or result.gene == expected
+        assert result.species == "homosapiens"
 
 
     @pytest.mark.filterwarnings("ignore:Failed to standardize")
@@ -188,6 +191,24 @@ class TestStandardizeHomoSapiens:
         result = ig.standardize(symbol=symbol, species="homosapiens")
 
         assert result.highest_precision == expected
+        assert result.species == "homosapiens"
+
+class TestStandardizeMusMusculus:
+
+    @pytest.mark.parametrize("symbol", VALID_MUSMUSCULUS_IG)
+    def test_already_correctly_formatted(self, symbol):
+        result = ig.standardize(symbol=symbol, species="musmusculus")
+
+        assert result.highest_precision == symbol
+
+    @pytest.mark.parametrize("symbol", ("foobar", "noice"))
+    def test_invalid_ig(self, symbol, caplog):
+        result = ig.standardize(symbol=symbol, species="musmusculus")
+        assert "Failed to standardize" in caplog.text
+        assert result.failed
+        assert result.highest_precision is None
+        assert result.species == "musmusculus"
+
 
 
 class TestQuery:

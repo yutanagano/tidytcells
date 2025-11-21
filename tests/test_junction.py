@@ -91,7 +91,7 @@ class Teststandardize:
 
     def test_j_symbol_fail_species(self,caplog):
         result = junction.standardize(
-            "AAAAAA", j_symbol="IGHJ", species="musmusculus", locus="IG"
+            "AAAAAA", j_symbol="IGHJ", species="nonexistent", locus="IG"
         )
         assert "Unsupported" in caplog.text
         assert "Unsupported" in result.error
@@ -134,13 +134,15 @@ class Teststandardize:
                 ("CSYAYVF", None, "IGLV2-11", "IG", "homosapiens", "CCSYAYVF"),
                 ("SYAYVF", None, "IGLV2-11", "IG", "homosapiens", "CCSYAYVF"),
                 ("CSYAYVF", None, "IGLV2-14", "IG", "homosapiens", "CSYAYVF"),
-                ("MRESENMD", None, None, "TRA", "homosapiens", "CAMRESENMDSSYKLIF")
+                ("MRESENMD", None, None, "TRA", "homosapiens", "CAMRESENMDSSYKLIF"),
+                ("CAGGSYGLTFGAG", None, None, "IG", "musmusculus", "CAGGSYGLTF"),
         )
     )
     def test_various_examples(self, seq, j_symbol, v_symbol, locus, species, expected):
         result = junction.standardize(seq=seq, j_symbol=j_symbol, v_symbol=v_symbol, species=species, locus=locus, allow_c_correction=True, allow_fw_correction=True, allow_v_reconstruction=True, allow_j_reconstruction=True, enforce_functional_j=True)
 
         assert result.junction == expected, result.error + result.attempted_fix
+        assert result.species == species
 
         if expected is not None:
             assert result.cdr3 == expected[1:-1]

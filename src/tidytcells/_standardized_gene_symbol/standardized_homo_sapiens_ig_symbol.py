@@ -5,6 +5,7 @@ from tidytcells._resources import VALID_HOMOSAPIENS_IG, HOMOSAPIENS_IG_SYNONYMS
 
 
 class StandardizedHomoSapiensIgSymbol(StandardizedIgSymbol):
+    _species = "homosapiens"
     _synonym_dictionary = HOMOSAPIENS_IG_SYNONYMS
     _valid_gene_dictionary = VALID_HOMOSAPIENS_IG
     _valid_subgroups = {
