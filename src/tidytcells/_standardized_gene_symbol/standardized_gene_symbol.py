@@ -1,6 +1,6 @@
 from abc import ABC
 from abc import abstractmethod
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Set
 
 from tidytcells._utils.result import ReceptorGeneResult
 
@@ -31,20 +31,16 @@ class StandardizedReceptorGeneSymbol(StandardizedSymbol):
         pass
 
     @property
-    def _valid_subgroups_without_genes(self):
-        return {key.split("-")[0] for key in self._valid_gene_dictionary if "-" in key}
-
-    @property
-    def _valid_subgroups(self):
-        return {key.split("-")[0] for key in self._valid_gene_dictionary}
-
+    @abstractmethod
+    def _valid_subgroups(self) -> Set[str]:
+        pass
 
     def __init__(self, symbol: str, enforce_functional: bool, allow_subgroup: bool) -> None:
         self.original_symbol = symbol
         self.enforce_functional = enforce_functional
 
         self._gene_name, self._allele_designation = self._parse_symbol(symbol)
-        self.allow_subgroup = self._allele_designation is None and allow_subgroup
+        self._allow_subgroup = self._allele_designation is None and allow_subgroup
         self._resolve_gene_name()
         self._compile_result()
 
@@ -60,15 +56,15 @@ class StandardizedReceptorGeneSymbol(StandardizedSymbol):
         if self._gene_name in self._valid_gene_dictionary:
             return True
 
-        if self.allow_subgroup and self._gene_name in self._valid_subgroups_without_genes:
+        if self._allow_subgroup and self._gene_name in self._valid_subgroups:
             return True
 
         return False
 
     def get_reason_why_invalid(self) -> Optional[str]:
         if not self._gene_name in self._valid_gene_dictionary:
-            if self._gene_name in self._valid_subgroups_without_genes:
-                if self.allow_subgroup:
+            if self._gene_name in self._valid_subgroups:
+                if self._allow_subgroup:
                     return None
                 else:
                     return "Symbol is a subgroup (not a gene)"

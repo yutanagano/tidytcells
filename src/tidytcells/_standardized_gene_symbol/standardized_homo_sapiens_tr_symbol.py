@@ -7,6 +7,6 @@ from tidytcells._resources import VALID_HOMOSAPIENS_TR, HOMOSAPIENS_TR_SYNONYMS
 class StandardizedHomoSapiensTrSymbol(StandardizedTrSymbol):
     _synonym_dictionary = HOMOSAPIENS_TR_SYNONYMS
     _valid_gene_dictionary = VALID_HOMOSAPIENS_TR
-    _valid_subgroup_dictionary = {
-        key.split("-")[0] for key in VALID_HOMOSAPIENS_TR if "-" in key
+    _valid_subgroups = {
+        key.split("-")[0] for key in VALID_HOMOSAPIENS_TR
     }
