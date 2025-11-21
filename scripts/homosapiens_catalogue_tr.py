@@ -69,10 +69,7 @@ def get_synonyms_data(valid_alleles: Iterable[str], is_tr: bool = True) -> dict:
     alleles_without_locus = {name[3:] for name in valid_alleles}
     synonyms = synonyms[synonyms.index.map(lambda x: x not in valid_alleles and x not in alleles_without_locus)]
 
-    synonyms_dict = synonyms["Approved symbol"].to_dict()
-
-    return synonyms_dict
-
+    return synonyms["Approved symbol"].to_dict()
 
 if __name__ == "__main__":
     main()
