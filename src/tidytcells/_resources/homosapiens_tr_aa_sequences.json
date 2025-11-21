@@ -3838,7 +3838,8 @@
         "functionality": "F",
         "J-REGION": "FSDGQKLLFARGTMLKVDL",
         "J-PHE": "F",
-        "J-MOTIF": "FSDG"
+        "J-MOTIF": "FARG",
+        "J-CDR3-END": "FSDGQKLLF"
     },
     "TRAJ16*02": {
         "functionality": "F",
@@ -4019,7 +4020,8 @@
         "functionality": "F",
         "J-REGION": "IGFGNVLHCGSGTQVIVLP",
         "J-CYS": "C",
-        "J-MOTIF": "CGSG"
+        "J-MOTIF": "CGSG",
+        "J-CDR3-END": "IGFGNVLHC"
     },
     "TRAJ36*01": {
         "functionality": "F",

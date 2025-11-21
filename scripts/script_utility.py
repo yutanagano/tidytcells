@@ -235,26 +235,28 @@ def add_v_motifs(v_aa_dict):
     return v_aa_dict
 
 
-def get_motif_idx(j_region, conserved_aa):
+def get_motif(j_region, conserved_aa):
     if conserved_aa is not None:
         if conserved_aa not in j_region:
             return None
 
         if j_region.count(conserved_aa) == 1:
-            return j_region.index(conserved_aa)
+            idx = j_region.index(conserved_aa)
+            return j_region[idx:idx+4]
 
         if j_region.count(conserved_aa + "G") == 1:  # G is a very common second amino acid in the motif
-            return j_region.index(conserved_aa + "G")
+            idx = j_region.index(conserved_aa + "G")
+            return j_region[idx:idx + 4]
 
     cons_aas_regex = "[FW]" if conserved_aa is None else conserved_aa
-    motif_regex = cons_aas_regex + "[AGS][A-Z]G"
+    motif_regex = ".+(" + cons_aas_regex + "[AGS][A-Z]G)"
 
     match = re.search(motif_regex, j_region)
     if match:
-        return match.start()
+        return match.group(1)
 
 
-def add_j_motifs(j_aa_dict, species): # todo somehow motif recovery doesnt work for TRAJ35*01 (manually added)
+def add_j_motifs(j_aa_dict, species):
     for allele, seq_data in j_aa_dict.items():
         if "J-REGION" not in seq_data or len(seq_data["J-REGION"]) < 4:
             continue
@@ -266,13 +268,10 @@ def add_j_motifs(j_aa_dict, species): # todo somehow motif recovery doesnt work 
             else None
 
         if not ("J-MOTIF" in seq_data and len(seq_data["J-MOTIF"]) == 4):
-            motif_idx = get_motif_idx(seq_data["J-REGION"], conserved_aa)
+            motif_from_seq = get_motif(seq_data["J-REGION"], conserved_aa)
 
-            if motif_idx is not None:
-                if "J-MOTIF" in seq_data:
-                    if seq_data["J-REGION"][motif_idx: motif_idx + 4] != seq_data["J-MOTIF"]:
-                        pass
-                seq_data["J-MOTIF"] = seq_data["J-REGION"][motif_idx: motif_idx + 4]
+            if motif_from_seq is not None:
+                seq_data["J-MOTIF"] = motif_from_seq
 
         if "J-MOTIF" in seq_data and len(seq_data["J-MOTIF"]) == 4:
             if conserved_aa is None:
