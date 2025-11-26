@@ -25,8 +25,7 @@ class TestStandardize:
             ("TRBV20/OR9-2*01", "TRBV20/OR9-2*01"),
             ("TCRAV14/4", "TRAV14/DV4"),
             ("TRAV15-1-DV6-1", "TRAV15-1/DV6-1"),
-            ("TRAV15/DV6", "TRAV15-1/DV6-1"),
-        ),
+        )
     )
     def test_any_species(self, symbol, expected):
         result = tr.standardize(symbol, species="any")
@@ -55,16 +54,58 @@ class TestStandardize:
     )
     def test_enforce_functional(self, symbol, expected, enforce_functional):
         result = tr.standardize(
-            symbol=symbol, species="homosapiens", enforce_functional=enforce_functional
+            symbol=symbol, species="homosapiens", enforce_functional=enforce_functional,
         )
 
         assert result == expected
+
+    @pytest.mark.filterwarnings("ignore:Failed to standardize")
+    @pytest.mark.parametrize(
+        ("symbol", "expected", "allow_subgroup"),
+        (
+            ("TRBJ2-7", "TRBJ2-7", True),
+            ("TRBJ2-7", "TRBJ2-7", False),
+            ("TRBJ2", "TRBJ2", True),
+            ("TRBJ2", None, False),
+        ),
+    )
+    def test_allow_subgroup(self, symbol, expected, allow_subgroup):
+        result = tr.standardize(
+            symbol=symbol, species="homosapiens", allow_subgroup=allow_subgroup,
+        )
+
+        assert result == expected
+
+    @pytest.mark.filterwarnings("ignore:Failed to standardize")
+    @pytest.mark.parametrize(
+        ("symbol", "expected"),
+        (
+            ("TRAV14/DV4*01", "TRAV14/DV4*01"),
+            ("TRAV14/DV4-1*01", "TRAV14/DV4*01"),
+            ("TRAV14-1/DV4-1*01", "TRAV14/DV4*01"),
+            ("TRAV14-1/DV4*01", "TRAV14/DV4*01"),
+            ("TRAV14-1/DV4*01", "TRAV14/DV4*01"),
+            ("TRAV1-1*02", "TRAV1-1*02"),
+            ("TRAV10-1", "TRAV10"),
+            ("TRAV10-1*01", "TRAV10*01"),
+            ("TCRAV29-01", "TRAV29/DV5"),
+            ("TCRAV36-01*01", "TRAV36/DV7*01"),
+        ),
+    )
+    def test_remove_illegal_dash1(self, symbol, expected, ):
+        result = tr.standardize(
+            symbol=symbol, species="homosapiens",
+        )
+
+        assert result == expected
+
 
     @pytest.mark.parametrize(
         ("symbol", "expected", "precision"),
         (
             ("TRBV24/OR9-2*01", "TRBV24/OR9-2*01", "allele"),
             ("TRAV16*01", "TRAV16", "gene"),
+            ("TRBV24/OR9", "TRBV24/OR9", "subgroup"),
         ),
     )
     def test_precision(self, symbol, expected, precision):
@@ -116,26 +157,29 @@ class TestStandardizeHomoSapiens:
         assert result == expected
 
     @pytest.mark.parametrize(
-        ("symbol", "expected"),
+        ("symbol", "expected", "species"),
         (
-            ("TRAV14DV4", "TRAV14/DV4"),
-            ("TRBV20OR9-2", "TRBV20/OR9-2"),
-            ("TRBV01", "TRBV1"),
-            ("TCRBV1", "TRBV1"),
-            ("TRAV14", "TRAV14/DV4"),
-            ("TRDV4", "TRAV14/DV4"),
-            ("TCRAV13S2", "TRAV13-2"),
-            ("TCRAV38S2", "TRAV38-2/DV8"),
-            ("TCRAV30-1", "TRAV30"),
-            ("TCRDV01-01*01", "TRDV1*01"),
-            ("TCRAV14/4", "TRAV14/DV4"),
-            ("TCRAV36-01*01", "TRAV36/DV7*01"),
-            ("29/DV5*01", "TRAV29/DV5*01"),
-            ("TCRBJ2.7", "TRBJ2-7"),
+            ("TRAV14DV4", "TRAV14/DV4", "homosapiens"),
+            ("TRBV20OR9-2", "TRBV20/OR9-2", "homosapiens"),
+            ("TRBV01", "TRBV1", "homosapiens"),
+            ("TCRBV1", "TRBV1", "homosapiens"),
+            ("TRAV14", "TRAV14/DV4", "homosapiens"),
+            ("TRDV4", "TRAV14/DV4", "homosapiens"),
+            ("TCRAV13S2", "TRAV13-2", "homosapiens"),
+            ("TCRAV38S2", "TRAV38-2/DV8", "homosapiens"),
+            ("TCRAV30-1", "TRAV30", "homosapiens"),
+            ("TCRDV01-01*01", "TRDV1*01", "homosapiens"),
+            ("TCRAV14/4", "TRAV14/DV4", "homosapiens"),
+            ("TCRAV36*01", "TRAV36/DV7*01", "homosapiens"),
+            ("29/DV5*01", "TRAV29/DV5*01", "homosapiens"),
+            ("TCRBJ2.7", "TRBJ2-7", "homosapiens"),
+            ("TRAV15-1", "TRAV15", "homosapiens"),
+            ("TRAV15-1", "TRAV15-1/DV6-1", "musmusculus"),
+
         ),
     )
-    def test_various_typos(self, symbol, expected):
-        result = tr.standardize(symbol=symbol, species="homosapiens")
+    def test_various_typos(self, symbol, expected, species):
+        result = tr.standardize(symbol=symbol, species=species)
 
         assert result == expected
 
@@ -152,18 +196,6 @@ class TestStandardizeMusMusculus:
         result = tr.standardize(symbol=symbol, species="musmusculus")
         assert "Failed to standardize" in caplog.text
         assert result == None
-
-    @pytest.mark.parametrize(
-        ("symbol", "expected"),
-        (
-            ("TRAV15-1-DV6-1", "TRAV15-1/DV6-1"),
-            ("TRAV15/DV6", "TRAV15-1/DV6-1"),
-        ),
-    )
-    def test_corrections(self, symbol, expected):
-        result = tr.standardize(symbol=symbol, species="musmusculus")
-
-        assert result == expected
 
 
 class TestQuery:
