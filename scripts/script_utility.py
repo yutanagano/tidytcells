@@ -8,7 +8,8 @@ from pandas import DataFrame
 from pathlib import Path
 import requests
 from typing import Tuple
-
+import re
+import time
 
 def get_tr_alleles_list(species: str) -> dict:
     gene_groups = (
@@ -64,6 +65,7 @@ def get_alleles_list(species: str, gene_groups: Tuple[str]) -> dict:
 def get_alleles_for_gene_group_for_species(gene_group: str, species: str) -> dict:
     alleles = collections.defaultdict(dict)
 
+    time.sleep(5) # to prevent getting blocked
     response = requests.get(
         f"https://www.imgt.org/genedb/GENElect?query=7.2+{gene_group}&species={species}"
     )
@@ -133,8 +135,22 @@ def get_d_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
 
 
 def get_j_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
-    labels = ("FR4-IMGT", "J-REGION", "J-PHE", "J-TRP")
-    return get_gene_sequence_data(labels, gene_groups, species)
+    labels = ("J-REGION", "J-MOTIF", "J-PHE", "J-TRP")
+    data = get_gene_sequence_data(labels, gene_groups, species)
+
+    # Add known non-canonical cases
+    if species == "Homo+sapiens":
+        if "TRAJ" in gene_groups:
+            data["TRAJ35*01"]["J-conserved"] = "C"
+            data["TRAJ35*01"]["J-MOTIF"] = "CGSG"
+        if "TRBJ" in gene_groups:
+            data["TRBJ2-7*02"]["J-conserved"] = "V"
+    elif species == "Mus+musculus":
+        if "TRAJ" in gene_groups:
+            data["TRAJ7*01"]["J-conserved"] = "L"
+            data["TRAJ7*01"]["J-MOTIF"] = "LGKG"
+
+    return add_j_motifs(data)
 
 
 def get_gene_sequence_data(
@@ -160,9 +176,12 @@ def get_sequence_data_for_label_for_gene_group_for_species(
 ) -> dict:
     aa_seqs = collections.defaultdict(dict)
 
+    time.sleep(5)  # to prevent getting blocked
     response = requests.get(
-        f"https://www.imgt.org/genedb/GENElect?query=8.2+{gene_group}&species={species}&IMGTlabel={label}"
+        f"https://www.imgt.org/genedb/GENElect?query=8.2+{gene_group}&species={species}&IMGTlabel={label}",
+        headers={"User-Agent": "Mozilla/5.0"},
     )
+
     parser = BeautifulSoup(response.text, features="html.parser")
     fasta = parser.find_all("pre")[1].string
 
@@ -173,10 +192,9 @@ def get_sequence_data_for_label_for_gene_group_for_species(
             allele = fields[1]
             functionality = fields[3]
 
-            if "F" in functionality:
-                current_allele = allele
-            else:
-                current_allele = None
+            current_allele = allele
+
+            aa_seqs[current_allele]["functionality"] = functionality
 
             continue
 
@@ -204,6 +222,43 @@ def parse_fasta_header(line: str) -> Tuple[str]:
     functionality = fields[3].strip("()[]")
 
     return gene, allele_designation, functionality
+
+
+def get_motif(j_region, conserved_aa):
+    if conserved_aa is not None:
+        if conserved_aa not in j_region:
+            return None
+
+        if j_region.count(conserved_aa) == 1:
+            idx = j_region.index(conserved_aa)
+            return j_region[idx:idx+4]
+
+        if j_region.count(conserved_aa + "G") == 1:  # G is a very common second amino acid in the motif
+            idx = j_region.index(conserved_aa + "G")
+            return j_region[idx:idx + 4]
+
+    cons_aas_regex = "[FW]" if conserved_aa is None else conserved_aa
+    motif_regex = ".+(" + cons_aas_regex + "[AGS][A-Z]G)"
+
+    match = re.search(motif_regex, j_region)
+    if match:
+        return match.group(1)
+
+
+def add_j_motifs(j_aa_dict):
+    for allele, seq_data in j_aa_dict.items():
+        if "J-REGION" not in seq_data or len(seq_data["J-REGION"]) < 4:
+            continue
+
+        conserved_aa = seq_data.pop("J-PHE", seq_data.pop("J-TRP", seq_data.pop("J-conserved", None)))
+
+        if not ("J-MOTIF" in seq_data and len(seq_data["J-MOTIF"]) == 4):
+            motif_from_seq = get_motif(seq_data["J-REGION"], conserved_aa)
+
+            if motif_from_seq is not None:
+                seq_data["J-MOTIF"] = motif_from_seq
+
+    return j_aa_dict
 
 
 def save_as_json(data: dict, file_name: str) -> None:

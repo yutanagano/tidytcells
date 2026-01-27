@@ -11,8 +11,6 @@ The submodules are:
 +-------------------------------+----------------------------------------------------------+
 | Submodule                     | For                                                      |
 +===============================+==========================================================+
-| :py:mod:`tidytcells.aa`       | General amino acid sequence data (e.g. peptide epitopes) |
-+-------------------------------+----------------------------------------------------------+
 | :py:mod:`tidytcells.ig`       | IG gene/allele data                                      |
 +-------------------------------+----------------------------------------------------------+
 | :py:mod:`tidytcells.junction` | TR JUNCTION or CDR3-IMGT amino acid sequence data        |

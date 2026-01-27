@@ -30,6 +30,9 @@ MUSMUSCULUS_TR_AA_SEQUENCES = get_json_resource("musmusculus_tr_aa_sequences.jso
 VALID_MUSMUSCULUS_MH = get_json_resource("valid_musmusculus_mh.json")
 MUSMUSCULUS_MH_SYNONYMS = get_json_resource("musmusculus_mh_synonyms.json")
 
+VALID_MUSMUSCULUS_IG = get_json_resource("valid_musmusculus_ig.json")
+MUSMUSCULUS_IG_AA_SEQUENCES = get_json_resource("musmusculus_ig_aa_sequences.json")
+
 
 AMINO_ACIDS = frozenset(
     (

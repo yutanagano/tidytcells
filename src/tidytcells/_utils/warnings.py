@@ -1,4 +1,7 @@
 from logging import Logger
+from typing import Union
+
+from tidytcells._utils.result import MhGene, ReceptorGene, Junction
 
 
 def warn_failure(
@@ -16,7 +19,17 @@ def warn_failure(
     logger.warning(warning_message)
 
 
-def warn_unsupported_species(species: str, gene_type: str, logger: Logger):
+def warn_result_failure(
+    result: Union[MhGene, ReceptorGene, Junction],
+    logger: Logger,
+):
+    warn_failure(reason_for_failure=result.error,
+                 original_input=result.original_input,
+                 attempted_fix=result.attempted_fix,
+                 species=result.species,
+                 logger=logger)
+
+def warn_unsupported_species(species: str, type: str, logger: Logger):
     logger.warning(
-        f'Unsupported species: "{species}". ' f"Skipping {gene_type} standardisation."
+        f'Unsupported species: "{species}". ' f"Skipping {type} standardisation."
     )

@@ -2,6 +2,6 @@
 Standardise TR/MH data.
 """
 
-from . import aa, junction, mh, tr, ig
+from . import junction, mh, tr, ig
 
-VERSION = "2.2.0"
+VERSION = "3.0.0"

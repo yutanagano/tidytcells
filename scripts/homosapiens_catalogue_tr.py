@@ -14,7 +14,6 @@ def main() -> None:
 
     print("Fetching TR gene sequence data from IMGT...")
     sequence_data = script_utility.get_tr_aa_sequence_data("Homo+sapiens")
-    sequence_data["TRAJ35*01"]["J-CYS"] = "C"
     script_utility.save_as_json(sequence_data, "homosapiens_tr_aa_sequences.json")
 
 
@@ -67,10 +66,10 @@ def get_synonyms_data(valid_alleles: Iterable[str], is_tr: bool = True) -> dict:
     synonyms.index = synonyms.index.str.upper()
 
     # Remove any synonyms that are also names of other valid genes
-    synonyms = synonyms[synonyms.index.map(lambda x: x not in valid_alleles)]
+    alleles_without_locus = {name[3:] for name in valid_alleles}
+    synonyms = synonyms[synonyms.index.map(lambda x: x not in valid_alleles and x not in alleles_without_locus)]
 
     return synonyms["Approved symbol"].to_dict()
-
 
 if __name__ == "__main__":
     main()
