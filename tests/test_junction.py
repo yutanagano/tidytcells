@@ -116,7 +116,7 @@ class Teststandardize:
                 ("AELNAGNNRKLI", "TRAJ38*01", "TRAV5-2*01", "TR", "musmusculus", "CAELNAGNNRKLIW"), # specifying a specific allele which contributes CAE- but is pseudogene overrides 'enforce_functional'
                 ("YFCAVVFNMDSNYQLIWGLGTSL", "TRAJ38*01", "TRAV", "TR", "homosapiens", "CAVVFNMDSNYQLIW"),
                 ("YFCAVVFNMDSNYQLIWGLGTSL", None, None, "TRA", "homosapiens", "CAVVFNMDSNYQLIW"),
-                ("YFCAVVFNMDSNYQLIWLLLL", "TRAJ38*01", None, "TR", "homosapiens", None), # J anchor invalid, no output
+                ("YFCAVVFNMDSNYQLIWTTTT", "TRAJ38*01", None, "TR", "homosapiens", None), # J anchor invalid, no output
                 ("VYYCARFNMDSNYQYFQHWGQGTLVTVSS", "IGHJ", "IGHV", "IG", "homosapiens", "CARFNMDSNYQYFQHW"),
                 ("YFCAELNAGNNVLH", "TRAJ35", None, "TR", "homosapiens", "CAELNAGNNVLHC"),
                 ("AGGYQNFYFGKGTMLLVSP", None, None, "TR", "homosapiens", "CAGGYQNFYF"),
@@ -138,6 +138,8 @@ class Teststandardize:
                 ("CAGGSYGLTFGAG", None, None, "IG", "musmusculus", "CAGGSYGLTF"),
                 ("ASGDWQGQNT", None, "TRBV13-2*01", "TRB", "musmusculus", "CASGDWQGQNTLYF"),
                 ("AIWDYEFHVMDY", "IGHJ4*01", "IGHV1S34*01", "IG", "musmusculus", "CAIWDYEFHVMDYW"),
+                ("ASSIRSNEKL", None, "TRBV19", "TRB", "homosapiens", "CASSIRSNEKLFF"),
+                ("ASSSRSTGEL", None, "TRBV19", "TRB", "homosapiens", "CASSSRSTGELFF"),
         )
     )
     def test_various_examples(self, seq, j_symbol, v_symbol, locus, species, expected):

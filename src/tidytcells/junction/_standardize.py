@@ -238,7 +238,7 @@ def standardize(
             Attempt to align to each of the retrieved V and J gene sequences through a sliding window approach:
                 - Allow any number of amino acids to be removed from V gene C-terminus or J gene N-terminus (simulating junction site deletion)
                 - Keep only V genes with at least 1 amino acid overlap with the sequence and with C as conserved amino acid
-                - Keep only J genes with at least 2 amino acids overlap and at most 1 mismatch within the alignment
+                - Keep only J genes with at least 1 amino acid overlap and at most 1 mismatch within the alignment
                 - Keep only V and J alignments with the highest overlap score (+1 score for match, -1.5 penalty for mismatch, 0 score for terminal overhangs)
 
             IF  (`allow_c_correction` is True AND sequence start is in ("W", "S", "R", "G", "Y", "F")) OR

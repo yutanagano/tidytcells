@@ -1,17 +1,5 @@
 import logging
 
-from tidytcells._resources import (
-    HOMOSAPIENS_TR_AA_SEQUENCES,
-    HOMOSAPIENS_IG_AA_SEQUENCES,
-    MUSMUSCULUS_TR_AA_SEQUENCES,
-)
-
-TR_AA_SEQUENCES = {
-    "homosapiens": HOMOSAPIENS_TR_AA_SEQUENCES,
-    "musmusculus": MUSMUSCULUS_TR_AA_SEQUENCES,
-}
-IG_AA_SEQUENCES = {"homosapiens": HOMOSAPIENS_IG_AA_SEQUENCES}
-
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +12,7 @@ def get_is_valid_locus_gene_fn(locus: str, gene: str):
     source: doi.org/10.1016/j.immuno.2025.100058
     '''
     if gene == "V":
-        if locus == "TRA":
+        if locus == "TRA" or locus == "TRA/D":
             return lambda x: x.startswith("TRAV") or x.startswith("TRDV")
 
         if locus == "TRD":
@@ -40,6 +28,9 @@ def get_compatible_symbols(symbol, aa_dict, gene, locus, enforce_functional):
     For a given gene symbol, return all alleles which are considered to be valid extensions of the gene symbol.
     A gene symbol can be an allele (return itself), gene, subgroup, or even locus (TRA) or receptor (TR)
     '''
+    if symbol in aa_dict.keys():
+        return [symbol]
+
     is_valid_locus_gene = get_is_valid_locus_gene_fn(locus, gene)
 
     return [

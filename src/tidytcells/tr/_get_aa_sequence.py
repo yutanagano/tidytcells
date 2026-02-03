@@ -1,16 +1,9 @@
-from tidytcells._resources import (
-    HOMOSAPIENS_TR_AA_SEQUENCES,
-    MUSMUSCULUS_TR_AA_SEQUENCES,
-)
+from tidytcells._resources import SUPPORTED_SPECIES_AND_THEIR_TR_AA_SEQUENCES
+
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 from typing import Dict, Optional
 
-
-SUPPORTED_SPECIES_AND_THEIR_AA_SEQUENCES = {
-    "homosapiens": HOMOSAPIENS_TR_AA_SEQUENCES,
-    "musmusculus": MUSMUSCULUS_TR_AA_SEQUENCES,
-}
 
 
 def get_aa_sequence(
@@ -74,11 +67,11 @@ def get_aa_sequence(
 
     species = _utils.clean_and_lowercase(species)
 
-    species_is_supported = species in SUPPORTED_SPECIES_AND_THEIR_AA_SEQUENCES
+    species_is_supported = species in SUPPORTED_SPECIES_AND_THEIR_TR_AA_SEQUENCES
     if not species_is_supported:
         raise ValueError(f"Unsupported species: {species}. No data available.")
 
-    aa_sequence_dict = SUPPORTED_SPECIES_AND_THEIR_AA_SEQUENCES[species]
+    aa_sequence_dict = SUPPORTED_SPECIES_AND_THEIR_TR_AA_SEQUENCES[species]
 
     if symbol in aa_sequence_dict:
         return aa_sequence_dict[symbol]

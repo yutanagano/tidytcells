@@ -137,15 +137,20 @@ class ReceptorGene:
     @property
     def locus(self) -> Optional[str]:
         if self.is_standardized:
-            locus = self._gene_name[0:3]
-            if "/D" in self._gene_name:
+            locus = self.symbol[0:3]
+            if "/D" in self.symbol:
                 locus += "/D"
             return locus
 
     @property
+    def receptor_type(self):
+        if self.is_standardized:
+            return self.symbol[0:2]
+
+    @property
     def gene_type(self) -> Optional[str]:
         if self.is_standardized:
-            return self._gene_name[3]
+            return self.symbol[3]
 
     @property
     def species(self) -> str:

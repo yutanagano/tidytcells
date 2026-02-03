@@ -10,6 +10,13 @@ F_MISMATCH_AAS = {"I", "L", "V", "Y", "S", "C"}
 W_MISMATCH_AAS = {"C", "G", "L", "R", "S"}
 FW_MISMATCH_AAS = F_MISMATCH_AAS.union(W_MISMATCH_AAS)
 
+MIN_J_SCORE = 1
+MIN_V_SCORE = 1
+MAX_J_MISMATCHES = 1
+MAX_V_MISMATCHES = 0
+MISMATCH_PENALTY = -1.5
+
+
 class JunctionStandardizer(ABC):
     """
     Abstract base standardizer class.
@@ -28,9 +35,7 @@ class JunctionStandardizer(ABC):
     def __init__(self, seq: str, locus: str, j_symbol: str, v_symbol: str,
                  enforce_functional_v: bool = True, enforce_functional_j: bool = False,
                  allow_c_correction: bool = False, allow_fw_correction: bool = False,
-                 allow_v_reconstruction: bool = False, allow_j_reconstruction: bool = False,
-                 mismatch_penalty: float = -1.5, max_v_mismatches: int = 0, max_j_mismatches: int = 1,
-                 min_j_score: int = 2, min_v_score: int = 1) -> None:
+                 allow_v_reconstruction: bool = False, allow_j_reconstruction: bool = False) -> None:
         self.orig_seq = seq
         self.corrected_seq = seq
         self.locus = locus
@@ -42,11 +47,6 @@ class JunctionStandardizer(ABC):
         self.allow_fw_correction = allow_fw_correction
         self.allow_v_reconstruction = allow_v_reconstruction
         self.allow_j_reconstruction = allow_j_reconstruction
-        self.mismatch_penalty = mismatch_penalty
-        self.max_v_mismatches = max_v_mismatches
-        self.max_j_mismatches = max_j_mismatches
-        self.min_j_score = min_j_score
-        self.min_v_score = min_v_score
         self.corrected_first_aa = False
         self.corrected_last_aa = False
 
@@ -114,8 +114,8 @@ class JunctionStandardizer(ABC):
         best_score = -1 if len(best_alignments_orig) == 0 else best_alignments_orig[0]["score"]
         corrected_seq = self.orig_seq[:-1] + conserved_aa
 
-        corr_best_alignments = align_j_regions(corrected_seq, self.j_aa_dict, self.min_j_score + 1,
-                                               self.mismatch_penalty, max_mismatches=0)
+        corr_best_alignments = align_j_regions(corrected_seq, self.j_aa_dict, MIN_J_SCORE + 1,
+                                               MISMATCH_PENALTY, max_mismatches=0)
         keep_alignments = []
 
         for alignment in corr_best_alignments:
@@ -142,8 +142,8 @@ class JunctionStandardizer(ABC):
         best_score = -1 if len(best_alignments_orig) == 0 else best_alignments_orig[0]["score"]
         corrected_seq = "C" + self.orig_seq[1:]
 
-        corr_best_alignments = align_v_regions(corrected_seq, self.v_aa_dict, self.min_v_score + 1,
-                                               self.mismatch_penalty, 0)
+        corr_best_alignments = align_v_regions(corrected_seq, self.v_aa_dict, MIN_V_SCORE + 1,
+                                               MISMATCH_PENALTY, 0)
         keep_alignments = []
 
         for alignment in corr_best_alignments:
@@ -165,7 +165,7 @@ class JunctionStandardizer(ABC):
         Compute alignments for each sequence in self.j_aa_dict, keep only the best alignments
         '''
 
-        best_alignments = align_j_regions(self.orig_seq, self.j_aa_dict, self.min_j_score, self.mismatch_penalty, self.max_j_mismatches)
+        best_alignments = align_j_regions(self.orig_seq, self.j_aa_dict, MIN_J_SCORE, MISMATCH_PENALTY, MAX_J_MISMATCHES)
 
         if self.allow_fw_correction and self.orig_seq[-1] in F_MISMATCH_AAS:
             best_alignments = self.correct_sequencing_err_j_side(best_alignments, conserved_aa="F")
@@ -190,7 +190,7 @@ class JunctionStandardizer(ABC):
         Compute alignments for each sequence in self.v_aa_dict, keep only the best alignments
         '''
 
-        best_alignments = align_v_regions(self.orig_seq, self.v_aa_dict, self.min_v_score, self.mismatch_penalty, self.max_v_mismatches)
+        best_alignments = align_v_regions(self.orig_seq, self.v_aa_dict, MIN_V_SCORE, MISMATCH_PENALTY, MAX_V_MISMATCHES)
 
         if self.allow_c_correction and self.orig_seq[0] in C_MISMATCH_AAS:
             best_alignments = self.correct_sequencing_err_v_side(best_alignments)
