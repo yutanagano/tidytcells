@@ -23,20 +23,29 @@ def get_is_valid_locus_gene_fn(locus: str, gene: str):
 
     return lambda x: x.startswith(locus) and gene in x
 
+def is_valid_functionality(aa_dict, candidate, enforce_functional):
+    if (not enforce_functional) or (aa_dict[candidate]["functionality"] in {"F", "[F]", "(F)"}):
+        return True
+
+    return False
+
+
 def get_compatible_symbols(symbol, aa_dict, gene, locus, enforce_functional):
     '''
     For a given gene symbol, return all alleles which are considered to be valid extensions of the gene symbol.
     A gene symbol can be an allele (return itself), gene, subgroup, or even locus (TRA) or receptor (TR)
     '''
     if symbol in aa_dict.keys():
-        return [symbol]
+        if is_valid_functionality(aa_dict, symbol, enforce_functional):
+            return [symbol]
+        return []
 
     is_valid_locus_gene = get_is_valid_locus_gene_fn(locus, gene)
 
     return [
         candidate
         for candidate in aa_dict.keys()
-        if (not enforce_functional or aa_dict[candidate]["functionality"] in {"F", "[F]", "(F)"})
+        if is_valid_functionality(aa_dict, candidate, enforce_functional)
         and is_valid_locus_gene(candidate)
         and candidate.startswith(symbol)
         and not (symbol[-1].isnumeric() and candidate[len(symbol)].isnumeric())
