@@ -27,10 +27,9 @@
    {% if classes %}
    .. rubric:: {{ _('Classes') }}
 
-   .. autosummary::
-      :toctree:
    {% for item in classes %}
-      {{ item }}
+   .. autoclass:: {{ item }}
+      :members:
    {%- endfor %}
    {% endif %}
    {% endblock %}
