@@ -139,12 +139,12 @@ def standardize(
         Use attributes 'junction' and 'cdr3' to retrieve the corrected sequences.
 
         >>> result = tt.junction.standardize("csadaf", locus="TR")
+        >>> result.is_standardized
+        True
         >>> result.junction
         'CSADAF'
         >>> result.cdr3
         'SADA'
-        >>> result.is_standardized
-        True
 
         Strings that are valid amino acid sequences but do not start and end
         with the appropriate residues can be corrected based on V/J gene or locus information.
@@ -170,6 +170,12 @@ def standardize(
         'J alignment unsuccessful; J side reconstruction unsuccessful.'
         >>> result.attempted_fix
         'CASWEHGH'
+
+        Other available properties are 'original_input' and 'species'.
+        >>> result.original_input
+        'ASWEHGH'
+        >>> result.species
+        'homosapiens'
 
         The conserved trailing residue can be intelligently inferred if
         `j_symbol` is supplied.
@@ -205,6 +211,8 @@ def standardize(
                                     allow_v_reconstruction=True, allow_j_reconstruction=True, \
                                     v_symbol="TRAV14/DV4", j_symbol="TRAJ12").junction
         'CAMRESENMDSSYKLIF'
+
+
 
 
     .. topic:: Decision Logic

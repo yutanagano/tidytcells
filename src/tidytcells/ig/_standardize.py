@@ -94,7 +94,7 @@ def standardize(
         'IGHV1'
 
         Attributes 'allele', 'gene' and 'subgroup' only return a result if the symbol could be standardized up to that level.
-        Attribute 'highest_precision' is never None for a successful standardization, and always returns the most
+        Attribute 'symbol' is never None for a successful standardization, and always returns the most
         detailed available result between 'allele', 'gene' and 'subgroup'.
 
         >>> tt.ig.standardize("IGHV1-2*01").symbol
@@ -132,6 +132,54 @@ def standardize(
 
         >>> tt.ig.standardize("IGHV2-2", species="musmusculus").gene
         'IGHV2-2'
+
+        Other available properties are 'original_input', 'species', 'receptor_type', 'locus' and 'gene_type'.
+
+        >>> result = tt.ig.standardize("IGHV01-02")
+        >>> result.symbol
+        'IGHV1-2'
+        >>> result.original_input
+        'IGHV01-02'
+        >>> result.species
+        'homosapiens'
+        >>> result.receptor_type
+        'IG'
+        >>> result.locus
+        'IGH'
+        >>> result.gene_type
+        'V'
+
+        Utility method 'get_all_alleles' can be used to retrieve all (functional) alleles for a given symbol.
+
+        >>> result = tt.ig.standardize("IGHV1-3")
+        >>> result.get_all_alleles()
+        ['IGHV1-3*01', 'IGHV1-3*02', 'IGHV1-3*03', 'IGHV1-3*04', 'IGHV1-3*05']
+
+        >>> result = tt.ig.standardize("IGHV1-67")
+        >>> result.get_all_alleles(enforce_functional=True)
+        []
+        >>> result.get_all_alleles(enforce_functional=True)
+        ['IGHV1-67*02', 'IGHV1-67*03', 'IGHV1-67*01']
+
+        Utility method 'get_aa_sequences' can be used to retrieve known amino acid sequences per allele.
+        Using sequence_type 'ALL' shows all available sequence data for each allele.
+
+        >>> result = tt.ig.standardize("IGHV1-3*01")
+        >>> result.get_aa_sequences(sequence_type="CDR1")
+        {'IGHV1-3*01': 'GYTFTSYA'}
+        >>> result.get_aa_sequences(sequence_type="CDR2")
+        {'IGHV1-3*01': 'INAGNGNT'}
+        >>> result = tt.ig.standardize("IGLJ3")
+        >>> result.get_aa_sequences(sequence_type="ALL")
+        {
+        'IGLJ3*01': {
+            'J-MOTIF': 'FGGG', 'J-REGION': 'VVFGGGTKLTVL', 'functionality': 'F'
+            },
+        'IGLJ3*02': {
+            'J-MOTIF': 'FGGG', 'J-REGION': 'WVFGGGTKLTVL', 'functionality': 'F'
+            }
+        }
+
 
     .. topic:: Decision Logic
 

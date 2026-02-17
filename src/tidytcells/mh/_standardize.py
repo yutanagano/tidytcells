@@ -99,7 +99,7 @@ def standardize(
 
 
         Attributes 'allele', 'protein' and 'gene' only return a result if the symbol could be standardized up to that level.
-        Attribute 'highest_precision' is never None for a successful standardization, and always returns the most
+        Attribute 'symbol' is never None for a successful standardization, and always returns the most
         detailed available result between 'allele', 'protein' and 'gene'.
 
         >>> tt.mh.standardize("HLA-DRB3*01:01:02:01").symbol
@@ -120,6 +120,23 @@ def standardize(
 
         >>> tt.mh.standardize("CRW2", species="musmusculus").gene
         'MH1-M5'
+
+        For failed standardizations, the 'error' attribute explains why the standardization failed, and
+        the 'attempted_fix' attribute contains the best attempted result found during standardization.
+
+        >>> result = tt.mh.standardize(symbol="HLA-DRB365")
+        >>> result.is_standardized
+        False
+        >>> result.error
+        'Nonexistent allele for recognized gene'
+        >>> result.attempted_fix
+        'HLA-DRB3*65'
+
+        Other available properties are 'original_input', 'species'.
+        >>> result.original_input
+        'HLA-DRB365'
+        >>> result.original_input
+        'homosapiens'
 
     .. topic:: Decision Logic
 

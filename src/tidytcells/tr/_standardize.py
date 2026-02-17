@@ -97,7 +97,7 @@ def standardize(
         'TRAV1'
 
         Attributes 'allele', 'gene' and 'subgroup' only return a result if the symbol could be standardized up to that level.
-        Attribute 'highest_precision' is never None for a successful standardization, and always returns the most
+        Attribute 'symbol' is never None for a successful standardization, and always returns the most
         detailed available result between 'allele', 'gene' and 'subgroup'.
 
         >>> tt.tr.standardize("TRAV1-1*01").symbol
@@ -135,6 +135,54 @@ def standardize(
 
         >>> tt.tr.standardize("TRBV1", species="musmusculus").gene
         'TRBV1'
+
+        Other available properties are 'original_input', 'species', 'receptor_type', 'locus' and 'gene_type'.
+
+        >>> result = tt.tr.standardize("TRAV01-01")
+        >>> result.symbol
+        'TRAV1-1'
+        >>> result.original_input
+        'TRAV01-01'
+        >>> result.species
+        'homosapiens'
+        >>> result.receptor_type
+        'TR'
+        >>> result.locus
+        'TRA'
+        >>> result.gene_type
+        'V'
+
+        Utility method 'get_all_alleles' can be used to retrieve all (functional) alleles for a given symbol.
+
+        >>> result = tt.tr.standardize("TRAV1-1")
+        >>> result.get_all_alleles()
+        ['TRAV1-1*01', 'TRAV1-1*02']
+
+        >>> result = tt.tr.standardize("TRAV15")
+        >>> result.get_all_alleles(enforce_functional=True)
+        []
+        >>> result.get_all_alleles(enforce_functional=True)
+        ['TRAV15*02', 'TRAV15*03', 'TRAV15*01']
+
+        Utility method 'get_aa_sequences' can be used to retrieve known amino acid sequences per allele.
+        Using sequence_type 'ALL' shows all available sequence data for each allele.
+
+        >>> result = tt.tr.standardize("TRAV1-1*01")
+        >>> result.get_aa_sequences(sequence_type="CDR1")
+        {'TRAV1-1*01': 'TSGFYG'}
+        >>> result.get_aa_sequences(sequence_type="CDR2")
+        {'TRAV1-1*01': 'NALDGL'}
+        >>> result = tt.tr.standardize("TRAJ15")
+        >>> result.get_aa_sequences(sequence_type="ALL")
+        {
+        'TRAJ15*01': {
+            'J-MOTIF': 'FGKG', 'J-REGION': 'NQAGTALIFGKGTTLSVSS', 'functionality': 'F'
+            },
+        'TRAJ15*02': {
+            'J-MOTIF': 'FGKG', 'J-REGION': 'NQAGTALIFGKGTHLSVSS', 'functionality': 'F'
+            }
+        }
+
 
     .. topic:: Decision Logic
 
