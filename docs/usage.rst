@@ -11,13 +11,13 @@ The submodules are:
 +-------------------------------+----------------------------------------------------------+
 | Submodule                     | For                                                      |
 +===============================+==========================================================+
+| :py:mod:`tidytcells.tr`       | TR gene/allele data                                      |
++-------------------------------+----------------------------------------------------------+
 | :py:mod:`tidytcells.ig`       | IG gene/allele data                                      |
 +-------------------------------+----------------------------------------------------------+
 | :py:mod:`tidytcells.junction` | TR JUNCTION or CDR3-IMGT amino acid sequence data        |
 +-------------------------------+----------------------------------------------------------+
 | :py:mod:`tidytcells.mh`       | MH gene/allele data                                      |
-+-------------------------------+----------------------------------------------------------+
-| :py:mod:`tidytcells.tr`       | TR gene/allele data                                      |
 +-------------------------------+----------------------------------------------------------+
 
 .. tip::
@@ -40,10 +40,16 @@ Now, these ``standardize`` functions can be used on their own to clean individua
 >>> import tidytcells as tt
 >>> orig = "A1"
 >>> cleaned = tt.mh.standardize(orig)
->>> cleaned
+>>> cleaned.symbol
 'HLA-A*01'
 
-However, in real-life scenarios one would like to clean a whole set of data contained in a table.
+The result of each ``standardize`` function is a wrapper object which will have various properties and utility
+methods for retrieving further information. Please see the :py:class:`~tidytcells.result.ReceptorGene`,
+:py:class:`~tidytcells.result.Junction` and :py:class:`~tidytcells.result.MhGene` classes for more detailed documentation.
+
+
+
+In real-life scenarios one would like to clean a whole set of data contained in a table.
 This can be achieved in a fairly straightforward manner by using :py:mod:`tidytcells` in conjunction with a data analysis tool like `pandas <https://pandas.pydata.org/>`_.
 Pandas provides a nice way to blanket-apply data transformation functions to multiple ``DataFrame`` cells through their ``Series.map`` and ``DataFrame.map`` methods.
 For example, given a table of TR/junction data (a similar procedure would work for tables with peptide-MH data as well):
@@ -51,51 +57,74 @@ For example, given a table of TR/junction data (a similar procedure would work f
 >>> import pandas as pd
 >>> df = pd.DataFrame(
 ...     data=[
-...         ["TRBV13*01",    "CASSYLPGQGDHYSNQPQHF", "trbj1-5*01"],
+...         ["TRBV13",    "CASSYLPGQGDHYSNQPQHF", "trbj1-5*01"],
 ...         ["TCRBV28S1*01", "CASSLGQSGANVLTF",      "TRBJ2-6*01"],
 ...         ["unknown",      "ASSDWGSQNTLY",         "TRBJ2-4*01"]
 ...     ],
-...     columns=["v", "junction", "j"]
+...     columns=["v_orig", "junction_orig", "j_orig"]
 ... )
 >>> df
-              v              junction           j
-0     TRBV13*01  CASSYLPGQGDHYSNQPQHF  trbj1-5*01
+         v_orig         junction_orig      j_orig
+0        TRBV13  CASSYLPGQGDHYSNQPQHF  trbj1-5*01
 1  TCRBV28S1*01       CASSLGQSGANVLTF  TRBJ2-6*01
 2       unknown          ASSDWGSQNTLY  TRBJ2-4*01
 
-One can apply the ``standardize`` functions from :py:mod:`tidytcells` over the whole table at once, like so:
+One can apply the ``standardize`` functions from :py:mod:`tidytcells` over the whole table at once.
+Use 'map' for standardization with default parameters, and 'apply' when parameters need to be set:
 
 >>> cleaned = df.copy()
->>> cleaned[["v", "j"]] = df[["v", "j"]].map(tt.tr.standardize)
->>> cleaned["junction"] = df["junction"].map(tt.junction.standardize)
->>> cleaned
+>>> cleaned[["v", "j"]] = df[["v_orig", "j_orig"]].map(tt.tr.standardize)
+>>> cleaned["junction"] = df["cdr3_orig"].apply(junction.standardize, locus="TRB")
+>>> cleaned[["v", "junction", "j"]]
            v              junction           j
-0  TRBV13*01  CASSYLPGQGDHYSNQPQHF  TRBJ1-5*01
+0     TRBV13  CASSYLPGQGDHYSNQPQHF  TRBJ1-5*01
 1  TRBV28*01       CASSLGQSGANVLTF  TRBJ2-6*01
-2       None        CASSDWGSQNTLYF  TRBJ2-4*01
+2                   CASSDWGSQNTLYF  TRBJ2-4*01
 
-To apply the functions with optional arguments, one can wrap the ``standardize`` functions using lambda functions (see below).
+Alternatively, for full control over the input parameters and retrieving different output values from the results objects,
+one one can wrap the ``standardize`` functions using lambda functions (see below).
 For use cases that require more flexibility, one could even define a wrapper function explicitly in the code.
 
 >>> cleaned = df.copy()
->>> cleaned[["v", "j"]] = df[["v", "j"]].map(
+>>> cleaned["v_allele"] = cleaned["v_orig"].map(
 ...     lambda x: tt.tr.standardize(
 ...         symbol=x,
-...         species="homosapiens",
-...         precision="gene"
-...     )
+...     ).allele
 ... )
->>> cleaned["junction"] = df["junction"].map(
+>>> cleaned["v_gene"] = cleaned["v_orig"].map(
+...     lambda x: tt.tr.standardize(
+...         symbol=x,
+...     ).gene
+... )
+>>> cleaned["v_subgroup"] = cleaned["v_orig"].map(
+...     lambda x: tt.tr.standardize(
+...         symbol=x,
+...     ).subgroup
+... )
+>>> cleaned[["v_orig", "v_allele", "v_gene", "v_subgroup"]]
+         v_orig   v_allele  v_gene v_subgroup
+0        TRBV13       None  TRBV13     TRBV13
+1  TCRBV28S1*01  TRBV28*01  TRBV28     TRBV28
+2       unknown       None    None       None
+
+>>> cleaned["cdr3"] = cleaned["junction_orig"].map(
 ...     lambda x: tt.junction.standardize(
 ...         seq=x,
-...         strict=True
-...     )
+...         locus="TRB",
+...     ).cdr3
 ... )
->>> cleaned
-        v              junction        j
-0  TRBV13  CASSYLPGQGDHYSNQPQHF  TRBJ1-5
-1  TRBV28       CASSLGQSGANVLTF  TRBJ2-6
-2    None                  None  TRBJ2-4
+>>> cleaned["junction"] = cleaned["junction_orig"].map(
+...     lambda x: tt.junction.standardize(
+...         seq=x,
+...         locus="TRB",
+...     ).cdr3
+... )
+>>> cleaned["junction_orig", "junction", "cdr3"]
+          junction_orig              junction                cdr3
+0  CASSYLPGQGDHYSNQPQHF  CASSYLPGQGDHYSNQPQHF  ASSYLPGQGDHYSNQPQH
+1       CASSLGQSGANVLTF       CASSLGQSGANVLTF       ASSLGQSGANVLT
+2          ASSDWGSQNTLY        CASSDWGSQNTLYF        ASSDWGSQNTLY
+
 
 For more complete documentations of the ``standardize`` functions, refer to :ref:`the api reference <api>`.
 
@@ -108,16 +137,21 @@ The ``query`` functions can be useful when checking if a particular dataset cove
 Since :py:mod:`tidytcells` has a local copy of all relevant data pulled directly from `IMGT's GENE-DB <https://www.imgt.org/genedb/>`_ (and updated with every new release), queries are blazingly fast and do not require an internet connection.
 
 
-Querying TR/IG gene amino acid sequence data from `IMGT GENE-DB <https://www.imgt.org/genedb/>`_
--------------------------------------------------------------------------------------------------
 
-Sometimes, you have a T cell receptor or immunoglobulin represented as its V and J gene usages and its junction sequences, but you want to represent it in terms of its amino acid sequence.
-In such situations, the :py:func:`tidytcells.tr.get_aa_sequence` and :py:func:`tidytcells.ig.get_aa_sequence` functions can help.
-These functions allow you to query amino acid sequence data for any functional TR or IG gene.
-The functions provide sequence data for the whole gene exome, as well as certain important regions (e.g. CDR1 and CDR2 in the V genes).
-The data is pulled from IMGT's `GENE-DB <https://www.imgt.org/genedb/>`_, and as is with the case with the :py:func:`tidytcells.tr.query`, :py:func:`tidytcells.mh.query`, and :py:func:`tidytcells.ig.query`, all relevant data exists locally within :py:mod:`tidytcells` (and updated with every new release), so the queries are blazingly fast and requires no internet connection.
 
-Other MH utilities
-------------------
+..
+    To do: rewrite these parts to match with new results objects / MRO
 
-The :py:mod:`mh <tidytcells.mh>` module provides a couple more extra goodies, including :py:func:`get_chain <tidytcells.mh.get_chain>` and :py:func:`get_class <tidytcells.mh.get_class>`, each with self-explanatory names.
+    Querying TR/IG gene amino acid sequence data from `IMGT GENE-DB <https://www.imgt.org/genedb/>`_
+    -------------------------------------------------------------------------------------------------
+
+    Sometimes, you have a T cell receptor or immunoglobulin represented as its V and J gene usages and its junction sequences, but you want to represent it in terms of its amino acid sequence.
+    In such situations, the :py:func:`tidytcells.tr.get_aa_sequence` and :py:func:`tidytcells.ig.get_aa_sequence` functions can help.
+    These functions allow you to query amino acid sequence data for any functional TR or IG gene.
+    The functions provide sequence data for the whole gene exome, as well as certain important regions (e.g. CDR1 and CDR2 in the V genes).
+    The data is pulled from IMGT's `GENE-DB <https://www.imgt.org/genedb/>`_, and as is with the case with the :py:func:`tidytcells.tr.query`, :py:func:`tidytcells.mh.query`, and :py:func:`tidytcells.ig.query`, all relevant data exists locally within :py:mod:`tidytcells` (and updated with every new release), so the queries are blazingly fast and requires no internet connection.
+
+    Other MH utilities
+    ------------------
+
+    The :py:mod:`mh <tidytcells.mh>` module provides a couple more extra goodies, including :py:func:`get_chain <tidytcells.mh.get_chain>` and :py:func:`get_class <tidytcells.mh.get_class>`, each with self-explanatory names.
