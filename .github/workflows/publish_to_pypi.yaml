@@ -17,7 +17,7 @@ jobs:
       - name: build wheel and source tarball
         run: python3 -m build
       - name: store distribution packages
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: python-package-distributions
           path: dist/
