@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from tidytcells import _utils
 from tidytcells._resources import VALID_HOMOSAPIENS_MH, HOMOSAPIENS_MH_SYNONYMS
-from tidytcells._utils.result import HLAGene
+from tidytcells.result import HLAGene
 
 
 class HlaSymbolParser:

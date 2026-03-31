@@ -7,7 +7,7 @@ from tidytcells._standardized_gene_symbol import (
 )
 from typing import Dict, Optional, Type, Union
 
-from tidytcells._utils.result import MhGene
+from tidytcells.result._mh_gene import MhGene
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +45,8 @@ def standardize(
     :type symbol:
         str
     :param species:
-        Can be specified to standardise to a TR symbol that is known to be valid for that species (see above for supported species).
-        If set to ``"any"``, then first attempts standardisation for *Homo sapiens*, then *Mus musculus*.
+        Can be specified to standardize to a TR symbol that is known to be valid for that species (see above for supported species).
+        If set to ``"any"``, then first attempts standardization for *Homo sapiens*, then *Mus musculus*.
         Defaults to ``"homosapiens"``.
 
         .. note::
@@ -61,7 +61,7 @@ def standardize(
     :type database:
         str
     :param log_failures:
-        Report standardisation failures through logging (at level ``WARNING``).
+        Report standardization failures through logging (at level ``WARNING``).
         Defaults to ``True``.
     :type log_failures:
         bool
@@ -70,30 +70,22 @@ def standardize(
     :type gene:
         str
     :param suppress_warnings:
-        Disable warnings that are usually logged when standardisation fails.
+        Disable warnings that are usually logged when standardization fails.
         Deprecated in favour of `log_failures`.
     :type suppress_warnings:
         bool
 
     :return:
-        This method will return a MhGeneResult object with the following attributes:
-            - success (bool): True if the standardiation was successful, False otherwise.
-            - failed (bool): the inverse of success.
-            - allele (str): the standardized symbol at the allele level, if standardisation to this level was successful, otherwise None.
-            - protein (str): the standardized symbol at the protein level, if standardisation to this level was successful, otherwise None. This is only available for human data.
-            - gene (str): the standardized symbol at the gene level, if standardisation was successful, otherwise None.
-            - highest_precision (str): the most precise version of the standardized symbol (allele > gene) if standardisation was successful, otherwise None.
-            - error (str): the error message, only if standardisation failed, otherwise None.
-            - attempted_fix (str): the best attempt at fixing the input symbol, only of standardisation failed, otherwise None.
-            - original_input (str): the original input symbol.
+        A standardized MHC gene wrapped in a :py:class:`~tidytcells.result.MhGene` object.
+        For details on how to use this output, please refer to the class documentation.
     :rtype:
-        MhGeneResult
+        :py:class:`~tidytcells.result.MhGene`
 
 
     .. topic:: Example usage
 
-        MH standardised results will be returned as a MhGeneResult (or HLAGeneResult for human genes).
-        When standardisation is a success, attributes 'allele', 'protein' and 'gene' can be used to retrieve the corrected information.
+        MH standardized results will be returned as a :py:class:`~tidytcells.result.MhGene` (or :py:class:`~tidytcells.result.HLAGene` for human genes).
+        When standardization is a success, attributes 'allele', 'protein' and 'gene' can be used to retrieve the corrected information.
 
         >>> result = tt.mh.standardize("HLA-DRB3*01:01:02:01")
         >>> result.is_standardized
@@ -106,8 +98,8 @@ def standardize(
         'HLA-DRB3'
 
 
-        Attributes 'allele', 'protein' and 'gene' only return a result if the symbol could be standardised up to that level.
-        Attribute 'highest_precision' is never None for a successful standardisation, and always returns the most
+        Attributes 'allele', 'protein' and 'gene' only return a result if the symbol could be standardized up to that level.
+        Attribute 'symbol' is never None for a successful standardization, and always returns the most
         detailed available result between 'allele', 'protein' and 'gene'.
 
         >>> tt.mh.standardize("HLA-DRB3*01:01:02:01").symbol
@@ -119,7 +111,7 @@ def standardize(
         >>> tt.mh.standardize("HLA-DRB3").symbol
         'HLA-DRB3'
 
-        Non-standardised input strings will intelligently be corrected to IMGT-compliant symbols.
+        Non-standardized input strings will intelligently be corrected to IMGT-compliant symbols.
 
         >>> tt.mh.standardize("A1").allele
         'HLA-A*01'
@@ -129,29 +121,46 @@ def standardize(
         >>> tt.mh.standardize("CRW2", species="musmusculus").gene
         'MH1-M5'
 
+        For failed standardizations, the 'error' attribute explains why the standardization failed, and
+        the 'attempted_fix' attribute contains the best attempted result found during standardization.
+
+        >>> result = tt.mh.standardize(symbol="HLA-DRB365")
+        >>> result.is_standardized
+        False
+        >>> result.error
+        'Nonexistent allele for recognized gene'
+        >>> result.attempted_fix
+        'HLA-DRB3*65'
+
+        Other available properties are 'original_input', 'species'.
+        >>> result.original_input
+        'HLA-DRB365'
+        >>> result.original_input
+        'homosapiens'
+
     .. topic:: Decision Logic
 
         #todo: update decision logic once mouse is updated with MRO mapping
 
-        To provide an easy way to gauge the scope and limitations of standardisation, below is a simplified overview of the decision logic employed when attempting to standardize an MH symbol.
+        To provide an easy way to gauge the scope and limitations of standardization, below is a simplified overview of the decision logic employed when attempting to standardize an MH symbol.
         For more detail, please refer to the `source code <https://github.com/yutanagano/tidytcells>`_.
 
         .. code-block:: none
 
-            IF the specified species is not supported for standardisation:
+            IF the specified species is not supported for standardization:
                 RETURN original symbol without modification
 
             ELSE:
-                // attempt standardisation
+                // attempt standardization
                 {
                     IF symbol is already in IMGT-compliant form:
-                        set standardisation status as successful
-                        skip rest of standardisation
+                        set standardization status as successful
+                        skip rest of standardization
 
                     IF symbol is a known deprecated symbol:
                         overwrite symbol with current IMGT-compliant symbol
-                        set standardisation status as successful
-                        skip rest of standardisation
+                        set standardization status as successful
+                        skip rest of standardization
 
                     // the rest is only applicable when species is set to homo sapiens
                     add "HLA-" to the beginning of the symbol if necessary                  //e.g. A -> HLA-A
@@ -159,18 +168,18 @@ def standardize(
                     add back forgotten asterisks if necessary                               //e.g. HLA-A01 -> HLA-A*01
                     add back forgotten colons if necessary                                  //e.g. HLA-A*0101 -> HLA-A*01:01
                     If symbol is now in IMGT-compliant form:
-                        set standardisation status as successful
-                        skip rest of standardisation
+                        set standardization status as successful
+                        skip rest of standardization
 
                     try adding or subtracting leading zeros from allele designation numbers //e.g. HLA-A*001 -> HLA-A*01
                     If symbol is now in IMGT-compliant form:
-                        set standardisation status as successful
-                        skip rest of standardisation
+                        set standardization status as successful
+                        skip rest of standardization
 
-                    set standardisation status as failed
+                    set standardization status as failed
                 }
 
-                RETURN MhGeneResult
+                RETURN :py:class:`~tidytcells.result.MhGene`
 
     """
     symbol = (
@@ -251,8 +260,11 @@ def standardize(
 
 
 
-def standardise(*args, **kwargs) -> Optional[str]:
+def standardise(*args, **kwargs) -> MhGene:
     """
     Alias for :py:func:`tidytcells.mh.standardize`.
+
+    :rtype:
+        :py:class:`~tidytcells.result.MhGene`
     """
     return standardize(*args, **kwargs)

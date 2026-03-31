@@ -1,5 +1,5 @@
 """
-Standardise TR/MH data.
+Standardize TR/MH data.
 """
 
 from . import junction, mh, tr, ig

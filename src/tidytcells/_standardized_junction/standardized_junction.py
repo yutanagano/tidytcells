@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Optional
 
-from tidytcells._utils.result import Junction
+from tidytcells.result import Junction
 from tidytcells._utils.alignment import *
 
 
@@ -312,7 +312,7 @@ class JunctionStandardizer(ABC):
     def get_reason_why_invalid(self) -> Optional[str]: # optional: enforce_complete / no reconstruction etc
         """
         If the CDR3 cannot be standardized (it is invalid), this method returns a string outlining the reason why (incomplete on the left side, right side, etc).
-        Returns None if standardisation was successful.
+        Returns None if standardization was successful.
         """
         if len(self.reasons_invalid) == 0:
             return None

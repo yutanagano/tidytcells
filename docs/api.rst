@@ -7,4 +7,8 @@ API reference
     :toctree: generated
     :recursive:
     
-    tidytcells
+    tidytcells.tr
+    tidytcells.ig
+    tidytcells.junction
+    tidytcells.mh
+    tidytcells.result

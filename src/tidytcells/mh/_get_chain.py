@@ -30,7 +30,7 @@ def get_chain(
     :type symbol:
         str
     :param log_failures:
-        Report standardisation failures through logging (at level ``WARNING``).
+        Report standardization failures through logging (at level ``WARNING``).
         Defaults to ``True``.
     :type log_failures:
         bool
@@ -39,7 +39,7 @@ def get_chain(
     :type gene:
         str
     :param suppress_warnings:
-        Disable warnings that are usually logged when standardisation fails.
+        Disable warnings that are usually logged when standardization fails.
         Deprecated in favour of `log_failures`.
     :type suppress_warnings:
         bool

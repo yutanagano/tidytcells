@@ -3,7 +3,7 @@ from typing import Optional
 
 from tidytcells import _utils
 from tidytcells._resources import VALID_MUSMUSCULUS_MH, MUSMUSCULUS_MH_SYNONYMS
-from tidytcells._utils.result import MhGene
+from tidytcells.result import MhGene
 
 
 class MhSymbolParser:

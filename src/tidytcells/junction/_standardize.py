@@ -1,7 +1,7 @@
 import logging
 from tidytcells import _utils
 from tidytcells._resources import AMINO_ACIDS
-from tidytcells._utils.result import Junction
+from tidytcells.result._junction import Junction
 from tidytcells._utils.alignment import get_is_valid_locus_gene_fn
 from tidytcells._utils.parameter import Parameter
 from tidytcells._standardized_junction import (
@@ -117,28 +117,21 @@ def standardize(
     :type allow_j_reconstruction:
         bool
     :param log_failures:
-        Report standardisation failures through logging (at level ``WARNING``).
+        Report standardization failures through logging (at level ``WARNING``).
         Defaults to ``True``.
     :type log_failures:
         bool
     :param suppress_warnings:
-        Disable warnings that are usually logged when standardisation fails.
+        Disable warnings that are usually logged when standardization fails.
         Deprecated in favour of `log_failures`.
     :type suppress_warnings:
         bool
 
     :return:
-        This method will return a JunctionResult object with the following attributes:
-            - success (bool): True if the standardiation was successful, False otherwise.
-            - failed (bool): the inverse of success.
-            - junction (str): the IMGT-junction, including conserved leading C and trailing F / W / C if the standardiation was successful, otherwise None.
-            - cdr3 (str): the IMGT-CDR3, excluding conserved leading C and trailing F / W / C if the standardiation was successful, otherwise None.
-            - error (str): the error message, only if standardisation failed, otherwise None.
-            - attempted_fix (str): the best attempt at fixing the input sequence, only of standardisation failed, otherwise None.
-            - original_input (str): the original input sequence.
-            - species (str): the species used for the gene lookup to validate the CDR3 junction.
+        A standardized CDR3 junction wrapped in a :py:class:`~tidytcells.result.Junction` object.
+        For details on how to use this output, please refer to the class documentation.
     :rtype:
-        JunctionResult
+        :py:class:`~tidytcells.result.Junction`
 
     .. topic:: Example usage
 
@@ -146,12 +139,12 @@ def standardize(
         Use attributes 'junction' and 'cdr3' to retrieve the corrected sequences.
 
         >>> result = tt.junction.standardize("csadaf", locus="TR")
+        >>> result.is_standardized
+        True
         >>> result.junction
         'CSADAF'
         >>> result.cdr3
         'SADA'
-        >>> result.is_standardized
-        True
 
         Strings that are valid amino acid sequences but do not start and end
         with the appropriate residues can be corrected based on V/J gene or locus information.
@@ -177,6 +170,12 @@ def standardize(
         'J alignment unsuccessful; J side reconstruction unsuccessful.'
         >>> result.attempted_fix
         'CASWEHGH'
+
+        Other available properties are 'original_input' and 'species'.
+        >>> result.original_input
+        'ASWEHGH'
+        >>> result.species
+        'homosapiens'
 
         The conserved trailing residue can be intelligently inferred if
         `j_symbol` is supplied.
@@ -214,10 +213,12 @@ def standardize(
         'CAMRESENMDSSYKLIF'
 
 
+
+
     .. topic:: Decision Logic
 
         To provide an easy way to gauge the scope and limitations of
-        standardisation, below is a simplified overview of the decision logic
+        standardization, below is a simplified overview of the decision logic
         employed when attempting to standardize a junction sequence. For more
         detail, please refer to the
         `source code <https://github.com/yutanagano/tidytcells>`_.
@@ -226,13 +227,13 @@ def standardize(
 
 
             0. sanity-check input
-            Skip standardisation if invalid parameters are passed (invalid amino acids in sequence, invalid species, etc)
+            Skip standardization if invalid parameters are passed (invalid amino acids in sequence, invalid species, etc)
 
             1. select candidate V/J genes
             Retrieve all possible V and J genes based on the provided `locus`, `j_symbol`, `v_symbol` and `enforce_functional_v`, `enforce_functional_j`
 
             IF an allele-level V/J symbol is provided for which no sequence information is known:
-                set standardisation status as failed (no sequence information known for <symbol>)
+                set standardization status as failed (no sequence information known for <symbol>)
 
             2. align sequence to V/J genes
             Attempt to align to each of the retrieved V and J gene sequences through a sliding window approach:
@@ -250,7 +251,7 @@ def standardize(
                     keep only the best alignments associated with the corrected sequence
 
             IF no alignments are found:
-                set standardisation status as failed (<V/J> alignment unsuccessful)
+                set standardization status as failed (<V/J> alignment unsuccessful)
 
             3. correct J side
             FOR each successful J gene alignment:
@@ -270,10 +271,10 @@ def standardize(
                 keep only this correction, skip to step 4
 
             IF no J side corrections remain:
-                set standardisation status as failed (J side reconstruction unsuccessful)
+                set standardization status as failed (J side reconstruction unsuccessful)
 
             IF multiple contradicting J side corrections remain:
-                set standardisation status as failed (J side reconstruction ambiguous)
+                set standardization status as failed (J side reconstruction ambiguous)
 
             4. correct V side
             FOR each successful V gene alignment:
@@ -290,19 +291,19 @@ def standardize(
                 keep only this correction, skip to step 5
 
             IF no V side corrections remain,:
-                set standardisation status as failed (V side reconstruction unsuccessful)
+                set standardization status as failed (V side reconstruction unsuccessful)
 
             IF multiple contradicting V side corrections remain:
-                set standardisation status as failed (V side reconstruction ambiguous)
+                set standardization status as failed (V side reconstruction ambiguous)
 
             5. check length
             IF the length of the remaining sequence is < 6:
-                set standardisation status as failed (junction too short)
+                set standardization status as failed (junction too short)
 
             6. finalisation
-            IF standardisation has not failed:
-                consider standardisation a success
-            RETURN JunctionResult
+            IF standardization has not failed:
+                consider standardization a success
+            RETURN :py:class:`~tidytcells.result.Junction`
 
     """
     seq = Parameter(seq, "seq").throw_error_if_not_of_type(str).value
@@ -404,7 +405,7 @@ def standardize(
     if locus[0:2] not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
         if log_failures:
             logger.warning(
-                f'Unsupported locus: "{locus}" for species "{species}". ' f"Skipping {type} standardisation."
+                f'Unsupported locus: "{locus}" for species "{species}". ' f"Skipping {type} standardization."
             )
 
         return Junction(original_input, f'Unsupported locus: "{locus}" for species "{species}"')
@@ -428,8 +429,11 @@ def standardize(
     return result
 
 
-def standardise(*args, **kwargs) -> Optional[str]:
+def standardise(*args, **kwargs) -> Junction:
     """
     Alias for :py:func:`tidytcells.junction.standardize`.
+
+    :rtype:
+        :py:class:`~tidytcells.result.Junction`
     """
     return standardize(*args, **kwargs)

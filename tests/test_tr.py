@@ -121,13 +121,6 @@ class TestStandardize:
         assert result.species == "homosapiens"
 
 
-    # ("IGLV7-43*01", True, "IGLV7-43*01", "IGLV7-43", "IGLV7", "IGLV7-43*01"),
-    # ("IGLV7-43*01", False, "IGLV7-43*01", "IGLV7-43", "IGLV7", "IGLV7-43*01"),
-    # ("IGLV8-61", True, None, "IGLV8-61", "IGLV8", "IGLV8-61"),
-    # ("IGLV8-61", False, None, "IGLV8-61", "IGLV8", "IGLV8-61"),
-    # ("IGLV8", True, None, None, "IGLV8", "IGLV8"),
-    # ("IGLV8", False, None, None, None, None),
-
     @pytest.mark.parametrize(
         ("symbol", "allow_subgroup", "expected_allele", "expected_gene", "expected_subgroup", "expected_symbol"),
         (
@@ -218,6 +211,45 @@ class TestStandardizeHomoSapiens:
 
         assert result.symbol == expected
         assert result.species == species
+
+    @pytest.mark.parametrize(
+        ("symbol", "expected_alleles", "enforce_functional", "species"),
+        (
+            ("TRAV1-1", ["TRAV1-1*01", "TRAV1-1*02"], True, "homosapiens"),
+            ("TRAV12-4", [], True, "musmusculus"),
+            ("TRAV12-4", ["TRAV12-4*01", "TRAV12-4*02", "TRAV12-4*03"], False, "musmusculus"),
+            ("TRAV14", ["TRAV14/DV4*01", "TRAV14/DV4*02",
+                        "TRAV14/DV4*03", "TRAV14/DV4*04", "TRAV14/DV4*05"], True, "homosapiens"),
+            ("TRAV14", ["TRAV14-1*01", "TRAV14-1*02", "TRAV14-1*03",
+                        "TRAV14-1*04", "TRAV14/DV4*01", "TRAV14/DV4*02",
+                        "TRAV14/DV4*03", "TRAV14/DV4*04", "TRAV14/DV4*05"], False, "homosapiens"),
+        ),
+    )
+    def test_get_all_alleles(self, symbol, expected_alleles, enforce_functional, species):
+        result = tr.standardize(symbol=symbol, species=species, allow_subgroup=True)
+
+        assert result.symbol == symbol
+        assert result.species == species
+        assert sorted(result.get_all_alleles(enforce_functional=enforce_functional)) == sorted(expected_alleles)
+
+    @pytest.mark.parametrize(
+        ("symbol", "sequence_type", "expected_result"),
+        (
+            ("TRAV1-1", "CDR1-IMGT", {"TRAV1-1*01": "TSGFYG", "TRAV1-1*02": "TSGFYG"}),
+            ("TRAV1-1", "CDR1", {"TRAV1-1*01": "TSGFYG", "TRAV1-1*02": "TSGFYG"}),
+            ("TRAV1-1", "cdr1", {"TRAV1-1*01": "TSGFYG", "TRAV1-1*02": "TSGFYG"}),
+            ("TRAJ10", "all", {"TRAJ10*01": {
+                                    "functionality": "F",
+                                    "J-REGION": "ILTGGGNKLTFGTGTQLKVEL",
+                                    "J-MOTIF": "FGTG"
+                                }}),
+        ),
+    )
+    def test_get_aa_sequences(self, symbol, sequence_type, expected_result):
+        result = tr.standardize(symbol=symbol, species="homosapiens", allow_subgroup=True)
+
+        assert result.symbol == symbol
+        assert result.get_aa_sequences(sequence_type) == expected_result
 
 
 class TestStandardizeMusMusculus:
@@ -320,58 +352,3 @@ class TestQuery:
         result = tr.query(precision="gene", contains_pattern="AJ")
         assert len(result) == 61
         assert "TRAJ11" in result
-
-
-class TestGetAaSequence:
-    @pytest.mark.parametrize(
-        ("symbol", "species", "expected"),
-        (
-            (
-                "TRAV10*02",
-                "homosapiens",
-                {
-                    "CDR1-IMGT": "VSPFSN",
-                    "CDR2-IMGT": "MTFSENT",
-                    "FR1-IMGT": "KNQVEQSPQSLIILEGKNCTLQCNYT",
-                    "FR2-IMGT": "LRWYKQDTGRGPVSLTI",
-                    "FR3-IMGT": "KSNGRYTATLDADTKQSSLHITASQLSDSASYIC",
-                    "V-REGION": "KNQVEQSPQSLIILEGKNCTLQCNYTVSPFSNLRWYKQDTGRGPVSLTIMTFSENTKSNGRYTATLDADTKQSSLHITASQLSDSASYICVVS",
-                    'functionality': 'F'
-                },
-            ),
-            (
-                "TRBD1*01",
-                "homosapiens",
-                {
-                    "D-REGION": "GTGG",
-                    'functionality': 'F'
-                },
-            ),
-            (
-                "TRAJ47*02",
-                "homosapiens",
-                {
-                    "J-REGION": "EYGNKLVFGAGTILRVKS",
-                    'J-MOTIF': 'FGAG',
-                    'functionality': 'F'
-                },
-            ),
-            (
-                "TRAV1*01",
-                "musmusculus",
-                {
-                    "CDR1-IMGT": "TSGFNG",
-                    "CDR2-IMGT": "VVLDGL",
-                    "FR1-IMGT": "GQGVEQPDNLMSVEGTFARVNCTYS",
-                    "FR2-IMGT": "LSWYQQREGHAPVFLSY",
-                    "FR3-IMGT": "KDSGHFSTFLSRSNGYSYLLLTELQIKDSASYLC",
-                    "V-REGION": "GQGVEQPDNLMSVEGTFARVNCTYSTSGFNGLSWYQQREGHAPVFLSYVVLDGLKDSGHFSTFLSRSNGYSYLLLTELQIKDSASYLCAVR",
-                    'functionality': 'F'
-                },
-            ),
-        ),
-    )
-    def test_get_aa_sequence(self, symbol, species, expected):
-        result = tr.get_aa_sequence(symbol=symbol, species=species)
-
-        assert result == expected

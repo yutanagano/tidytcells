@@ -2,7 +2,7 @@ from abc import ABC
 from abc import abstractmethod
 from typing import Dict, Optional, Tuple, Set
 
-from tidytcells._utils.result import ReceptorGene
+from tidytcells.result import ReceptorGene
 
 
 
