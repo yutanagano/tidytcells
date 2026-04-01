@@ -3634,7 +3634,6 @@
     },
     "TRAV14D-2*02": {
         "functionality": "(F)",
-        "CDR1-IMGT": "STFDY",
         "FR2-IMGT": "FPWYRQFPRESPALLIA",
         "CDR2-IMGT": "ISLVSNK",
         "FR3-IMGT": "KEDGRFTIFFNKREKKLSLHITDSQPGDSATYFC",
@@ -3642,7 +3641,6 @@
     },
     "TRAV9D-4*03": {
         "functionality": "(F)",
-        "CDR1-IMGT": "",
         "FR2-IMGT": "IRGRVQYPRQGLQLLLK",
         "CDR2-IMGT": "YYSGDPVV",
         "FR3-IMGT": "QGVNGFEAEFSKSNSSFHLRKASVHWSDSAVYFC",
