@@ -126,8 +126,7 @@ def get_ig_j_gene_sequence_data(species: str) -> dict:
 
 def get_v_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
     labels = ("FR1-IMGT", "CDR1-IMGT", "FR2-IMGT", "CDR2-IMGT", "FR3-IMGT", "V-REGION")
-    return get_gene_sequence_data(labels, gene_groups, species)
-
+    return omit_incomplete_regions(get_gene_sequence_data(labels, gene_groups, species))
 
 def get_d_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
     labels = ("D-REGION",)
@@ -151,6 +150,20 @@ def get_j_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
             data["TRAJ7*01"]["J-MOTIF"] = "LGKG"
 
     return add_j_motifs(data)
+
+def omit_incomplete_regions(v_aa_dict):
+    for allele, seq_data in v_aa_dict.items():
+        # Remove any empty sequences
+        for region in ("CDR1-IMGT", "CDR2-IMGT", "FR1-IMGT", "FR2-IMGT", "FR3-IMGT", "V-REGION"):
+            if region in seq_data and seq_data[region] == "":
+                seq_data.pop(region)
+
+        # Remove CDR1 if FR1 is missing and V starts with CDR1 (CDR1 is likely incomplete)
+        if ("V-REGION" in seq_data) and ("FR1-IMGT" not in seq_data) and ("CDR1-IMGT" in seq_data):
+            if seq_data["V-REGION"].startswith(seq_data["CDR1-IMGT"]):
+                seq_data.pop("CDR1-IMGT")
+
+    return v_aa_dict
 
 
 def get_gene_sequence_data(
