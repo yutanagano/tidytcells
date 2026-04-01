@@ -143,7 +143,7 @@ class Teststandardize:
         )
     )
     def test_various_examples(self, seq, j_symbol, v_symbol, locus, species, expected):
-        result = junction.standardize(seq=seq, j_symbol=j_symbol, v_symbol=v_symbol, species=species, locus=locus, allow_c_correction=True, allow_fw_correction=True, allow_v_reconstruction=True, allow_j_reconstruction=True, enforce_functional_j=True)
+        result = junction.standardize(seq=seq, j_symbol=j_symbol, v_symbol=v_symbol, species=species, locus=locus, allow_c_correction=True, allow_fw_correction=True, max_v_reconstruction=3, max_j_reconstruction=8, enforce_functional_j=True)
 
         assert result.junction == expected
         assert result.species == species

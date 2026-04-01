@@ -34,8 +34,8 @@ def standardize(
     allow_fw_correction: Optional[bool] = None,
     enforce_functional_v: Optional[bool] = None,
     enforce_functional_j: Optional[bool] = None,
-    allow_v_reconstruction: Optional[bool] = None,
-    allow_j_reconstruction: Optional[bool] = None,
+    max_v_reconstruction: Optional[int] = None,
+    max_j_reconstruction: Optional[int] = None,
     log_failures: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,
 ) -> Junction:
@@ -104,17 +104,19 @@ def standardize(
         Defaults to ``False``.
     :type enforce_functional_j:
         bool
-    :param allow_v_reconstruction:
-        Whether to allow more than just the 1 conserved C amino acid to be re-constructed from the V gene.
-        It is recommended to only set this value to True if V symbol information is supplied.
-        Defaults to ``False``.
-    :type allow_v_reconstruction:
+    :param max_v_reconstruction:
+        The maximum number of amino acids to reconstruct based on V gene information.
+        Defaults to 1 (only construct the conserved C). It is recommended to only set this number
+        to a value greater than 1 if V symbol information is supplied, and generally not recommended to set
+        the value larger than 3.
+    :type max_v_reconstruction:
         bool
-    :param allow_j_reconstruction:
-        Whether to allow more than just the 1 conserved F / W / C amino acid to be re-constructed from the J gene.
-        It is recommended to only set this value to True if J symbol information is supplied.
-        Defaults to ``False``.
-    :type allow_j_reconstruction:
+    :param max_j_reconstruction:
+        The maximum number of amino acids to reconstruct based on J gene information.
+        Defaults to 1 (only construct the conserved F / W / C). It is recommended to only set this number
+        to a value greater than 1 if J symbol information is supplied, and generally not recommended to set
+        the value larger than 3.
+    :type max_j_reconstruction:
         bool
     :param log_failures:
         Report standardization failures through logging (at level ``WARNING``).
@@ -358,16 +360,16 @@ def standardize(
         .throw_error_if_not_of_type(bool)
         .value
     )
-    allow_v_reconstruction = (
-        Parameter(allow_v_reconstruction, "allow_v_reconstruction")
-        .set_default(False)
-        .throw_error_if_not_of_type(bool)
+    max_v_reconstruction = (
+        Parameter(max_v_reconstruction, "max_v_reconstruction")
+        .set_default(1)
+        .throw_error_if_not_of_type(int)
         .value
     )
-    allow_j_reconstruction = (
-        Parameter(allow_j_reconstruction, "allow_j_reconstruction")
-        .set_default(False)
-        .throw_error_if_not_of_type(bool)
+    max_j_reconstruction = (
+        Parameter(max_j_reconstruction, "max_j_reconstruction")
+        .set_default(1)
+        .throw_error_if_not_of_type(int)
         .value
     )
     suppress_warnings_inverted = (
@@ -417,8 +419,8 @@ def standardize(
                                                       allow_fw_correction=allow_fw_correction,
                                                       enforce_functional_v=enforce_functional_v,
                                                       enforce_functional_j=enforce_functional_j,
-                                                      allow_v_reconstruction=allow_v_reconstruction,
-                                                      allow_j_reconstruction=allow_j_reconstruction).result
+                                                      max_v_reconstruction=max_v_reconstruction,
+                                                      max_j_reconstruction=max_j_reconstruction).result
 
     if (not result.is_standardized) and log_failures:
         _utils.warn_result_failure(

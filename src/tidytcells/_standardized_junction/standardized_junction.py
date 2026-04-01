@@ -35,7 +35,7 @@ class JunctionStandardizer(ABC):
     def __init__(self, seq: str, locus: str, j_symbol: str, v_symbol: str,
                  enforce_functional_v: bool = True, enforce_functional_j: bool = False,
                  allow_c_correction: bool = False, allow_fw_correction: bool = False,
-                 allow_v_reconstruction: bool = False, allow_j_reconstruction: bool = False) -> None:
+                 max_v_reconstruction: int = 1, max_j_reconstruction: int = 1) -> None:
         self.orig_seq = seq
         self.corrected_seq = seq
         self.locus = locus
@@ -45,8 +45,8 @@ class JunctionStandardizer(ABC):
         self.enforce_functional_j = enforce_functional_j
         self.allow_c_correction = allow_c_correction
         self.allow_fw_correction = allow_fw_correction
-        self.allow_v_reconstruction = allow_v_reconstruction
-        self.allow_j_reconstruction = allow_j_reconstruction
+        self.max_v_reconstruction = max_v_reconstruction
+        self.max_j_reconstruction = max_j_reconstruction
         self.corrected_first_aa = False
         self.corrected_last_aa = False
 
@@ -235,7 +235,7 @@ class JunctionStandardizer(ABC):
             elif len(seq) < new_seq_len:
                 reconstruction_length = new_seq_len - len(seq)
 
-                if reconstruction_length <= 1 or self.allow_j_reconstruction:
+                if reconstruction_length <= self.max_j_reconstruction:
                     end_j_idx = j_conserved_idx + 1
                     start_j_idx = end_j_idx - reconstruction_length
 
@@ -290,7 +290,7 @@ class JunctionStandardizer(ABC):
             if v_conserved_idx < v_offset:
                 reconstructed_aas = alignment_details["v_region"][v_conserved_idx:][:v_offset]
 
-                if len(reconstructed_aas) <= 1 or self.allow_v_reconstruction:
+                if len(reconstructed_aas) <= self.max_v_reconstruction:
                     new_seq = reconstructed_aas + seq
                     corrected_seqs.add(new_seq)
 
