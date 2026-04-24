@@ -3,7 +3,6 @@ from tidytcells._resources import AMINO_ACIDS
 from tidytcells._utils import Parameter
 from typing import Optional, Literal
 
-
 logger = logging.getLogger(__name__)
 
 

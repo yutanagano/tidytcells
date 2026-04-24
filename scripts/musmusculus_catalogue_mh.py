@@ -3,7 +3,6 @@ import json
 import pandas as pd
 import re
 
-
 df = pd.read_excel(Path("data") / "musmusculus_mh.ods").drop(
     columns=["Unnamed: 2", "Unnamed: 4"]
 )

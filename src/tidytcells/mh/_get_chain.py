@@ -4,7 +4,6 @@ from typing import Optional
 from tidytcells._resources import VALID_HOMOSAPIENS_MH
 from tidytcells._utils import Parameter
 
-
 logger = logging.getLogger(__name__)
 
 

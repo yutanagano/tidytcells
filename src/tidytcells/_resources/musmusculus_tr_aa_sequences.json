@@ -3030,7 +3030,8 @@
         "J-PHE": "F"
     },
     "TRAJ23*01": {
-        "J-REGION": "NYNQGKLIFGQGTKLSIKP"
+        "J-REGION": "NYNQGKLIFGQGTKLSIKP",
+        "J-PHE": "F"
     },
     "TRAJ24*01": {
         "J-REGION": "ELASLGKLQFGTGTQVVVTP",

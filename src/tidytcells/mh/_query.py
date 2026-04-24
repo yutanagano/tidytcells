@@ -8,7 +8,6 @@ from tidytcells._query_engine import (
 )
 from typing import Dict, FrozenSet, Optional, Type, Literal
 
-
 QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
     "homosapiens": HlaQueryEngine,
     "musmusculus": MusMusculusMhQueryEngine,
