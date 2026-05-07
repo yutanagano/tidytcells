@@ -3257,7 +3257,6 @@
     },
     "TRAV8-4*07": {
         "functionality": "(F)",
-        "CDR1-IMGT": "VEPY",
         "FR2-IMGT": "LFWYVQYPNQGLQLLLK",
         "CDR2-IMGT": "YTTGATLV",
         "FR3-IMGT": "KGINGFEAEFKKSETSFHLTKPSAHMTDPAEYFC",
@@ -3265,7 +3264,6 @@
     },
     "TRBV5-4*04": {
         "functionality": "(F)",
-        "CDR1-IMGT": "T",
         "FR2-IMGT": "VSWYQQALGQGPQFIFQ",
         "CDR2-IMGT": "YYREEE",
         "FR3-IMGT": "NGRGNSPPRFSGLQFPNYSSELNVNALELDDSALYLC",
@@ -3273,7 +3271,6 @@
     },
     "TRBV7-9*07": {
         "functionality": "(F)",
-        "CDR1-IMGT": "HNR",
         "FR2-IMGT": "LYWYRQTLGQGPEFLTY",
         "CDR2-IMGT": "FQNEAQ",
         "FR3-IMGT": "LEKSRLLSDRFSAERPKGSFSTLEIQRTEEGDSAMYLC",

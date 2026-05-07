@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: check out branch
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: set up python
         uses: actions/setup-python@v6
         with:
@@ -17,7 +17,7 @@ jobs:
       - name: build wheel and source tarball
         run: python3 -m build
       - name: store distribution packages
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: python-package-distributions
           path: dist/
@@ -32,7 +32,7 @@ jobs:
       id-token: write
     steps:
       - name: download dists
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: python-package-distributions
           path: dist/
