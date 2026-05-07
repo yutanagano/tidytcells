@@ -8,7 +8,6 @@ from tidytcells._query_engine import (
     HomoSapiensIgQueryEngine,
 )
 
-
 QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
     "homosapiens": HomoSapiensIgQueryEngine,
 }

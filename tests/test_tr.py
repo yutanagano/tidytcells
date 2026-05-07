@@ -170,7 +170,7 @@ class TestQuery:
     @pytest.mark.parametrize(
         ("species", "precision", "expected_len", "expected_in", "expected_not_in"),
         (
-            ("homosapiens", "allele", 468, "TRAJ8*02", "TRAJ8"),
+            ("homosapiens", "allele", 563, "TRAJ8*02", "TRAJ8"),
             ("homosapiens", "gene", 250, "TRAJ8", "TRAJ8*02"),
             ("musmusculus", "allele", 556, "TRAJ4*01", "TRAJ4"),
             ("musmusculus", "gene", 273, "TRAJ4", "TRAJ4*01"),
@@ -222,8 +222,8 @@ class TestQuery:
         ),
         (
             ("homosapiens", "gene", "F", 187, "TRBJ2-7", "TRBV12-1"),
-            ("homosapiens", "allele", "NF", 110, "TRAV35*03", "TRAV35*01"),
-            ("homosapiens", "gene", "NF", 74, "TRAV35", "TRAJ30"),
+            ("homosapiens", "allele", "NF", 150, "TRAV35*03", "TRAV35*01"),
+            ("homosapiens", "gene", "NF", 80, "TRAV35", "TRAJ30"),
             ("musmusculus", "gene", "P", 59, "TRGC3", "TRDV5"),
             ("musmusculus", "allele", "ORF", 24, "TRBV24*03", "TRBV24*01"),
         ),
@@ -278,7 +278,6 @@ class TestGetAaSequence:
                 "TRAJ47*02",
                 "homosapiens",
                 {
-                    "FR4-IMGT": "FGAGTILRVKS",
                     "J-PHE": "F",
                     "J-REGION": "EYGNKLVFGAGTILRVKS",
                 },

@@ -7,7 +7,6 @@ from tidytcells._standardized_gene_symbol import (
 )
 from typing import Dict, Optional, Type, Literal
 
-
 logger = logging.getLogger(__name__)
 
 

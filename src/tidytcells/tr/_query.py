@@ -9,7 +9,6 @@ from tidytcells._query_engine import (
     MusMusculusTrQueryEngine,
 )
 
-
 QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
     "homosapiens": HomoSapiensTrQueryEngine,
     "musmusculus": MusMusculusTrQueryEngine,

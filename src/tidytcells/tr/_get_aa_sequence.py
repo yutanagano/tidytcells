@@ -6,7 +6,6 @@ from tidytcells import _utils
 from tidytcells._utils import Parameter
 from typing import Dict, Optional
 
-
 SUPPORTED_SPECIES_AND_THEIR_AA_SEQUENCES = {
     "homosapiens": HOMOSAPIENS_TR_AA_SEQUENCES,
     "musmusculus": MUSMUSCULUS_TR_AA_SEQUENCES,
