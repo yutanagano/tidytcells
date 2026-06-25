@@ -8,11 +8,12 @@ class Junction:
     When failed, the error message(s) and attempted partially standardized CDR3 can be retrieved.
     '''
 
-    def __init__(self, original_input, error, corrected_junction=None, species=None):
+    def __init__(self, original_input, error, corrected_junction=None, species=None, j_gene_match=None):
         self._original_input = original_input
         self._error = error
         self._corrected_junction = corrected_junction
         self._species = species
+        self._j_gene_match = j_gene_match
 
     def __str__(self):
         str_repr = self.junction
@@ -63,3 +64,9 @@ class Junction:
     def species(self) -> str:
         '''The species used for the gene lookup to validate the CDR3 junction.'''
         return self._species
+
+    @property
+    def j_gene_match(self) -> str:
+        '''The closest matching J gene(s) that were used to validate or reconstruct the CDR3 junction.
+        If multiple J genes have an identical matching score, the returned gene names will be separated by ', ' '''
+        return self._j_gene_match
