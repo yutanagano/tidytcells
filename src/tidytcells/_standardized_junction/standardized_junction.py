@@ -238,7 +238,6 @@ class JunctionStandardizer(ABC):
           2. An unambiguous correction can be determined (no disagreement between alignments)
         '''
 
-        # corrected_seqs = set()
         corrected_seq_with_j_gene = []
 
         alignment_too_long = []
