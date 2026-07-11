@@ -68,5 +68,6 @@ class Junction:
     @property
     def j_gene_match(self) -> str:
         '''The closest matching J gene(s) that were used to validate or reconstruct the CDR3 junction.
-        If multiple J genes have an identical matching score, the returned gene names will be separated by ', ' '''
+        If multiple J genes have an identical matching score, the returned gene names will be separated by ', '.
+        '''
         return self._j_gene_match
