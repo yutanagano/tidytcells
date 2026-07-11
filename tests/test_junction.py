@@ -52,6 +52,7 @@ class Teststandardize:
 
         assert result.junction == "CASSPGGADRRIDGYTF"
         assert result.is_standardized
+        assert result.j_gene_match == "TRBJ1-2"
         assert result.error is None
 
     def test_log_failures(self, caplog):
@@ -96,6 +97,7 @@ class Teststandardize:
         assert "Unsupported" in caplog.text
         assert "Unsupported" in result.error
         assert result.junction is None
+        assert result.j_gene_match is None
         assert not result.is_standardized
 
 
@@ -153,9 +155,11 @@ class Teststandardize:
             assert result.is_standardized
             assert result.error is None
             assert str(result) == expected
+
+            if j_symbol is not None:
+                assert j_symbol in result.j_gene_match
         else:
             assert not result.is_standardized
             assert result.error is not None
             assert len(result.error) > 0
             assert str(result) == ""
-

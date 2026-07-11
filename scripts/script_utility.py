@@ -148,6 +148,8 @@ def get_j_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
         if "TRAJ" in gene_groups:
             data["TRAJ7*01"]["J-conserved"] = "L"
             data["TRAJ7*01"]["J-MOTIF"] = "LGKG"
+            data["TRAJ44*01"]["J-conserved"] = "L"
+            data["TRAJ44*01"]["J-MOTIF"] = "LGAG"
 
     return add_j_motifs(data)
 

@@ -4029,7 +4029,8 @@
     },
     "TRAJ44*01": {
         "functionality": "ORF",
-        "J-REGION": "VTGSGGKLTLGAGTRLQVNL"
+        "J-REGION": "VTGSGGKLTLGAGTRLQVNL",
+        "J-MOTIF": "LGAG"
     },
     "TRAJ45*01": {
         "functionality": "F",

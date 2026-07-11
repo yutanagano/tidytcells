@@ -49,11 +49,12 @@ class JunctionStandardizer(ABC):
         self.max_j_reconstruction = max_j_reconstruction
         self.corrected_first_aa = False
         self.corrected_last_aa = False
+        self.correction_j_genes = None
 
         self.reasons_invalid = []
         self._resolve_juncton()
 
-        self.result = Junction(self.orig_seq, self.get_reason_why_invalid(), self.corrected_seq, self._species)
+        self.result = Junction(self.orig_seq, self.get_reason_why_invalid(), self.corrected_seq, self._species, self.correction_j_genes)
 
 
     def _resolve_juncton(self):
@@ -63,11 +64,14 @@ class JunctionStandardizer(ABC):
         self.j_alignments = self.align_j()
         self.v_alignments = self.align_v()
 
-        self.corrected_seq = self.correct_seq_j_side(self.corrected_seq)
-        self.corrected_seq = self.correct_seq_v_side(self.corrected_seq)
+        if len(self.j_alignments) > 0:
+            self.corrected_seq, self.correction_j_genes = self.correct_seq_j_side(self.corrected_seq)
+
+        if len(self.v_alignments) > 0:
+            self.corrected_seq = self.correct_seq_v_side(self.corrected_seq)
 
         if len(self.corrected_seq) < 6:
-            self.reasons_invalid.append("junction too short")
+            self.reasons_invalid.append("Junction too short")
 
     def get_aa_dict_from_symbol(self, gene) -> dict:
         '''
@@ -86,13 +90,13 @@ class JunctionStandardizer(ABC):
         # if symbol is an allele, return only info for the given allele
         if "*" in symbol:
             if gene not in symbol:
-                self.reasons_invalid.append(f"not a {gene} gene: {symbol}")
+                self.reasons_invalid.append(f"not a {gene} gene: {symbol} ({self._species})")
                 return dict()
 
             if symbol in  self._sequence_dictionary:
                 return {symbol: self._sequence_dictionary[symbol]}
             else:
-                self.reasons_invalid.append("no sequence information known for " + symbol)
+                self.reasons_invalid.append(f"no sequence information known for {symbol} ({self._species})")
 
         # if symbol is less specific than allele, retrieve any alleles that are valid extensions of the given symbol
         enforce_functional = self.enforce_functional_v if gene == "V" else self.enforce_functional_j
@@ -175,8 +179,11 @@ class JunctionStandardizer(ABC):
 
         if len(best_alignments) == 0:
             err = "J alignment unsuccessful"
+
             if self.j_symbol is not None:
-                err += " for J symbol " + self.j_symbol
+                err += f" for J symbol {self.j_symbol} ({self._species})"
+            else:
+                err += f" for any J symbol ({self._species})"
 
             if len(self.j_aa_dict) == 0:
                 err += ": no known sequence information"
@@ -197,8 +204,11 @@ class JunctionStandardizer(ABC):
 
         if len(best_alignments) == 0:
             err = "V alignment unsuccessful"
+
             if self.v_symbol is not None:
-                err += " for V symbol " + self.v_symbol
+                err += f" for V symbol {self.v_symbol} ({self._species})"
+            else:
+                err += " for any V symbol"
 
             if len(self.v_aa_dict) == 0:
                 err += ": no known sequence information"
@@ -206,6 +216,17 @@ class JunctionStandardizer(ABC):
             self.reasons_invalid.append(err)
 
         return best_alignments
+
+    def get_j_string_repr(self, seq, corrected_seq_with_j_gene):
+        '''
+        The J gene string representation concatenates all best-scoring J genes that match the sequence
+        '''
+
+        j_genes = sorted({j_gene for corrected_seq, j_gene in corrected_seq_with_j_gene
+                          if corrected_seq == seq})
+
+        return ", ".join(j_genes)
+
 
     def correct_seq_j_side(self, seq):
         '''
@@ -217,7 +238,9 @@ class JunctionStandardizer(ABC):
           2. An unambiguous correction can be determined (no disagreement between alignments)
         '''
 
-        corrected_seqs = set()
+        corrected_seq_with_j_gene = []
+
+        alignment_too_long = []
 
         for alignment_details in self.j_alignments:
             j_conserved_idx = alignment_details["j_conserved_idx"]
@@ -225,12 +248,11 @@ class JunctionStandardizer(ABC):
 
             new_seq_len = j_offset + j_conserved_idx + 1
 
-            # If any alignment matches perfectly, don't look any further
             if len(seq) == new_seq_len:
-                return seq
+                corrected_seq_with_j_gene.append((seq, alignment_details['gene']))
 
             elif len(seq) > new_seq_len:
-                corrected_seqs.add(seq[:new_seq_len])
+                corrected_seq_with_j_gene.append((seq[:new_seq_len], alignment_details['gene']))
 
             elif len(seq) < new_seq_len:
                 reconstruction_length = new_seq_len - len(seq)
@@ -240,7 +262,16 @@ class JunctionStandardizer(ABC):
                     start_j_idx = end_j_idx - reconstruction_length
 
                     reconstructed_aas = alignment_details["j_region"][start_j_idx:end_j_idx]
-                    corrected_seqs.add(seq + reconstructed_aas)
+                    # corrected_seqs.add(seq + reconstructed_aas)
+                    corrected_seq_with_j_gene.append((seq + reconstructed_aas, alignment_details['gene']))
+                else:
+                    alignment_too_long.append(f"{alignment_details['gene']} ({self._species}): Alignment successful but reconstruction too long ({reconstruction_length})")
+
+        corrected_seqs = {corrected_seq for corrected_seq, j_gene in corrected_seq_with_j_gene}
+
+        # if the perfect match exists, keep only this
+        if seq in corrected_seqs:
+            return seq, self.get_j_string_repr(seq, corrected_seq_with_j_gene)
 
         if len(corrected_seqs) > 1:
             # When Junction-reconstruction results are ambiguous (different J's)
@@ -256,13 +287,15 @@ class JunctionStandardizer(ABC):
 
             if len(corrected_seqs) > 1:
                 self.reasons_invalid.append(f"J side reconstruction ambiguous: {corrected_seqs}")
-                return seq
+                return seq, None
 
         if len(corrected_seqs) == 0:
-            self.reasons_invalid.append(f"J side reconstruction unsuccessful.")
-            return seq
+            self.reasons_invalid.append(f"J side reconstruction unsuccessful")
+            self.reasons_invalid.extend(alignment_too_long)
+            return seq, None
 
-        return corrected_seqs.pop()
+        corrected_seq = corrected_seqs.pop()
+        return corrected_seq, self.get_j_string_repr(corrected_seq, corrected_seq_with_j_gene)
 
     def correct_seq_v_side(self, seq):
         '''
@@ -274,6 +307,7 @@ class JunctionStandardizer(ABC):
           2. An unambiguous correction can be determined (no disagreement between alignments)
         '''
         corrected_seqs = set()
+        alignment_too_long = []
 
         for alignment_details in self.v_alignments:
             v_conserved_idx = alignment_details["v_conserved_idx"]
@@ -289,10 +323,13 @@ class JunctionStandardizer(ABC):
 
             if v_conserved_idx < v_offset:
                 reconstructed_aas = alignment_details["v_region"][v_conserved_idx:][:v_offset]
+                reconstruction_length = len(reconstructed_aas)
 
-                if len(reconstructed_aas) <= self.max_v_reconstruction:
+                if reconstruction_length <= self.max_v_reconstruction:
                     new_seq = reconstructed_aas + seq
                     corrected_seqs.add(new_seq)
+                else:
+                    alignment_too_long.append(f"{alignment_details['gene']} ({self._species}): Alignment successful but reconstruction too long ({reconstruction_length})")
 
         corrected_seqs = {seq for seq in corrected_seqs if seq.startswith("C")}
 
@@ -300,7 +337,8 @@ class JunctionStandardizer(ABC):
             return "C" + seq
 
         if len(corrected_seqs) == 0:
-            self.reasons_invalid.append(f"V side reconstruction unsuccessful.")
+            self.reasons_invalid.append(f"V side reconstruction unsuccessful")
+            self.reasons_invalid.extend(alignment_too_long)
             return seq
 
         if len(corrected_seqs) > 1:
