@@ -319,7 +319,7 @@ def standardize(
     j_symbol = (
         Parameter(j_symbol, "j_symbol")
         .throw_error_if_not_of_type(str, optional=True)
-        .throw_error_if_failed_test(test=get_is_valid_locus_gene_fn(locus, "J"),
+        .throw_error_if_failed_test(test=get_is_valid_locus_multi_gene_fn(locus, "J"),
                                     mssg=f"is not a valid J gene for \"locus\" {locus}",
                                     optional=True)
         .value
@@ -327,7 +327,7 @@ def standardize(
     v_symbol = (
         Parameter(v_symbol, "v_symbol")
         .throw_error_if_not_of_type(str, optional=True)
-        .throw_error_if_failed_test(test=get_is_valid_locus_gene_fn(locus, "V"),
+        .throw_error_if_failed_test(test=get_is_valid_locus_multi_gene_fn(locus, "V"),
                                     mssg=f"is not a valid V gene for \"locus\" {locus}",
                                     optional=True)
         .value
