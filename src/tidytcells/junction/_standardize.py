@@ -63,6 +63,7 @@ def standardize(
         for this J allele. If a less precise gene or subgroup is given
         (e.g., human TRAJ23 which has multiple alleles),
         all associated allele sequences will be tested for the best alignment.
+        Multiple j_symbols may be given, separated by comma ',' (e.g., TRAJ13*01,TRAJ13*02).
         If no J symbol is given, all J genes for the given species + locus will be tested.
     :type j_symbol:
         str
@@ -73,6 +74,7 @@ def standardize(
         for this V allele. If a less precise gene or subgroup is given
         (e.g., human TRAV1-1 which has multiple alleles, or TRAV1 which has multiple genes),
         all associated allele sequences will be tested for the best alignment.
+        Multiple v_symbols may be given, separated by comma ',' (e.g., TRAV1-1*01,TRAV1-1*02).
         If no V symbol is given, all V genes for the given species + locus will be tested.
     :type v_symbol:
         str

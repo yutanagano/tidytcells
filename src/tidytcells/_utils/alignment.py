@@ -13,15 +13,23 @@ def get_is_valid_locus_gene_fn(locus: str, gene: str):
     '''
     if gene == "V":
         if locus == "TRA" or locus == "TRA/D":
-            return lambda x: x.startswith("TRAV") or x.startswith("TRDV")
+            return lambda symbol: symbol.startswith("TRAV") or symbol.startswith("TRDV")
 
         if locus == "TRD":
-            return lambda x: x.startswith("TRDV") or (x.startswith("TRAV") and "/DV" in x)
+            return lambda symbol: symbol.startswith("TRDV") or (symbol.startswith("TRAV") and "/DV" in symbol)
 
     if len(locus) == 3:
-        return lambda x: x.startswith(locus + gene)
+        return lambda symbol: symbol.startswith(locus + gene)
 
-    return lambda x: x.startswith(locus) and gene in x
+    return lambda symbol: symbol.startswith(locus) and gene in symbol
+
+def get_is_valid_locus_multi_gene_fn(locus: str, gene: str):
+    '''
+    wrapper around get_is_valid_locus_gene_fn for multi-gene strings
+    '''
+
+    is_valid_locus_gene_fn = get_is_valid_locus_gene_fn(locus, gene)
+    return lambda symbol: all([is_valid_locus_gene_fn(sub_symbol.strip()) for sub_symbol in symbol.split(",")])
 
 def is_valid_functionality(aa_dict, candidate, enforce_functional):
     if (not enforce_functional) or (aa_dict[candidate]["functionality"] in {"F", "[F]", "(F)"}):

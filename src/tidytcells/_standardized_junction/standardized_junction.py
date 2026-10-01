@@ -58,8 +58,8 @@ class JunctionStandardizer(ABC):
 
 
     def _resolve_juncton(self):
-        self.j_aa_dict = self.get_aa_dict_from_symbol("J")
-        self.v_aa_dict = self.get_aa_dict_from_symbol("V")
+        self.j_aa_dict = self.get_aa_dict_from_symbol(self.j_symbol, "J")
+        self.v_aa_dict = self.get_aa_dict_from_symbol(self.v_symbol, "V")
 
         self.j_alignments = self.align_j()
         self.v_alignments = self.align_v()
@@ -73,40 +73,43 @@ class JunctionStandardizer(ABC):
         if len(self.corrected_seq) < 6:
             self.reasons_invalid.append("Junction too short")
 
-    def get_aa_dict_from_symbol(self, gene) -> dict:
+    def get_aa_dict_from_symbol(self, symbol, gene) -> dict:
         '''
         Given the user-provided allele/gene/subgroup symbol (v_symbol, j_symbol), this function returns
         the sequence_dictionary information for any of the alleles applicable to the given symbol.
         '''
 
-        symbol = self.locus[0:2]
+        symbol = self.locus[0:2] if symbol is None else symbol
 
-        if gene == "J" and self.j_symbol is not None:
-            symbol = self.j_symbol
+        aa_dict = dict()
 
-        if gene == "V" and self.v_symbol is not None:
-            symbol = self.v_symbol
+        for sub_symbol in symbol.split(","):
+            sub_symbol = sub_symbol.strip()
 
-        # if symbol is an allele, return only info for the given allele
-        if "*" in symbol:
-            if gene not in symbol:
-                self.reasons_invalid.append(f"not a {gene} gene: {symbol} ({self._species})")
-                return dict()
+            # if symbol is an allele, return only info for the given allele
+            if "*" in sub_symbol:
+                if gene not in sub_symbol:
+                    self.reasons_invalid.append(f"not a {gene} gene: {sub_symbol} ({self._species})")
+                    continue
+                    # return dict()
 
-            if symbol in  self._sequence_dictionary:
-                return {symbol: self._sequence_dictionary[symbol]}
-            else:
-                self.reasons_invalid.append(f"no sequence information known for {symbol} ({self._species})")
+                if sub_symbol in  self._sequence_dictionary:
+                    aa_dict.update({sub_symbol: self._sequence_dictionary[sub_symbol]})
+                    continue
+                else:
+                    self.reasons_invalid.append(f"no sequence information known for {sub_symbol} ({self._species})")
 
-        # if symbol is less specific than allele, retrieve any alleles that are valid extensions of the given symbol
-        enforce_functional = self.enforce_functional_v if gene == "V" else self.enforce_functional_j
-        allele_symbols = get_compatible_symbols(symbol, self._sequence_dictionary, gene, self.locus, enforce_functional)
+            # if sub_symbol is less specific than allele, retrieve any alleles that are valid extensions of the given sub_symbol
+            enforce_functional = self.enforce_functional_v if gene == "V" else self.enforce_functional_j
+            allele_symbols = get_compatible_symbols(sub_symbol, self._sequence_dictionary, gene, self.locus, enforce_functional)
 
-        # if all alleles for one gene have the same sequence info, collapse the gene to 1 dict item
-        aas_per_allele = {ext_symbol: self._sequence_dictionary[ext_symbol] for ext_symbol in allele_symbols}
-        aas_per_gene = collapse_aa_dict_per_gene(aas_per_allele)
+            # if all alleles for one gene have the same sequence info, collapse the gene to 1 dict item
+            aas_per_allele = {ext_symbol: self._sequence_dictionary[ext_symbol] for ext_symbol in allele_symbols}
+            aas_per_gene = collapse_aa_dict_per_gene(aas_per_allele)
 
-        return aas_per_gene
+            aa_dict.update(aas_per_gene)
+
+        return aa_dict
 
     def correct_sequencing_err_j_side(self, best_alignments_orig, conserved_aa):
         '''
@@ -252,7 +255,8 @@ class JunctionStandardizer(ABC):
                 corrected_seq_with_j_gene.append((seq, alignment_details['gene']))
 
             elif len(seq) > new_seq_len:
-                corrected_seq_with_j_gene.append((seq[:new_seq_len], alignment_details['gene']))
+                if new_seq_len > 1:
+                    corrected_seq_with_j_gene.append((seq[:new_seq_len], alignment_details['gene']))
 
             elif len(seq) < new_seq_len:
                 reconstruction_length = new_seq_len - len(seq)

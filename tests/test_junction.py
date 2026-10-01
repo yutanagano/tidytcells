@@ -55,6 +55,40 @@ class Teststandardize:
         assert result.j_gene_match == "TRBJ1-2"
         assert result.error is None
 
+    def test_multi_j_symbol(self):
+        # When using either TRBJ1 and TRBJ2 subgroups, the best match is TRBJ1-2, no matter the order of the subgroups or spaces
+        result = junction.standardize(seq="CASSPGGADRRIDGYTF", locus="TR", j_symbol="TRBJ1,TRBJ2")
+        assert result.j_gene_match == "TRBJ1-2"
+
+        result = junction.standardize(seq="CASSPGGADRRIDGYTF", locus="TR", j_symbol="TRBJ2, TRBJ1")
+        assert result.j_gene_match == "TRBJ1-2"
+
+        # When using only the TRBJ2 subgroup, TRBJ2-6 is the best match (only one ending with TF)
+        result = junction.standardize(seq="CASSPGGADRRIDGYTF", locus="TR", j_symbol="TRBJ2")
+        assert result.j_gene_match == "TRBJ2-6"
+
+    def test_multi_v_symbol(self):
+        # Reconstruction with TRBV10-1 adds 'CAS'
+        result = junction.standardize(seq="SPGGADRRIDGYTF", locus="TR", v_symbol="TRBV10-1", max_v_reconstruction=3)
+        assert result.junction == "CASSPGGADRRIDGYTF"
+
+        # Reconstruction with TRBV10-3 adds 'CAI'
+        result = junction.standardize(seq="SPGGADRRIDGYTF", locus="TR", v_symbol="TRBV10-3", max_v_reconstruction=3)
+        assert result.junction == "CAISPGGADRRIDGYTF"
+
+        # Allowing both TRBV10-1 and TRBV10-3 causes ambiguity, no matter the order or spaces
+        result = junction.standardize(seq="SPGGADRRIDGYTF", locus="TR", v_symbol="TRBV10-1,TRBV10-3",
+                                      max_v_reconstruction=3)
+        assert result.error.startswith("V side reconstruction ambiguous: ")
+        assert "CAISPGGADRRIDGYTF" in result.error
+        assert "CASSPGGADRRIDGYTF" in result.error
+
+        result = junction.standardize(seq="SPGGADRRIDGYTF", locus="TR", v_symbol="TRBV10-3, TRBV10-1",
+                                      max_v_reconstruction=3)
+        assert result.error.startswith("V side reconstruction ambiguous: ")
+        assert "CAISPGGADRRIDGYTF" in result.error
+        assert "CASSPGGADRRIDGYTF" in result.error
+
     def test_log_failures(self, caplog):
         junction.standardize(seq="123456", log_failures=False, locus="TR")
         assert len(caplog.records) == 0
