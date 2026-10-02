@@ -73,3 +73,5 @@ AMINO_ACIDS = frozenset(
         "Y",
     )
 )
+
+AMINO_ACIDS_WITH_SPECIAL = AMINO_ACIDS | {"X", "*", "#"}

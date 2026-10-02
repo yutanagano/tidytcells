@@ -1,8 +1,8 @@
 import logging
 from tidytcells import _utils
-from tidytcells._resources import AMINO_ACIDS
+from tidytcells._resources import AMINO_ACIDS, AMINO_ACIDS_WITH_SPECIAL
 from tidytcells.result._junction import Junction
-from tidytcells._utils.alignment import get_is_valid_locus_gene_fn
+from tidytcells._utils.alignment import get_is_valid_locus_multi_gene_fn
 from tidytcells._utils.parameter import Parameter
 from tidytcells._standardized_junction import (
     JunctionStandardizer,
@@ -36,6 +36,7 @@ def standardize(
     enforce_functional_j: Optional[bool] = None,
     max_v_reconstruction: Optional[int] = None,
     max_j_reconstruction: Optional[int] = None,
+    allow_special_chars: Optional[bool] = None,
     log_failures: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,
 ) -> Junction:
@@ -119,6 +120,12 @@ def standardize(
         to a value greater than 1 if J symbol information is supplied, and generally not recommended to set
         the value larger than 3.
     :type max_j_reconstruction:
+        bool
+    :param allow_special_chars:
+        Whether to allow special characters 'X' and '*' in the input sequence. This will only affect input
+        validation, but not the result Junction. If ``False``, standardization automatically fails if
+        special characters occur in the input sequence. Defaults to ``False``.
+    :type allow_special_chars:
         bool
     :param log_failures:
         Report standardization failures through logging (at level ``WARNING``).
@@ -374,6 +381,12 @@ def standardize(
         .throw_error_if_not_of_type(int)
         .value
     )
+    allow_special_chars = (
+        Parameter(allow_special_chars, "allow_special_chars")
+        .set_default(False)
+        .throw_error_if_not_of_type(bool)
+        .value
+    )
     suppress_warnings_inverted = (
         not suppress_warnings if suppress_warnings is not None else None
     )
@@ -391,7 +404,9 @@ def standardize(
     seq = seq.upper().strip()
 
     for char in seq:
-        if char not in AMINO_ACIDS:
+        legal_chars = AMINO_ACIDS_WITH_SPECIAL if allow_special_chars else AMINO_ACIDS
+
+        if char not in legal_chars:
             if log_failures:
                 logger.warning(
                     f'Failed to standardize {original_input}. Not a valid amino acid sequence, found: {char}'
