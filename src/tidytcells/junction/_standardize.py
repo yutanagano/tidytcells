@@ -8,6 +8,7 @@ from tidytcells._standardized_junction import (
     JunctionStandardizer,
     HomoSapiensTrJunctionStandardizer,
     HomoSapiensIgJunctionStandardizer,
+    OgrdbHomoSapiensIgJunctionStandardizer,
     MusMusculusTrJunctionStandardizer,
     MusMusculusIgJunctionStandardizer,
 )
@@ -18,10 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Dict[str, Type[JunctionStandardizer]]] = {
-    "homosapiens": {"TR": HomoSapiensTrJunctionStandardizer,
-                    "IG": HomoSapiensIgJunctionStandardizer},
-    "musmusculus": {"TR": MusMusculusTrJunctionStandardizer,
-                    "IG": MusMusculusIgJunctionStandardizer},
+    "homosapiens": {"TR": {"IMGT": HomoSapiensTrJunctionStandardizer},
+                    "IG": {"IMGT": HomoSapiensIgJunctionStandardizer, "OGRDB": OgrdbHomoSapiensIgJunctionStandardizer}},
+    "musmusculus": {"TR": {"IMGT": MusMusculusTrJunctionStandardizer},
+                    "IG": {"IMGT": MusMusculusIgJunctionStandardizer}},
 }
 
 def standardize(
@@ -37,6 +38,7 @@ def standardize(
     max_v_reconstruction: Optional[int] = None,
     max_j_reconstruction: Optional[int] = None,
     allow_special_chars: Optional[bool] = None,
+    germline_reference: Optional[str] = None,
     log_failures: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,
 ) -> Junction:
@@ -127,6 +129,10 @@ def standardize(
         special characters occur in the input sequence. Defaults to ``False``.
     :type allow_special_chars:
         bool
+    :param germline_reference:
+        The germline reference set for the standardization. Valid options are 'IMGT' and 'OGRDB' (only for IG).
+    :type germline_reference:
+        str
     :param log_failures:
         Report standardization failures through logging (at level ``WARNING``).
         Defaults to ``True``.
@@ -387,6 +393,12 @@ def standardize(
         .throw_error_if_not_of_type(bool)
         .value
     )
+    germline_reference = (
+        Parameter(germline_reference, "germline_reference")
+        .set_default("IMGT")
+        .throw_error_if_not_one_of("IMGT", "OGRDB")
+        .value
+    )
     suppress_warnings_inverted = (
         not suppress_warnings if suppress_warnings is not None else None
     )
@@ -424,13 +436,20 @@ def standardize(
     if locus[0:2] not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
         if log_failures:
             logger.warning(
-                f'Unsupported locus: "{locus}" for species "{species}". ' f"Skipping {type} standardization."
+                f'Unsupported locus: "{locus}" for species "{species}" (valid options are: {SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]}). ' f"Skipping {type} standardization."
             )
 
         return Junction(original_input, f'Unsupported locus: "{locus}" for species "{species}"')
 
+    if germline_reference not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][locus[0:2]]:
+        if log_failures:
+            logger.warning(
+                f'Unsupported germline_reference: "{germline_reference}" for species "{species}" and locus {locus}  (valid options are: {SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][locus[0:2]]}). ' f"Skipping {type} standardization."
+            )
 
-    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][locus[0:2]]
+        return Junction(original_input, f'Unsupported germline_reference: "{germline_reference}" for species "{species}" and locus {locus}.')
+
+    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][locus[0:2]][germline_reference]
     result = standardizer_cls(seq=seq, locus=locus, j_symbol=j_symbol, v_symbol=v_symbol,
                                                       allow_c_correction=allow_c_correction,
                                                       allow_fw_correction=allow_fw_correction,

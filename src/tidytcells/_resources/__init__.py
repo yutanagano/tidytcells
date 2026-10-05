@@ -24,6 +24,7 @@ HOMOSAPIENS_MH_SYNONYMS = get_json_resource("homosapiens_mh_synonyms.json")
 VALID_HOMOSAPIENS_IG = get_json_resource("valid_homosapiens_ig.json")
 HOMOSAPIENS_IG_SYNONYMS = get_json_resource("homosapiens_ig_synonyms.json")
 HOMOSAPIENS_IG_AA_SEQUENCES = get_json_resource("homosapiens_ig_aa_sequences.json")
+HOMOSAPIENS_IG_AA_SEQUENCES_OGRDB = get_json_resource("homosapiens_ig_aa_sequences_ogrdb.json")
 
 VALID_MUSMUSCULUS_TR = get_json_resource("valid_musmusculus_tr.json")
 MUSMUSCULUS_TR_AA_SEQUENCES = get_json_resource("musmusculus_tr_aa_sequences.json")

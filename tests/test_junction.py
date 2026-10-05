@@ -134,6 +134,22 @@ class Teststandardize:
         assert result.j_gene_match is None
         assert not result.is_standardized
 
+    def test_germline_reference(self):
+        # IGLV1-41*01 is ORF in IMGT but functional in OGRDB, so enforcing functional
+        # V genes excludes it under IMGT and keeps it under OGRDB.
+        kwargs = {
+            "seq": "LASSPGVFGANVLTF",
+            "locus": "IG",
+            "v_symbol": "IGLV1-41",
+            "enforce_functional_v": True,
+        }
+
+        result = junction.standardize(germline_reference="IMGT", **kwargs)
+        assert not result.is_standardized
+
+        result = junction.standardize(germline_reference="OGRDB", **kwargs)
+        assert result.junction == "CLASSPGVFGANVLTF"
+
 
     @pytest.mark.parametrize(
         ("seq", "j_symbol", "v_symbol", "locus", "species", "expected"),
