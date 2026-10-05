@@ -15,9 +15,10 @@ PATH_TO_DATA_DIR = Path("data") / "MRO"
 
 RELEASE_URL = "https://github.com/IEDB/MRO/releases/latest/download"
 
-SPECIES_TAXON = {"homosapiens": "NCBITaxon:9606"}
+SPECIES_TAXON = {"homosapiens": "NCBITaxon:9606", "musmusculus": "NCBITaxon:10090"}
 
-ALLELE_PATTERN = re.compile(r"^([A-Za-z0-9]+-[A-Z0-9]+)\*(\d+(?::\d+)*)[NLSCAQ]?(?: .+ mutant)?$")
+HLA_PATTERN = re.compile(r"^([A-Za-z0-9]+-[A-Z0-9]+)\*(\d+(?::\d+)*)[NLSCAQ]?(?: .+ mutant)?$")
+H2_PATTERN = re.compile(r"^H2-[A-Za-z0-9-]+$")
 
 
 def main() -> None:
@@ -29,8 +30,15 @@ def main() -> None:
         print(f"Converting MRO data for {species}...")
         df = load_molecules(protein_complexes_path, molecule_export_path, species)
 
-        script_utility.save_as_json(build_valid_tree(df["IEDB alternative term"]), f"valid_{species}_mh_mro.json")
-        script_utility.save_as_json(build_synonyms(df), f"{species}_mh_synonyms_allele_mro.json")
+        if species == "homosapiens":
+            valid, pattern = build_valid_tree(df["IEDB alternative term"]), HLA_PATTERN
+        elif species == "musmusculus":
+            valid, pattern = build_valid_symbols(df["IEDB alternative term"]), H2_PATTERN
+        else:
+            raise ValueError(f"Unsupported species: {species}")
+
+        script_utility.save_as_json(valid, f"valid_{species}_mh_mro.json")
+        script_utility.save_as_json(build_synonyms(df, pattern), f"{species}_mh_synonyms_allele_mro.json")
 
 
 def get_protein_complexes_path() -> Path:
@@ -89,7 +97,7 @@ def build_valid_tree(terms) -> dict:
 
     for term in terms:
         for chain in chain_terms(term):
-            m = ALLELE_PATTERN.match(chain)
+            m = HLA_PATTERN.match(chain)
 
             if not m:
                 continue
@@ -101,15 +109,19 @@ def build_valid_tree(terms) -> dict:
     return sort_tree(tree)
 
 
+def build_valid_symbols(terms) -> dict:
+    return {term: dict() for term in sorted(set(terms)) if H2_PATTERN.match(term)}
+
+
 def sort_tree(tree: dict) -> dict:
     return {k: sort_tree(tree[k]) for k in sorted(tree)}
 
 
-def build_synonyms(df: pd.DataFrame) -> dict:
+def build_synonyms(df: pd.DataFrame, pattern: re.Pattern) -> dict:
     candidates = collections.defaultdict(set)
 
     for term, alternatives in zip(df["IEDB alternative term"], df["alternative term"]):
-        if "/" in term or "mutant" in term or not ALLELE_PATTERN.match(term):
+        if "/" in term or "mutant" in term or not pattern.match(term):
             continue
 
         for alternative in filter(None, alternatives.split("|")):
