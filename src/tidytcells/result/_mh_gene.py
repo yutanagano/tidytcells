@@ -8,17 +8,21 @@ class MhGene:
     If standardization was successful, this object provides access to the standardized allele/gene and other properties.
     When failed, the error message(s) and attempted partially standardized gene symbol can be retrieved.
     '''
-    def __init__(self, original_input, error, gene_name=None, allele_designation=None, species=None):
+    def __init__(self, original_input, error, gene_name=None, allele_designation=None, species=None, mutation=None):
         self._original_input = original_input
         self._error = error
         self._gene_name = gene_name
         self._allele_designation = allele_designation if allele_designation is not None and len(allele_designation) > 0 else None
         self._species = species
+        self._mutation = mutation
 
         self._highest_precision_symbol = self._gene_name
 
         if self._gene_name is not None and self._allele_designation is not None:
             self._highest_precision_symbol = f'{self._gene_name}*{":".join(self._allele_designation)}'
+
+        if self._highest_precision_symbol is not None and self._mutation is not None:
+            self._highest_precision_symbol += f' {self._mutation} mutant'
 
     def __str__(self):
         str_repr = self.symbol
@@ -71,6 +75,12 @@ class MhGene:
             return self._gene_name
 
     @property
+    def mutation(self) -> Optional[str]:
+        '''The mutation description (e.g. ``'K66A'`` for ``'HLA-A*02:01 K66A mutant'``) if standardization was successful and the input was a mutant, otherwise ``None``.'''
+        if self.is_standardized:
+            return self._mutation
+
+    @property
     def species(self) -> str:
         '''The species used to validate the gene name.'''
         return self._species
@@ -83,8 +93,8 @@ class HLAGene(MhGene):
     If standardization was successful, this object provides access to the standardized allele/protein/gene and other properties.
     When failed, the error message(s) and attempted partially standardized gene symbol can be retrieved.
     '''
-    def __init__(self, original_input, error, gene_name=None, allele_designation=None):
-        super().__init__(original_input, error, gene_name, allele_designation, species="homosapiens")
+    def __init__(self, original_input, error, gene_name=None, allele_designation=None, mutation=None):
+        super().__init__(original_input, error, gene_name, allele_designation, species="homosapiens", mutation=mutation)
 
     @property
     def protein(self) -> Optional[str]:

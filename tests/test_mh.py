@@ -304,3 +304,54 @@ class TestGetClass:
     def test_log_failures(self, caplog):
         mh.get_class("foobarbaz", log_failures=False)
         assert len(caplog.records) == 0
+
+    @pytest.mark.parametrize(
+        ("symbol", "expected"),
+        (
+            ("HLA-A*3351", "HLA-A*33:51"),
+            ("HLA-A3058", "HLA-A*30:58"),
+            ("HLA-B*8101", "HLA-B*81:01"),
+            ("HLA-A*02101", "HLA-A*02:101"),
+            ("HLA-B*390101", "HLA-B*39:01:01"),
+            ("HLA-A*03010101", "HLA-A*03:01:01:01"),
+        ),
+    )
+    def test_missing_colons_ambiguous_split(self, symbol, expected):
+        result = mh.standardize(symbol=symbol, species="homosapiens")
+
+        assert result.is_standardized
+        assert result.symbol == expected
+
+    @pytest.mark.parametrize("database", ("IMGT", "MRO"))
+    @pytest.mark.parametrize(
+        ("symbol", "expected", "expected_allele", "expected_mutation"),
+        (
+                ("HLA-A*02:01 K66A mutant", "HLA-A*02:01 K66A mutant", "HLA-A*02:01", "K66A"),
+                ("HLA-A0201 K66A, E63Q mutant", "HLA-A*02:01 K66A, E63Q mutant", "HLA-A*02:01", "K66A, E63Q"),
+                ("HLA-B*08:01 B:I66A Mutant", "HLA-B*08:01 B:I66A mutant", "HLA-B*08:01", "B:I66A"),
+                ("HLA-DRB1*01:01 G86Y mutant", "HLA-DRB1*01:01 G86Y mutant", "HLA-DRB1*01:01", "G86Y"),
+        ),
+    )
+    def test_mutant(self, symbol, expected, expected_allele, expected_mutation, database):
+        result = mh.standardize(symbol=symbol, species="homosapiens", database=database)
+
+        assert result.is_standardized
+        assert result.symbol == expected
+        assert str(result) == expected
+        assert result.allele == expected_allele
+        assert result.protein == expected_allele
+        assert result.gene == expected_allele.split("*")[0]
+        assert result.mutation == expected_mutation
+
+    def test_mutant_invalid_allele(self):
+        result = mh.standardize(symbol="HLA-FOO*01:01 K66A mutant", species="homosapiens")
+
+        assert not result.is_standardized
+        assert result.symbol is None
+        assert result.mutation is None
+        assert result.attempted_fix == "HLA-FOO*01:01 K66A mutant"
+
+    def test_no_mutation(self):
+        result = mh.standardize(symbol="HLA-A*02:01", species="homosapiens")
+
+        assert result.mutation is None
