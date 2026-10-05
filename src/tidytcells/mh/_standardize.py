@@ -2,19 +2,20 @@ import logging
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
-    HlaSymbolStandardizer,
+    ImgtHlaSymbolStandardizer,
+    MroHlaSymbolStandardizer,
     MusMusculusMhSymbolStandardizer,
 )
-from typing import Dict, Optional, Type, Union
+from typing import Dict, Optional, Type
 
 from tidytcells.result._mh_gene import MhGene
 
 logger = logging.getLogger(__name__)
 
 
-SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[Union[HlaSymbolStandardizer, MusMusculusMhSymbolStandardizer]]] = {
-    "homosapiens": HlaSymbolStandardizer,
-    "musmusculus": MusMusculusMhSymbolStandardizer,
+SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Dict[str, Type]] = {
+    "homosapiens": {"IMGT": ImgtHlaSymbolStandardizer, "MRO": MroHlaSymbolStandardizer},
+    "musmusculus": {"IMGT": MusMusculusMhSymbolStandardizer},
 }
 
 
@@ -27,12 +28,12 @@ def standardize(
     suppress_warnings: Optional[bool] = None,
 ) -> MhGene:
     """
-    Attempt to standardize an MH gene / allele symbol to be IMGT-compliant. # todo update docs once MRO mapping available
+    Attempt to standardize an MH gene / allele symbol to be IMGT- or MRO-compliant.
 
-    .. topic:: Supported species
+    .. topic:: Supported species and databases
 
-        - ``"homosapiens"``
-        - ``"musmusculus"``
+        - ``"homosapiens"``: ``"IMGT"``, ``"MRO"``
+        - ``"musmusculus"``: ``"IMGT"``
 
     .. note::
         This function will only verify the validity of an MH gene/allele up to the level of the protein.
@@ -55,9 +56,10 @@ def standardize(
     :type species:
         str
     :param database:
-        Which gene database to use. Defaults to ``"MRO"``, alternatively, ``"IMGT"`` can be selected.
+        Which database to standardize against: ``"IMGT"`` or ``"MRO"`` (https://github.com/IEDB/MRO).
+        If species is ``"any"``, only species for which the database is available are attempted.
         Note that IMGT uses a non-standard representation of mouse MH genes, and using MRO is therefore recommended.
-        See also: https://github.com/IEDB/MRO
+        Defaults to ``"IMGT"``.
     :type database:
         str
     :param log_failures:
@@ -116,7 +118,14 @@ def standardize(
         >>> tt.mh.standardize("A1").allele
         'HLA-A*01'
 
-        *Mus musculus* is a supported species. # todo update example with MRO
+        MRO names can also be used for standardization.
+
+        >>> tt.mh.standardize("HLA-Cw*0301", database="MRO").symbol
+        'HLA-C*03:04'
+        >>> tt.mh.standardize("HLA-A0201 K66A mutant", database="MRO").symbol
+        'HLA-A*02:01 K66A mutant'
+
+        *Mus musculus* is a supported species.
 
         >>> tt.mh.standardize("CRW2", species="musmusculus").gene
         'MH1-M5'
@@ -140,25 +149,31 @@ def standardize(
 
     .. topic:: Decision Logic
 
-        #todo: update decision logic once mouse is updated with MRO mapping
-
         To provide an easy way to gauge the scope and limitations of standardization, below is a simplified overview of the decision logic employed when attempting to standardize an MH symbol.
         For more detail, please refer to the `source code <https://github.com/yutanagano/tidytcells>`_.
 
         .. code-block:: none
 
             IF the specified species is not supported for standardization:
-                RETURN original symbol without modification
+                RETURN original symbol and error message
+
+            IF the specified database is not available for the species:
+                RETURN original symbol and error message
 
             ELSE:
                 // attempt standardization
                 {
-                    IF symbol is already in IMGT-compliant form:
+                    split off a trailing "<mutation> mutant" description if present       //e.g. HLA-A*02:01 K66A mutant
+
+                    IF database is MRO and symbol is a known MRO synonym:
+                        overwrite symbol with its MRO name                              //e.g. HLA-Cw*0301 -> HLA-C*03:04
+
+                    IF symbol is already in compliant form:
                         set standardization status as successful
                         skip rest of standardization
 
-                    IF symbol is a known deprecated symbol:
-                        overwrite symbol with current IMGT-compliant symbol
+                    IF database is IMGT and gene is a known deprecated symbol:
+                        overwrite gene with current IMGT-compliant symbol
                         set standardization status as successful
                         skip rest of standardization
 
@@ -167,12 +182,12 @@ def standardize(
                     replace "Cw" with "C"                                                   //e.g. HLA-Cw -> HLA-C
                     add back forgotten asterisks if necessary                               //e.g. HLA-A01 -> HLA-A*01
                     add back forgotten colons if necessary                                  //e.g. HLA-A*0101 -> HLA-A*01:01
-                    If symbol is now in IMGT-compliant form:
+                    If symbol is now in compliant form:
                         set standardization status as successful
                         skip rest of standardization
 
                     try adding or subtracting leading zeros from allele designation numbers //e.g. HLA-A*001 -> HLA-A*01
-                    If symbol is now in IMGT-compliant form:
+                    If symbol is now in compliant form:
                         set standardization status as successful
                         skip rest of standardization
 
@@ -188,12 +203,6 @@ def standardize(
         .throw_error_if_not_of_type(str)
         .value
     )
-    symbol = (
-        Parameter(symbol, "symbol")
-        .resolve_with_alias(gene, "gene")
-        .throw_error_if_not_of_type(str)
-        .value
-    )
     species = (
         Parameter(species, "species")
         .set_default("homosapiens")
@@ -201,9 +210,9 @@ def standardize(
         .value
     )
     database = (
-        Parameter(database, "species")
-        .set_default("MRO")
-        .throw_error_if_not_one_of("MRO", "IMGT")
+        Parameter(database, "database")
+        .set_default("IMGT")
+        .throw_error_if_not_one_of("IMGT", "MRO")
         .value
     )
     suppress_warnings_inverted = (
@@ -224,9 +233,12 @@ def standardize(
 
         for (
             species,
-            standardizer_cls,
+            standardizers,
         ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
-            mh_standardizer = standardizer_cls(symbol)
+            if database not in standardizers:
+                continue
+
+            mh_standardizer = standardizers[database](symbol)
 
             if mh_standardizer.result.is_standardized:
                 return mh_standardizer.result
@@ -247,7 +259,14 @@ def standardize(
             _utils.warn_unsupported_species(species, "MH", logger)
         return MhGene(symbol, f'Unsupported species: {species}')
 
-    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]
+    if database not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
+        if log_failures:
+            logger.warning(
+                f'Unsupported database: "{database}" for species "{species}" (valid options are: {list(SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species])}). Skipping MH standardization.'
+            )
+        return MhGene(symbol, f'Unsupported database: "{database}" for species "{species}"')
+
+    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][database]
     mh_standardizer = standardizer_cls(symbol)
 
     if (not mh_standardizer.result.is_standardized) and log_failures:

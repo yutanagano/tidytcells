@@ -1,17 +1,41 @@
 import itertools
 import re
-from typing import List, Optional
+from abc import ABC, abstractmethod
+from typing import Dict, List, Optional
 
 from tidytcells import _utils
-from tidytcells._resources import VALID_HOMOSAPIENS_MH, HOMOSAPIENS_MH_SYNONYMS
+from tidytcells._resources import (
+    VALID_HOMOSAPIENS_MH,
+    HOMOSAPIENS_MH_SYNONYMS,
+    VALID_HOMOSAPIENS_MH_MRO,
+    HOMOSAPIENS_MH_SYNONYMS_ALLELE_MRO,
+)
 from tidytcells.result import HLAGene
 
 
 class HlaSymbolParser:
+    MUTANT_REGEX = re.compile(r"^\s*(\S+)\s+(.+?)\s+mutant\s*$", re.IGNORECASE)
+
+    cleaned_symbol: str
     gene_name: str
     allele_designation: List[str]
+    mutation: Optional[str]
 
     def __init__(self, hla_symbol: str) -> None:
+        hla_symbol = self._parse_mutation(hla_symbol)
+        self.cleaned_symbol = _utils.clean_and_uppercase(hla_symbol)
+        self._parse_gene_and_allele(self.cleaned_symbol)
+
+    def _parse_mutation(self, hla_symbol: str) -> str:
+        self.mutation = None
+
+        mutant_match = self.MUTANT_REGEX.match(hla_symbol)
+        if mutant_match:
+            hla_symbol, self.mutation = mutant_match.groups()
+
+        return hla_symbol
+
+    def _parse_gene_and_allele(self, hla_symbol: str) -> None:
         if hla_symbol == "B2M":
             self.gene_name = "B2M"
             self.allele_designation = []
@@ -52,20 +76,46 @@ class HlaSymbolParser:
             return []
 
         return [
-            f"{int(d):02}" if d.isdigit() else d for d in allele_designation.split(":")
+            f"{int(d):02}" if d.isdigit() and len(d) <= 3 else d
+            for d in allele_designation.split(":")
         ]
 
 
-class HlaSymbolStandardizer:
+class HlaSymbolStandardizer(ABC):
+    """
+    Abstract base standardizer class.
+    """
+
+    @property
+    @abstractmethod
+    def _valid_symbols(self) -> Dict[str, Dict]:
+        pass
+
+    @property
+    @abstractmethod
+    def _gene_synonyms(self) -> Dict[str, str]:
+        pass
+
+    @property
+    @abstractmethod
+    def _allele_synonyms(self) -> Dict[str, str]:
+        pass
+
     def __init__(self, symbol: str) -> None:
+        self.original_symbol = symbol
         self._parse_hla_symbol(symbol)
         self._resolve_errors()
         self._compile_result()
 
     def _parse_hla_symbol(self, hla_symbol: str) -> None:
-        self.original_symbol = hla_symbol
-        cleaned_hla_symbol = _utils.clean_and_uppercase(hla_symbol)
-        parsed_hla_symbol = HlaSymbolParser(cleaned_hla_symbol)
+        parsed_hla_symbol = HlaSymbolParser(hla_symbol)
+        self._mutation = parsed_hla_symbol.mutation
+
+        if parsed_hla_symbol.cleaned_symbol in self._allele_synonyms:
+            parsed_hla_symbol = HlaSymbolParser(
+                self._allele_synonyms[parsed_hla_symbol.cleaned_symbol]
+            )
+
         self._gene_name = parsed_hla_symbol.gene_name
         self._allele_designation = parsed_hla_symbol.allele_designation
 
@@ -74,7 +124,7 @@ class HlaSymbolStandardizer:
             return
 
         if self._is_synonym():
-            self._gene_name = HOMOSAPIENS_MH_SYNONYMS[self._gene_name]
+            self._gene_name = self._gene_synonyms[self._gene_name]
             if self.get_reason_why_invalid() is None:
                 return
 
@@ -103,7 +153,7 @@ class HlaSymbolStandardizer:
             self._gene_name = original
 
     def _is_synonym(self) -> bool:
-        return self._gene_name in HOMOSAPIENS_MH_SYNONYMS
+        return self._gene_name in self._gene_synonyms
 
     def _resolve_common_errors(self) -> None:
         if not self._gene_name.startswith("HLA-"):
@@ -120,27 +170,47 @@ class HlaSymbolStandardizer:
     def _handle_forgotten_colon_between_first_and_second_allele_designator(
         self,
     ) -> None:
-        if len(self._allele_designation) == 0:
+        if not self._allele_designation or not self._allele_designation[0].isdigit():
             return
 
         original = self._allele_designation
 
-        def format_ad(d):
-            return f"{int(d):02}"
-
-        for split_idx in range(1, len(original[0])):
-            self._allele_designation = [
-                format_ad(original[0][:split_idx]),
-                format_ad(original[0][split_idx:]),
-            ] + original[1:]
+        for fields in self._split_into_designator_fields(original[0]):
+            self._allele_designation = fields + original[1:]
             if self.get_reason_why_invalid() is None:
                 return
 
         self._allele_designation = original
 
+    @classmethod
+    def _split_into_designator_fields(cls, digits: str, max_fields: int = 4) -> List[List[str]]:
+        candidates = [f for f in cls._all_designator_field_splits(digits) if 2 <= len(f) <= max_fields]
+        return sorted(candidates, key=cls._field_lengths)
+
+    @classmethod
+    def _all_designator_field_splits(cls, digits: str) -> List[List[str]]:
+        if not digits:
+            return [[]]
+
+        splits = []
+        for n in (2, 3):
+            field = digits[:n]
+            if len(field) == n and not (n == 3 and field.startswith("0")):
+                for tail in cls._all_designator_field_splits(digits[n:]):
+                    splits.append([field] + tail)
+
+        return splits
+
+    @staticmethod
+    def _field_lengths(fields: List[str]) -> List[int]:
+        return [len(field) for field in fields]
+
     def _try_different_amounts_of_leading_zeros_in_first_2_allele_designators(
         self,
     ) -> None:
+        if not all(ad.isdigit() for ad in self._allele_designation[:2]):
+            return
+
         original = self._allele_designation
         first_two_allele_designators = [int(ad) for ad in self._allele_designation[:2]]
         reformatted_allele_designators = [
@@ -160,14 +230,14 @@ class HlaSymbolStandardizer:
         if self._gene_name == "B2M" and not self._allele_designation:
             return None
 
-        if not self._gene_name in VALID_HOMOSAPIENS_MH:
+        if not self._gene_name in self._valid_symbols:
             return "Unrecognized gene name"
 
         # Verify allele designators up to the level of the protein (or G/P)
         allele_designation = self._allele_designation.copy()
         if not self._is_group():
             allele_designation = allele_designation[:2]
-        current_root = VALID_HOMOSAPIENS_MH[self._gene_name]
+        current_root = self._valid_symbols[self._gene_name]
 
         while len(allele_designation) > 0:
             try:
@@ -205,5 +275,17 @@ class HlaSymbolStandardizer:
         self.result = HLAGene(original_input=self.original_symbol,
                               error=self.get_reason_why_invalid(),
                               gene_name=self._gene_name,
-                              allele_designation=self._allele_designation)
+                              allele_designation=self._allele_designation,
+                              mutation=self._mutation)
 
+
+class ImgtHlaSymbolStandardizer(HlaSymbolStandardizer):
+    _valid_symbols = VALID_HOMOSAPIENS_MH
+    _gene_synonyms = HOMOSAPIENS_MH_SYNONYMS
+    _allele_synonyms = {}
+
+
+class MroHlaSymbolStandardizer(HlaSymbolStandardizer):
+    _valid_symbols = VALID_HOMOSAPIENS_MH_MRO
+    _gene_synonyms = {}
+    _allele_synonyms = HOMOSAPIENS_MH_SYNONYMS_ALLELE_MRO

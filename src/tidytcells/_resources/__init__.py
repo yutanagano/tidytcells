@@ -20,6 +20,8 @@ HOMOSAPIENS_TR_SYNONYMS = get_json_resource("homosapiens_tr_synonyms.json")
 HOMOSAPIENS_TR_AA_SEQUENCES = get_json_resource("homosapiens_tr_aa_sequences.json")
 VALID_HOMOSAPIENS_MH = get_json_resource("valid_homosapiens_mh.json")
 HOMOSAPIENS_MH_SYNONYMS = get_json_resource("homosapiens_mh_synonyms.json")
+VALID_HOMOSAPIENS_MH_MRO = get_json_resource("valid_homosapiens_mh_mro.json")
+HOMOSAPIENS_MH_SYNONYMS_ALLELE_MRO = get_json_resource("homosapiens_mh_synonyms_allele_mro.json")
 
 VALID_HOMOSAPIENS_IG = get_json_resource("valid_homosapiens_ig.json")
 HOMOSAPIENS_IG_SYNONYMS = get_json_resource("homosapiens_ig_synonyms.json")
