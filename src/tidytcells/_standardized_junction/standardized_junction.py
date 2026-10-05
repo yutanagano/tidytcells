@@ -175,7 +175,7 @@ class JunctionStandardizer(ABC):
         Compute alignments for each sequence in self.j_aa_dict, keep only the best alignments
         '''
 
-        best_alignments = align_j_regions(self.orig_seq, self.j_aa_dict, MIN_J_SCORE, MISMATCH_PENALTY, MAX_J_MISMATCHES)
+        best_alignments = align_j_regions(self.orig_seq, self.j_aa_dict, MIN_J_SCORE, self.mismatch_penalty, MAX_J_MISMATCHES)
 
         if self.allow_fw_correction and self.orig_seq[-1] in F_MISMATCH_AAS:
             best_alignments = self.correct_sequencing_err_j_side(best_alignments, conserved_aa="F")
@@ -290,7 +290,7 @@ class JunctionStandardizer(ABC):
 
             if self.j_symbol is None:
                 if len(corrected_seqs) > 1:
-                    corrected_seqs = {s for s in corrected_seqs if s[-1] in ("F", "W")}
+                    corrected_seqs = {s for s in corrected_seqs if s[-1] in ("F", "W")} # , "C", "V
 
             if len(corrected_seqs) > 1:
                 self.reasons_invalid.append(f"J side reconstruction ambiguous: {corrected_seqs}")
