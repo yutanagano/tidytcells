@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Optional
 
+from tidytcells._resources import AMINO_ACIDS
 from tidytcells.result import Junction
 from tidytcells._utils.alignment import *
 
@@ -261,15 +262,15 @@ class JunctionStandardizer(ABC):
             elif len(seq) < new_seq_len:
                 reconstruction_length = new_seq_len - len(seq)
 
-                if reconstruction_length <= self.max_j_reconstruction:
-                    end_j_idx = j_conserved_idx + 1
-                    start_j_idx = end_j_idx - reconstruction_length
+                end_j_idx = j_conserved_idx + 1
+                start_j_idx = end_j_idx - reconstruction_length
+                reconstructed_aas = alignment_details["j_region"][start_j_idx:end_j_idx]
 
-                    reconstructed_aas = alignment_details["j_region"][start_j_idx:end_j_idx]
-                    # corrected_seqs.add(seq + reconstructed_aas)
-                    corrected_seq_with_j_gene.append((seq + reconstructed_aas, alignment_details['gene']))
-                else:
-                    alignment_too_long.append(f"{alignment_details['gene']} ({self._species}): Alignment successful but reconstruction too long ({reconstruction_length})")
+                if all(aa in AMINO_ACIDS for aa in reconstructed_aas):
+                    if reconstruction_length <= self.max_j_reconstruction:
+                        corrected_seq_with_j_gene.append((seq + reconstructed_aas, alignment_details['gene']))
+                    else:
+                        alignment_too_long.append(f"{alignment_details['gene']} ({self._species}): Alignment successful but reconstruction too long ({reconstruction_length})")
 
         corrected_seqs = {corrected_seq for corrected_seq, j_gene in corrected_seq_with_j_gene}
 
@@ -327,13 +328,15 @@ class JunctionStandardizer(ABC):
 
             if v_conserved_idx < v_offset:
                 reconstructed_aas = alignment_details["v_region"][v_conserved_idx:][:v_offset]
-                reconstruction_length = len(reconstructed_aas)
 
-                if reconstruction_length <= self.max_v_reconstruction:
-                    new_seq = reconstructed_aas + seq
-                    corrected_seqs.add(new_seq)
-                else:
-                    alignment_too_long.append(f"{alignment_details['gene']} ({self._species}): Alignment successful but reconstruction too long ({reconstruction_length})")
+                if all(aa in AMINO_ACIDS for aa in reconstructed_aas):
+                    reconstruction_length = len(reconstructed_aas)
+
+                    if reconstruction_length <= self.max_v_reconstruction:
+                        new_seq = reconstructed_aas + seq
+                        corrected_seqs.add(new_seq)
+                    else:
+                        alignment_too_long.append(f"{alignment_details['gene']} ({self._species}): Alignment successful but reconstruction too long ({reconstruction_length})")
 
         corrected_seqs = {seq for seq in corrected_seqs if seq.startswith("C")}
 
