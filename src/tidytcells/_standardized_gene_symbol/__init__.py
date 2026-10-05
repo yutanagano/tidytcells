@@ -3,4 +3,4 @@ from .standardized_ig_symbol import IgSymbolStandardizer
 from .standardized_tr_symbol import TrSymbolStandardizer
 
 from .standardized_hla_symbol import ImgtHlaSymbolStandardizer, MroHlaSymbolStandardizer
-from .standardized_mus_musculus_mh_symbol import MusMusculusMhSymbolStandardizer
+from .standardized_mus_musculus_mh_symbol import ImgtMusMusculusMhSymbolStandardizer, MroMusMusculusMhSymbolStandardizer

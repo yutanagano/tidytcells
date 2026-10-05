@@ -4,7 +4,8 @@ from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
     ImgtHlaSymbolStandardizer,
     MroHlaSymbolStandardizer,
-    MusMusculusMhSymbolStandardizer,
+    ImgtMusMusculusMhSymbolStandardizer,
+    MroMusMusculusMhSymbolStandardizer,
 )
 from typing import Dict, Optional, Type
 
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Dict[str, Type]] = {
     "homosapiens": {"IMGT": ImgtHlaSymbolStandardizer, "MRO": MroHlaSymbolStandardizer},
-    "musmusculus": {"IMGT": MusMusculusMhSymbolStandardizer},
+    "musmusculus": {"IMGT": ImgtMusMusculusMhSymbolStandardizer, "MRO": MroMusMusculusMhSymbolStandardizer},
 }
 
 
@@ -28,17 +29,17 @@ def standardize(
     suppress_warnings: Optional[bool] = None,
 ) -> MhGene:
     """
-    Attempt to standardize an MH gene / allele symbol to be IMGT- or MRO-compliant.
+    Attempt to standardize an MH gene / allele symbol to be MRO- or IMGT-compliant.
 
     .. topic:: Supported species and databases
 
-        - ``"homosapiens"``: ``"IMGT"``, ``"MRO"``
-        - ``"musmusculus"``: ``"IMGT"``
+        - ``"homosapiens"``: ``"MRO"``, ``"IMGT"``
+        - ``"musmusculus"``: ``"MRO"``, ``"IMGT"``
 
     .. note::
         This function will only verify the validity of an MH gene/allele up to the level of the protein.
         Any further precise allele designations will not be verified, apart from the requirement that the format (colon-separated numbers) look valid.
-        The reasons for this is firstly because new alleles at that level are added to the IMGT list quite often and so accurate verification is difficult,
+        The reasons for this is firstly because new alleles at that level are added quite often and so accurate verification is difficult,
         secondly because people rarely need verification to such a precise level, and finally because such verification costs more computational effort with diminishing returns.
 
     :param symbol:
@@ -56,10 +57,10 @@ def standardize(
     :type species:
         str
     :param database:
-        Which database to standardize against: ``"IMGT"`` or ``"MRO"`` (https://github.com/IEDB/MRO).
+        Which database to standardize against: ``"MRO"`` (https://github.com/IEDB/MRO) or ``"IMGT"``.
         If species is ``"any"``, only species for which the database is available are attempted.
-        Note that IMGT uses a non-standard representation of mouse MH genes, and using MRO is therefore recommended.
-        Defaults to ``"IMGT"``.
+        Note that IMGT uses a non-standard representation of mouse MH genes (e.g. ``MH1-K1`` rather than ``H2-Kb``).
+        Defaults to ``"MRO"``.
     :type database:
         str
     :param log_failures:
@@ -113,22 +114,36 @@ def standardize(
         >>> tt.mh.standardize("HLA-DRB3").symbol
         'HLA-DRB3'
 
-        Non-standardized input strings will intelligently be corrected to IMGT-compliant symbols.
+        Non-standardized input strings will intelligently be corrected to compliant symbols.
 
         >>> tt.mh.standardize("A1").allele
         'HLA-A*01'
 
-        MRO names can also be used for standardization.
-
-        >>> tt.mh.standardize("HLA-Cw*0301", database="MRO").symbol
-        'HLA-C*03:04'
-        >>> tt.mh.standardize("HLA-A0201 K66A mutant", database="MRO").symbol
-        'HLA-A*02:01 K66A mutant'
-
         *Mus musculus* is a supported species.
 
-        >>> tt.mh.standardize("CRW2", species="musmusculus").gene
+        >>> tt.mh.standardize("H-2Kb", species="musmusculus").symbol
+        'H2-Kb'
+        >>> tt.mh.standardize("I-Ab", species="musmusculus").symbol
+        'H2-IAb'
+        >>> tt.mh.standardize("CRW2", species="musmusculus", database="IMGT").gene
         'MH1-M5'
+
+        Known alternative MRO names are mapped to the current MRO name, and mutant molecules are supported.
+
+        >>> tt.mh.standardize("HLA-Cw*0301").symbol
+        'HLA-C*03:04'
+        >>> tt.mh.standardize("HLA-A0201 K66A mutant").symbol
+        'HLA-A*02:01 K66A mutant'
+        >>> tt.mh.standardize("HLA-A0201 K66A mutant").mutation
+        'K66A'
+
+        IMGT can be selected instead of MRO, which may give a different result for the same input.
+
+        >>> tt.mh.standardize("I-Ab", species="musmusculus").symbol
+        'H2-IAb'
+        >>> tt.mh.standardize("I-Ab", species="musmusculus", database="IMGT").symbol
+        'MH2-AB'
+
 
         For failed standardizations, the 'error' attribute explains why the standardization failed, and
         the 'attempted_fix' attribute contains the best attempted result found during standardization.
@@ -165,8 +180,11 @@ def standardize(
                 {
                     split off a trailing "<mutation> mutant" description if present       //e.g. HLA-A*02:01 K66A mutant
 
-                    IF database is MRO and symbol is a known MRO synonym:
-                        overwrite symbol with its MRO name                              //e.g. HLA-Cw*0301 -> HLA-C*03:04
+                IF symbol is a known alternative name of an allele:
+                    overwrite symbol with the current allele name                     //e.g. HLA-Cw*0301 -> HLA-C*03:04
+
+                // for mus musculus, where the database names haplotypes
+                try matching while ignoring an H2 / H-2 prefix and hyphens              //e.g. H-2Kb, I-Ab -> H2-Kb, H2-IAb
 
                     IF symbol is already in compliant form:
                         set standardization status as successful
@@ -211,8 +229,8 @@ def standardize(
     )
     database = (
         Parameter(database, "database")
-        .set_default("IMGT")
-        .throw_error_if_not_one_of("IMGT", "MRO")
+        .set_default("MRO")
+        .throw_error_if_not_one_of("MRO", "IMGT")
         .value
     )
     suppress_warnings_inverted = (
