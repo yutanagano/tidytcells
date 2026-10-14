@@ -158,7 +158,7 @@ def standardize(
         >>> result = tt.ig.standardize("IGHV1-67")
         >>> result.get_all_alleles(enforce_functional=True)
         []
-        >>> result.get_all_alleles(enforce_functional=True)
+        >>> result.get_all_alleles(enforce_functional=False)
         ['IGHV1-67*02', 'IGHV1-67*03', 'IGHV1-67*01']
 
         Utility method 'get_aa_sequences' can be used to retrieve known amino acid sequences per allele.
