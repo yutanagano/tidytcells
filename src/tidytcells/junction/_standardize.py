@@ -1,29 +1,17 @@
 import logging
+from tidytcells._config import config
 from tidytcells import _utils
-from tidytcells._resources import AMINO_ACIDS, AMINO_ACIDS_WITH_SPECIAL
+from tidytcells._resources import AMINO_ACIDS, AMINO_ACIDS_WITH_SPECIAL, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES
+
 from tidytcells.result._junction import Junction
 from tidytcells._utils.alignment import get_is_valid_locus_multi_gene_fn
 from tidytcells._utils.parameter import Parameter
-from tidytcells._standardized_junction import (
-    JunctionStandardizer,
-    HomoSapiensTrJunctionStandardizer,
-    HomoSapiensIgJunctionStandardizer,
-    OgrdbHomoSapiensIgJunctionStandardizer,
-    MusMusculusTrJunctionStandardizer,
-    MusMusculusIgJunctionStandardizer,
-)
-
-from typing import Dict, Optional, Type
+from tidytcells._standardized_junction import JunctionStandardizer
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
 
-SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Dict[str, Type[JunctionStandardizer]]] = {
-    "homosapiens": {"TR": {"IMGT": HomoSapiensTrJunctionStandardizer},
-                    "IG": {"IMGT": HomoSapiensIgJunctionStandardizer, "OGRDB": OgrdbHomoSapiensIgJunctionStandardizer}},
-    "musmusculus": {"TR": {"IMGT": MusMusculusTrJunctionStandardizer},
-                    "IG": {"IMGT": MusMusculusIgJunctionStandardizer}},
-}
 
 def standardize(
     seq: str,
@@ -38,7 +26,6 @@ def standardize(
     max_v_reconstruction: Optional[int] = None,
     max_j_reconstruction: Optional[int] = None,
     allow_special_chars: Optional[bool] = None,
-    germline_reference: Optional[str] = None,
     log_failures: Optional[bool] = None,
     suppress_warnings: Optional[bool] = None,
 ) -> Junction:
@@ -129,10 +116,6 @@ def standardize(
         special characters occur in the input sequence. Defaults to ``False``.
     :type allow_special_chars:
         bool
-    :param germline_reference:
-        The germline reference set for the standardization. Valid options are 'IMGT' and 'OGRDB' (only for IG).
-    :type germline_reference:
-        str
     :param log_failures:
         Report standardization failures through logging (at level ``WARNING``).
         Defaults to ``True``.
@@ -393,12 +376,6 @@ def standardize(
         .throw_error_if_not_of_type(bool)
         .value
     )
-    germline_reference = (
-        Parameter(germline_reference, "germline_reference")
-        .set_default("IMGT")
-        .throw_error_if_not_one_of("IMGT", "OGRDB")
-        .value
-    )
     suppress_warnings_inverted = (
         not suppress_warnings if suppress_warnings is not None else None
     )
@@ -426,37 +403,44 @@ def standardize(
             return Junction(original_input, f'Not a valid amino acid sequence, found: {char}')
 
 
-    if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
+    if species not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES:
         if log_failures:
             _utils.warn_unsupported_species(species, "junction", logger)
 
         return Junction(original_input, f'Unsupported species: {species}')
 
 
-    if locus[0:2] not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
+    if locus[0:2] not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species]:
         if log_failures:
             logger.warning(
-                f'Unsupported locus: "{locus}" for species "{species}" (valid options are: {SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]}). ' f"Skipping {type} standardization."
+                f'Unsupported locus: "{locus}" for species "{species}" (valid options are: {SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species]}). ' f"Skipping {type} standardization."
             )
 
         return Junction(original_input, f'Unsupported locus: "{locus}" for species "{species}"')
 
-    if germline_reference not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][locus[0:2]]:
+    if config.receptor_database not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]]:
         if log_failures:
             logger.warning(
-                f'Unsupported germline_reference: "{germline_reference}" for species "{species}" and locus {locus}  (valid options are: {SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][locus[0:2]]}). ' f"Skipping {type} standardization."
+                f'Unsupported receptor_database: "{config.receptor_database}" for species "{species}" and locus "{locus}" '
+                f'(valid options are: {sorted(SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]])}). '
+                f'Use tidytcells.set_receptor_database() to switch. '
+                f'Skipping junction standardization.'
             )
 
-        return Junction(original_input, f'Unsupported germline_reference: "{germline_reference}" for species "{species}" and locus {locus}.')
+        return Junction(original_input, f'Unsupported receptor_database: "{config.receptor_database}" for species "{species}" and locus {locus}. Use tidytcells.set_receptor_database() to switch.')
 
-    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][locus[0:2]][germline_reference]
-    result = standardizer_cls(seq=seq, locus=locus, j_symbol=j_symbol, v_symbol=v_symbol,
-                                                      allow_c_correction=allow_c_correction,
-                                                      allow_fw_correction=allow_fw_correction,
-                                                      enforce_functional_v=enforce_functional_v,
-                                                      enforce_functional_j=enforce_functional_j,
-                                                      max_v_reconstruction=max_v_reconstruction,
-                                                      max_j_reconstruction=max_j_reconstruction).result
+    sequence_dictionary = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]][config.receptor_database]
+
+    result = JunctionStandardizer(seq=seq, locus=locus, j_symbol=j_symbol, v_symbol=v_symbol,
+                                  allow_c_correction=allow_c_correction,
+                                  allow_fw_correction=allow_fw_correction,
+                                  enforce_functional_v=enforce_functional_v,
+                                  enforce_functional_j=enforce_functional_j,
+                                  max_v_reconstruction=max_v_reconstruction,
+                                  max_j_reconstruction=max_j_reconstruction,
+                                  species=species,
+                                  germline_database=config.receptor_database,
+                                  sequence_dictionary=sequence_dictionary).result
 
     if (not result.is_standardized) and log_failures:
         _utils.warn_result_failure(

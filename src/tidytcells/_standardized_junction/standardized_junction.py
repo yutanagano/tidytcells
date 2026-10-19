@@ -1,5 +1,4 @@
-from abc import ABC, abstractmethod
-from typing import Dict, Optional
+from typing import Optional
 
 from tidytcells._resources import AMINO_ACIDS
 from tidytcells.result import Junction
@@ -19,25 +18,13 @@ TCR_MISMATCH_PENALTY = -1.5
 BCR_MISMATCH_PENALTY = -0.5
 
 
-class JunctionStandardizer(ABC):
-    """
-    Abstract base standardizer class.
-    """
-
-    @property
-    @abstractmethod
-    def _species(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def _sequence_dictionary(self) -> Dict[str, Dict]:
-        pass
+class JunctionStandardizer():
 
     def __init__(self, seq: str, locus: str, j_symbol: str, v_symbol: str,
                  enforce_functional_v: bool = True, enforce_functional_j: bool = False,
                  allow_c_correction: bool = False, allow_fw_correction: bool = False,
-                 max_v_reconstruction: int = 1, max_j_reconstruction: int = 1) -> None:
+                 max_v_reconstruction: int = 1, max_j_reconstruction: int = 1,
+                 species: str = None, germline_database: str = None, sequence_dictionary: dict = None) -> None:
         self.orig_seq = seq
         self.corrected_seq = seq
         self.locus = locus
@@ -49,6 +36,10 @@ class JunctionStandardizer(ABC):
         self.allow_fw_correction = allow_fw_correction
         self.max_v_reconstruction = max_v_reconstruction
         self.max_j_reconstruction = max_j_reconstruction
+        self.species = species
+        self.germline_database = germline_database
+        self.sequence_dictionary = sequence_dictionary
+
         self.mismatch_penalty = TCR_MISMATCH_PENALTY if self.locus.startswith("T") else BCR_MISMATCH_PENALTY
         self.corrected_first_aa = False
         self.corrected_last_aa = False
@@ -57,7 +48,7 @@ class JunctionStandardizer(ABC):
         self.reasons_invalid = []
         self._resolve_juncton()
 
-        self.result = Junction(self.orig_seq, self.get_reason_why_invalid(), self.corrected_seq, self._species, self.correction_j_genes)
+        self.result = Junction(self.orig_seq, self.get_reason_why_invalid(), self.corrected_seq, self.species, self.correction_j_genes, self.germline_database)
 
 
     def _resolve_juncton(self):
@@ -92,22 +83,22 @@ class JunctionStandardizer(ABC):
             # if symbol is an allele, return only info for the given allele
             if "*" in sub_symbol:
                 if gene not in sub_symbol:
-                    self.reasons_invalid.append(f"not a {gene} gene: {sub_symbol} ({self._species})")
+                    self.reasons_invalid.append(f"not a {gene} gene: {sub_symbol} ({self.species})")
                     continue
                     # return dict()
 
-                if sub_symbol in  self._sequence_dictionary:
-                    aa_dict.update({sub_symbol: self._sequence_dictionary[sub_symbol]})
+                if sub_symbol in  self.sequence_dictionary:
+                    aa_dict.update({sub_symbol: self.sequence_dictionary[sub_symbol]})
                     continue
                 else:
-                    self.reasons_invalid.append(f"no sequence information known for {sub_symbol} ({self._species})")
+                    self.reasons_invalid.append(f"no sequence information known for {sub_symbol} ({self.species})")
 
             # if sub_symbol is less specific than allele, retrieve any alleles that are valid extensions of the given sub_symbol
             enforce_functional = self.enforce_functional_v if gene == "V" else self.enforce_functional_j
-            allele_symbols = get_compatible_symbols(sub_symbol, self._sequence_dictionary, gene, self.locus, enforce_functional)
+            allele_symbols = get_compatible_symbols(sub_symbol, self.sequence_dictionary, gene, self.locus, enforce_functional)
 
             # if all alleles for one gene have the same sequence info, collapse the gene to 1 dict item
-            aas_per_allele = {ext_symbol: self._sequence_dictionary[ext_symbol] for ext_symbol in allele_symbols}
+            aas_per_allele = {ext_symbol: self.sequence_dictionary[ext_symbol] for ext_symbol in allele_symbols}
             aas_per_gene = collapse_aa_dict_per_gene(aas_per_allele)
 
             aa_dict.update(aas_per_gene)
@@ -187,9 +178,9 @@ class JunctionStandardizer(ABC):
             err = "J alignment unsuccessful"
 
             if self.j_symbol is not None:
-                err += f" for J symbol {self.j_symbol} ({self._species})"
+                err += f" for J symbol {self.j_symbol} ({self.species})"
             else:
-                err += f" for any J symbol ({self._species})"
+                err += f" for any J symbol ({self.species})"
 
             if len(self.j_aa_dict) == 0:
                 err += ": no known sequence information"
@@ -212,7 +203,7 @@ class JunctionStandardizer(ABC):
             err = "V alignment unsuccessful"
 
             if self.v_symbol is not None:
-                err += f" for V symbol {self.v_symbol} ({self._species})"
+                err += f" for V symbol {self.v_symbol} ({self.species})"
             else:
                 err += " for any V symbol"
 
@@ -272,7 +263,7 @@ class JunctionStandardizer(ABC):
                     if reconstruction_length <= self.max_j_reconstruction:
                         corrected_seq_with_j_gene.append((seq + reconstructed_aas, alignment_details['gene']))
                     else:
-                        alignment_too_long.append(f"{alignment_details['gene']} ({self._species}): Alignment successful but reconstruction too long ({reconstruction_length})")
+                        alignment_too_long.append(f"{alignment_details['gene']} ({self.species}): Alignment successful but reconstruction too long ({reconstruction_length})")
 
         corrected_seqs = {corrected_seq for corrected_seq, j_gene in corrected_seq_with_j_gene}
 
@@ -338,7 +329,7 @@ class JunctionStandardizer(ABC):
                         new_seq = reconstructed_aas + seq
                         corrected_seqs.add(new_seq)
                     else:
-                        alignment_too_long.append(f"{alignment_details['gene']} ({self._species}): Alignment successful but reconstruction too long ({reconstruction_length})")
+                        alignment_too_long.append(f"{alignment_details['gene']} ({self.species}): Alignment successful but reconstruction too long ({reconstruction_length})")
 
         corrected_seqs = {seq for seq in corrected_seqs if seq.startswith("C")}
 

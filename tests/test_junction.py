@@ -1,5 +1,5 @@
 import pytest
-from tidytcells import junction
+from tidytcells import junction, config
 
 
 class Teststandardize:
@@ -134,7 +134,7 @@ class Teststandardize:
         assert result.j_gene_match is None
         assert not result.is_standardized
 
-    def test_germline_reference(self):
+    def test_germline_reference_config(self):
         # IGLV1-41*01 is ORF in IMGT but functional in OGRDB, so enforcing functional
         # V genes excludes it under IMGT and keeps it under OGRDB.
         kwargs = {
@@ -144,11 +144,17 @@ class Teststandardize:
             "enforce_functional_v": True,
         }
 
-        result = junction.standardize(germline_reference="IMGT", **kwargs)
+        config.set_receptor_database("IMGT")
+        result = junction.standardize(**kwargs)
         assert not result.is_standardized
+        assert result.germline_database == "IMGT"
 
-        result = junction.standardize(germline_reference="OGRDB", **kwargs)
+        config.set_receptor_database("OGRDB")
+        result = junction.standardize(**kwargs)
         assert result.junction == "CLASSPGVFGANVLTF"
+        assert result.germline_database == "OGRDB"
+
+        config.reset_defaults()
 
 
     @pytest.mark.parametrize(

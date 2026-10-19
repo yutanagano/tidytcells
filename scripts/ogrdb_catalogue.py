@@ -48,6 +48,10 @@ def main() -> None:
     sequence_data = get_ig_aa_sequence_data(paths)
     script_utility.save_as_json(sequence_data, "homosapiens_ig_aa_sequences_ogrdb.json")
 
+    print("Compiling valid IG genes...")
+    valid_genes = get_valid_gene_data(sequence_data)
+    script_utility.save_as_json(valid_genes, "valid_homosapiens_ig_ogrdb.json")
+
 
 def get_germline_set_path(locus: str) -> Path:
     path = PATH_TO_DATA_DIR / f"Homo_sapiens_{locus}.json"
@@ -84,6 +88,16 @@ def get_ig_aa_sequence_data(paths: Tuple[Path]) -> dict:
     d_gene_sequence_data = get_d_gene_sequence_data(alleles)
     j_gene_sequence_data = get_j_gene_sequence_data(alleles)
     return {**v_gene_sequence_data, **d_gene_sequence_data, **j_gene_sequence_data}
+
+
+def get_valid_gene_data(sequence_data: dict) -> dict:
+    valid_genes = collections.defaultdict(dict)
+
+    for allele, data in sequence_data.items():
+        gene, designation = allele.split("*")
+        valid_genes[gene][designation] = data["functionality"]
+
+    return {gene: dict(sorted(alleles.items())) for gene, alleles in sorted(valid_genes.items())}
 
 
 def get_alleles(paths: Tuple[Path]) -> dict:
@@ -124,7 +138,7 @@ def get_v_gene_sequence_data(alleles: dict) -> dict:
         nt_seq = allele["coding_sequence"].upper()
         v_region = translate(nt_seq)
 
-        aa_seqs[name]["functionality"] = get_functionality(allele, v_region)
+        aa_seqs[name]["functionality"] = get_functionality(allele)
         aa_seqs[name].update(get_v_regions(name, allele, nt_seq))
         aa_seqs[name]["V-REGION"] = v_region
 
@@ -135,7 +149,6 @@ def get_d_gene_sequence_data(alleles: dict) -> dict:
     aa_seqs = collections.defaultdict(dict)
 
     for name, allele in get_alleles_of_type(alleles, "D").items():
-        # the D reading frame is arbitrary, so stop codons do not indicate a pseudogene
         aa_seqs[name]["functionality"] = get_functionality(allele)
         aa_seqs[name]["D-REGION"] = translate(allele["coding_sequence"].upper())
 
@@ -154,7 +167,7 @@ def get_j_gene_sequence_data(alleles: dict) -> dict:
 
         j_region = translate(allele["coding_sequence"].upper()[frame - 1:])
 
-        aa_seqs[name]["functionality"] = get_functionality(allele, j_region)
+        aa_seqs[name]["functionality"] = get_functionality(allele)
         aa_seqs[name]["J-REGION"] = j_region
 
         conserved_aa = get_conserved_aa(name, allele, j_region)
@@ -209,16 +222,8 @@ def get_conserved_aa(name: str, allele: dict, j_region: str) -> str:
 
     return j_region[offset // 3]
 
-
-def get_functionality(allele: dict, aa_seq: str = None) -> str:
-    # OGRDB only records functional or not; a stop codon separates P from ORF
-    if allele["functional"]:
-        return "F"
-
-    if aa_seq is not None and "*" in aa_seq:
-        return "P"
-
-    return "ORF"
+def get_functionality(allele: dict) -> str:
+    return "F" if allele["functional"] else "NF"
 
 
 def translate(nt_seq: str) -> str:

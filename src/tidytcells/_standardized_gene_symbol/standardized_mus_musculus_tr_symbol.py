@@ -1,13 +1,14 @@
 from tidytcells._standardized_gene_symbol.standardized_tr_symbol import (
     TrSymbolStandardizer,
 )
-from tidytcells._resources import VALID_MUSMUSCULUS_TR
+from tidytcells._resources import VALID_MUSMUSCULUS_TR_IMGT
 
 
-class MusMusculusTrSymbolStandardizer(TrSymbolStandardizer):
+class MusMusculusImgtTrSymbolStandardizer(TrSymbolStandardizer):
     _species = "musmusculus"
+    _germline_database = "IMGT"
     _synonym_dictionary = dict()
-    _valid_gene_dictionary = VALID_MUSMUSCULUS_TR
+    _valid_gene_dictionary = VALID_MUSMUSCULUS_TR_IMGT
     _valid_subgroups = {
-        key.split("-")[0] for key in VALID_MUSMUSCULUS_TR
+        key.split("-")[0] for key in VALID_MUSMUSCULUS_TR_IMGT
     }
