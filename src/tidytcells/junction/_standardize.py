@@ -111,9 +111,10 @@ def standardize(
     :type max_j_reconstruction:
         bool
     :param allow_special_chars:
-        Whether to allow special characters 'X' and '*' in the input sequence. This will only affect input
-        validation, but not the result Junction. If ``False``, standardization automatically fails if
-        special characters occur in the input sequence. Defaults to ``False``.
+        Whether to allow special characters 'X', '#' and '*' in the input sequence. This will only affect input
+        validation, but not the result Junction (special characters will not be added).
+        If ``False``, standardization automatically fails if special characters occur in the input sequence.
+        Defaults to ``False``.
     :type allow_special_chars:
         bool
     :param log_failures:
