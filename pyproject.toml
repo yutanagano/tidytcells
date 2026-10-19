@@ -13,7 +13,7 @@ maintainers = [
 ]
 description = "Standardise TR/MH data"
 readme = "README.md"
-keywords = ["immunology", "bioinformatics", "TCR", "TR", "MHC", "MH", "HLA", "T cell", "IMGT"]
+keywords = ["immunology", "bioinformatics", "TCR", "TR", "MHC", "MH", "HLA", "T cell", "IMGT", "IG", "BCR", "B cell", "CDR3", "Junction", "OGRDB"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",

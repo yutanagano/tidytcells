@@ -9,24 +9,34 @@ class IgSymbolParser:
     gene_name: str
     allele_designation: Optional[str]
 
-    def __init__(self, ig_symbol: str, species="homosapiens") -> None:
+    def __init__(self, ig_symbol: str, species: str, germline_database: str) -> None:
         if species == "homosapiens":
-            pattern = r"^([A-Z0-9\-\.\(\)\/ab]+)(\*(\d+))?"
+            gene_pattern = r"^([A-Z0-9\-\.\(\)\/ab]+)"
         elif species == "musmusculus":
-            pattern = r"^([A-Z0-9\-\.\(\)\/]+[abcdef]?)(\*(\d+))?"
+            gene_pattern = r"^([A-Z0-9\-\.\(\)\/]+[abcdef]?)"
         else:
-            pattern = r"^([A-Z0-9\-\.\(\)\/]+)(\*(\d+))?"
+            gene_pattern = r"^([A-Z0-9\-\.\(\)\/]+)"
 
+        if germline_database == "OGRDB":
+            allele_pattern =  r"(\*(i?\d+))?"
+        else:
+            allele_pattern = r"(\*(\d+))?"
+
+        pattern = gene_pattern + allele_pattern
 
         parse_attempt = re.match(pattern, ig_symbol)
 
         if parse_attempt:
             self.gene_name = parse_attempt.group(1)
-            self.allele_designation = (
-                None
-                if parse_attempt.group(3) is None
-                else f"{int(parse_attempt.group(3)):02}"
-            )
+
+            allele = parse_attempt.group(3)
+
+            if allele is None:
+                self.allele_designation = None
+            elif allele.startswith("i"):
+                self.allele_designation = f"i{int(allele[1:]):02}"
+            else:
+                self.allele_designation = f"{int(allele):02}"
         else:
             self.gene_name = ig_symbol
             self.allele_designation = None
@@ -36,12 +46,16 @@ class IgSymbolStandardizer(ReceptorGeneSymbolStandardizer):
 
     def _parse_symbol(self, ig_symbol: str) -> Tuple[Optional[str], Optional[str]]:
         cleaned_ig_symbol = self._safe_clean_ig_symbol(ig_symbol)
-        parsed_ig_symbol = IgSymbolParser(cleaned_ig_symbol, species=self._species)
+        parsed_ig_symbol = IgSymbolParser(cleaned_ig_symbol, species=self._species, germline_database=self._germline_database)
 
         return parsed_ig_symbol.gene_name, parsed_ig_symbol.allele_designation
 
     def _safe_clean_ig_symbol(self, ig_symbol: str) -> str:
-        cleaned_ig_symbol = _utils.clean_and_uppercase(ig_symbol)
+        gene_part, star, allele_part = ig_symbol.partition("*")
+        gene_part = _utils.clean_and_uppercase(gene_part)
+        allele_part = _utils.clean_and_lowercase(allele_part)
+
+        cleaned_ig_symbol = gene_part + star + allele_part
 
         # Deal with lowercase a/b in genes like IGHD1/OR15-1a*01
         if self._species == "homosapiens":

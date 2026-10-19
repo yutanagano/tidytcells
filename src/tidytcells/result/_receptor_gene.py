@@ -1,6 +1,7 @@
 from typing import Optional
-from tidytcells._utils.alignment import get_compatible_symbols
 from tidytcells._resources import SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES
+from tidytcells._utils.alignment import get_compatible_symbols
+
 
 
 class ReceptorGene:
@@ -10,13 +11,14 @@ class ReceptorGene:
     If standardization was successful, this object provides access to the standardized allele/gene/subgroup and other properties.
     When failed, the error message(s) and attempted partially standardized gene symbol can be retrieved.
     '''
-    def __init__(self, original_input, error, gene_name=None, allele_designation=None, subgroup_name=None, species=None):
+    def __init__(self, original_input, error, gene_name=None, allele_designation=None, subgroup_name=None, species=None, germline_database=None):
         self._original_input = original_input
         self._error = error
         self._gene_name = gene_name
         self._allele_designation = allele_designation
         self._subgroup_name = subgroup_name
         self._species = species
+        self._germline_database = germline_database
 
         self._highest_precision_symbol = None
 
@@ -110,6 +112,11 @@ class ReceptorGene:
         '''The species used to validate the gene name.'''
         return self._species
 
+    @property
+    def germline_database(self) -> str:
+        ''' The germline database that was used to standardize this junction (IMGT or OGRDB)'''
+        return self._germline_database
+
     def get_all_alleles(self, enforce_functional=True):
         '''
         Get all alleles related to the standardized symbol
@@ -124,7 +131,7 @@ class ReceptorGene:
             list
         '''
         if self.is_standardized:
-            aa_dict = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[self.receptor_type][self.species]
+            aa_dict = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[self.species][self.receptor_type][self.germline_database]
 
             return get_compatible_symbols(self.symbol, aa_dict, self.gene_type, self.locus, enforce_functional)
 
@@ -155,7 +162,7 @@ class ReceptorGene:
         sequence_type = sequence_type + "-IMGT" if sequence_type in {"FR1", "FR2", "FR3", "CDR1", "CDR2"} else sequence_type
 
         if self.is_standardized:
-            aa_dict = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[self.receptor_type][self.species]
+            aa_dict = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[self.species][self.receptor_type][self.germline_database]
 
             alleles_of_interest = self.get_all_alleles(enforce_functional)
 
