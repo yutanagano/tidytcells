@@ -1,18 +1,12 @@
-from importlib import resources
 import json
-import sys
+from pathlib import Path
 
-if sys.version_info >= (3, 9):
+RESOURCES_DIR = Path(__file__).parent
 
-    def get_json_resource(filename: str) -> dict:
-        with resources.files(__name__).joinpath(filename).open("r") as f:
-            return json.load(f)
 
-else:
-
-    def get_json_resource(filename: str) -> dict:
-        with resources.open_text(__name__, filename) as f:
-            return json.load(f)
+def get_json_resource(filename: str) -> dict:
+    with open(RESOURCES_DIR / filename, "r") as f:
+        return json.load(f)
 
 
 VALID_HOMOSAPIENS_TR_IMGT = get_json_resource("valid_homosapiens_tr.json")
@@ -38,6 +32,19 @@ MUSMUSCULUS_MH_SYNONYMS_ALLELE_MRO = get_json_resource("musmusculus_mh_synonyms_
 
 VALID_MUSMUSCULUS_IG_IMGT = get_json_resource("valid_musmusculus_ig.json")
 MUSMUSCULUS_IG_AA_SEQUENCES_IMGT = get_json_resource("musmusculus_ig_aa_sequences.json")
+
+
+
+HOMOSAPIENS_MH_VALID_IPD = get_json_resource("ipd/homosapiens_mh_valid_allele_ipd.json")
+HOMOSAPIENS_MH_SYNONYMS_GENE_HGNC_IPD = get_json_resource("ipd/homosapiens_mh_synonyms_gene_hgnc.json")
+
+
+MUSMUSCULUS_MH_VALID_MRO = get_json_resource("mro/musmusculus_mh_valid_protein_mro.json")
+MUSMUSCULUS_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro/musmusculus_mh_synonyms_allele_mro.json")
+
+HOMOSAPIENS_MH_VALID_PROTEIN_MRO = get_json_resource("mro/homosapiens_mh_valid_protein_mro.json")
+HOMOSAPIENS_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro/homosapiens_mh_synonyms_allele_mro.json")
+HOMOSAPIENS_MH_SYNONYMS_GENE_HGNC_MRO = get_json_resource("mro/homosapiens_mh_synonyms_gene_hgnc.json")
 
 
 

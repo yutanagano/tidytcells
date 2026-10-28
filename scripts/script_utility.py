@@ -7,7 +7,7 @@ import pandas as pd
 from pandas import DataFrame
 from pathlib import Path
 import requests
-from typing import Tuple
+from typing import Tuple, Iterable
 import re
 import time
 
@@ -289,3 +289,53 @@ def fetch_hgnc_data() -> DataFrame:
     )
     buffer = StringIO(response.text)
     return pd.read_csv(buffer, sep="\t", on_bad_lines="warn")
+
+def get_hgnc_synonyms_data(valid_alleles: Iterable[str]) -> dict:
+    hgnc = fetch_hgnc_data()
+
+    mh_genes = hgnc[hgnc["Gene group name"].notna()]
+    mh_genes = mh_genes[
+        mh_genes["Gene group name"].str.contains("Histocompatibility complex")
+    ]
+
+    # Only keep genes whose 'approved symbols' are in our IMGT list
+    mh_genes = mh_genes[mh_genes["Approved symbol"].map(lambda x: x in valid_alleles)]
+
+    # Get MH genes with "alias symbols"
+    mh_genes_with_aliases = mh_genes[mh_genes["Alias symbols"].notna()][
+        ["Approved symbol", "Alias symbols"]
+    ]
+    mh_genes_with_aliases["Alias symbols"] = mh_genes_with_aliases["Alias symbols"].map(
+        lambda x: [element.strip() for element in x.split(",")]
+    )
+    mh_genes_with_aliases.columns = ["Approved symbol", "Synonym"]
+    mh_genes_with_aliases = mh_genes_with_aliases.explode("Synonym")
+
+    # Get MH genes with "previous symbols" (deprecated symbols)
+    mh_genes_with_depnames = mh_genes[mh_genes["Previous symbols"].notna()][
+        ["Approved symbol", "Previous symbols"]
+    ]
+    mh_genes_with_depnames["Previous symbols"] = mh_genes_with_depnames[
+        "Previous symbols"
+    ].map(lambda x: [element.strip() for element in x.split(",")])
+    mh_genes_with_depnames.columns = ["Approved symbol", "Synonym"]
+    mh_genes_with_depnames = mh_genes_with_depnames.explode("Synonym")
+
+    # Combine and uppercase
+    mh_synonyms = pd.concat([mh_genes_with_aliases, mh_genes_with_depnames])
+    mh_synonyms["Synonym"] = mh_synonyms["Synonym"].str.upper()
+
+    # Remove ambiguous synonyms
+    mh_synonyms = mh_synonyms.groupby("Synonym").aggregate(lambda x: x.tolist())
+    mh_synonyms = mh_synonyms[mh_synonyms["Approved symbol"].map(len) == 1].copy()
+    mh_synonyms["Approved symbol"] = mh_synonyms["Approved symbol"].map(
+        lambda x: x.pop()
+    )
+
+    # Remove redundant items
+    mh_synonyms = mh_synonyms[mh_synonyms.index != mh_synonyms["Approved symbol"]]
+
+    # Remove any synonyms that are also names of other valid genes
+    mh_synonyms = mh_synonyms[mh_synonyms.index.map(lambda x: x not in valid_alleles)]
+
+    return mh_synonyms["Approved symbol"].to_dict()
