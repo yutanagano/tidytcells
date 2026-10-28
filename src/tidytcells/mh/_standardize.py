@@ -6,6 +6,10 @@ from tidytcells._standardized_gene_symbol import (
     ImgtHlaSymbolStandardizer,
     MroHlaSymbolStandardizer,
     MroMusMusculusMhSymbolStandardizer,
+    MroBoLaSymbolStandardizer,
+    MroMamuSymbolStandardizer,
+    MroPatrSymbolStandardizer,
+    MroSlaSymbolStandardizer
 )
 from typing import Dict, Optional, Type
 
@@ -17,6 +21,10 @@ logger = logging.getLogger(__name__)
 SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Dict[str, Type]] = {
     "homosapiens": {"IPD": ImgtHlaSymbolStandardizer, "MRO": MroHlaSymbolStandardizer},
     "musmusculus": {"MRO": MroMusMusculusMhSymbolStandardizer},
+    "bostaurus": {"MRO": MroBoLaSymbolStandardizer},
+    "macacamulatta": {"MRO": MroMamuSymbolStandardizer},
+    "pantroglodytes": {"MRO": MroPatrSymbolStandardizer},
+    "susscrofa": {"MRO": MroSlaSymbolStandardizer},
 }
 
 

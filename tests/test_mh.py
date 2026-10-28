@@ -365,6 +365,53 @@ class TestStandardizeMusMusculusMro:
         config.reset_mhc_database()
 
 
+class TestStandardizeAnySpeciesMro:
+    @pytest.mark.parametrize(
+        ("species", "symbol"),
+        (
+            *(("homosapiens", symbol) for symbol in HOMOSAPIENS_MH_VALID_PROTEIN_MRO),
+            *(("bostaurus", symbol) for symbol in BOSTAURUS_MH_VALID_PROTEIN_MRO),
+            *(("macacamulatta", symbol) for symbol in MACACAMULATTA_MH_VALID_PROTEIN_MRO),
+            *(("pantroglodytes", symbol) for symbol in PANTROGLODYTES_MH_VALID_PROTEIN_MRO),
+            *(("susscrofa", symbol) for symbol in SUSSCROFA_MH_VALID_PROTEIN_MRO),
+            *(("musmusculus", symbol) for symbol in MUSMUSCULUS_MH_VALID_MRO),
+        ),
+    )
+    def test_already_correctly_formatted(self, species, symbol):
+        result = mh.standardize(symbol=symbol, species=species)
+
+        assert result.symbol == symbol
+        assert result.gene == symbol
+        assert result.allele is None
+        assert result.is_standardized
+        assert result.error is None
+        assert result.species == species
+
+    @pytest.mark.parametrize(
+        ("species", "symbol"),
+        (
+            *(("homosapiens", symbol) for symbol in HOMOSAPIENS_MH_VALID_PROTEIN_MRO),
+            *(("bostaurus", symbol) for symbol in BOSTAURUS_MH_VALID_PROTEIN_MRO),
+            *(("macacamulatta", symbol) for symbol in MACACAMULATTA_MH_VALID_PROTEIN_MRO),
+            *(("pantroglodytes", symbol) for symbol in PANTROGLODYTES_MH_VALID_PROTEIN_MRO),
+            *(("susscrofa", symbol) for symbol in SUSSCROFA_MH_VALID_PROTEIN_MRO),
+            *(("musmusculus", symbol) for symbol in MUSMUSCULUS_MH_VALID_MRO),
+        ),
+    )
+    def test_case_insensitive(self, species, symbol):
+        result = mh.standardize(symbol=symbol.lower(), species=species)
+
+        assert result.symbol == symbol
+        assert result.gene == symbol
+        assert result.allele is None
+        assert result.is_standardized
+        assert result.error is None
+        assert result.species == species
+
+
+
+
+
 class TestQuery:
     @pytest.mark.filterwarnings("ignore:tidytcells is not.+aware")
     @pytest.mark.parametrize(
