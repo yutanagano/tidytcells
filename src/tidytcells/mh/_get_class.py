@@ -1,7 +1,7 @@
 import logging
 import re
 from typing import Optional
-from tidytcells._resources import VALID_HOMOSAPIENS_MH
+from tidytcells._resources import HOMOSAPIENS_MH_VALID_IPD
 from tidytcells._utils import Parameter
 
 
@@ -77,7 +77,7 @@ def get_class(
 
     symbol = symbol.split("*")[0]
 
-    if not symbol in (*VALID_HOMOSAPIENS_MH, "B2M"):
+    if not symbol in (*HOMOSAPIENS_MH_VALID_IPD, "B2M"):
         if log_failures:
             logger.warning(f"Unrecognized gene {symbol}. Is this standardized?")
         return None

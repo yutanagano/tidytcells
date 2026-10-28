@@ -3,11 +3,8 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Dict, Optional
 
-from tidytcells import _utils
 from tidytcells._resources import (
-    VALID_MUSMUSCULUS_MH,
-    MUSMUSCULUS_MH_SYNONYMS,
-    VALID_MUSMUSCULUS_MH_MRO,
+    MUSMUSCULUS_MH_VALID_MRO,
     MUSMUSCULUS_MH_SYNONYMS_ALLELE_MRO,
 )
 from tidytcells.result import MhGene
@@ -88,39 +85,6 @@ class MusMusculusMhSymbolStandardizer(ABC):
                              species="musmusculus")
 
 
-class ImgtMusMusculusMhSymbolStandardizer(MusMusculusMhSymbolStandardizer):
-    _valid_symbols = VALID_MUSMUSCULUS_MH
-    _synonyms = MUSMUSCULUS_MH_SYNONYMS
-
-    def _standardize(self, symbol: str) -> None:
-        self._parse_mh_symbol(symbol)
-        self._resolve_errors()
-
-    def _parse_mh_symbol(self, mh_symbol: str) -> None:
-        cleaned_mh_symbol = _utils.clean_and_uppercase(mh_symbol)
-        parsed_mh_symbol = MhSymbolParser(cleaned_mh_symbol)
-        self._gene_name = parsed_mh_symbol.gene_name
-        self._allele_designation = parsed_mh_symbol.allele_designation
-
-    def _resolve_errors(self) -> None:
-        if self.get_reason_why_invalid() is None:
-            return
-
-        if self._is_synonym():
-            self._gene_name = self._synonyms[self._gene_name.replace("-", "")]
-            if self.get_reason_why_invalid() is None:
-                return
-
-    def _is_synonym(self) -> bool:
-        return self._gene_name.replace("-", "") in self._synonyms
-
-    def compile(self, precision: str = "allele") -> str:
-        if precision == "allele" and self._allele_designation:
-            return f"{self._gene_name}*{self._allele_designation}"
-
-        return self._gene_name
-
-
 def build_prefixed_index(valid_symbols: Dict, synonyms: Dict[str, str]) -> Dict[str, str]:
     index = {MroMhSymbolParser.strip_h2_prefix_and_hyphens(s).upper(): s for s in valid_symbols}
 
@@ -136,7 +100,7 @@ def build_prefixed_index(valid_symbols: Dict, synonyms: Dict[str, str]) -> Dict[
 
 
 class MroMusMusculusMhSymbolStandardizer(MusMusculusMhSymbolStandardizer):
-    _valid_symbols = VALID_MUSMUSCULUS_MH_MRO
+    _valid_symbols = MUSMUSCULUS_MH_VALID_MRO
     _synonyms = MUSMUSCULUS_MH_SYNONYMS_ALLELE_MRO
 
     _exact_index = {**{s.upper(): s for s in _valid_symbols}, **_synonyms}

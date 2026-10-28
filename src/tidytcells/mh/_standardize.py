@@ -1,10 +1,10 @@
 import logging
+from tidytcells._config import config
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
     ImgtHlaSymbolStandardizer,
     MroHlaSymbolStandardizer,
-    ImgtMusMusculusMhSymbolStandardizer,
     MroMusMusculusMhSymbolStandardizer,
 )
 from typing import Dict, Optional, Type
@@ -15,15 +15,14 @@ logger = logging.getLogger(__name__)
 
 
 SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Dict[str, Type]] = {
-    "homosapiens": {"IMGT": ImgtHlaSymbolStandardizer, "MRO": MroHlaSymbolStandardizer},
-    "musmusculus": {"IMGT": ImgtMusMusculusMhSymbolStandardizer, "MRO": MroMusMusculusMhSymbolStandardizer},
+    "homosapiens": {"IPD": ImgtHlaSymbolStandardizer, "MRO": MroHlaSymbolStandardizer},
+    "musmusculus": {"MRO": MroMusMusculusMhSymbolStandardizer},
 }
 
 
 def standardize(
     symbol: Optional[str] = None,
     species: Optional[str] = None,
-    database: Optional[str] = None,
     log_failures: Optional[bool] = None,
     gene: Optional[str] = None,
     suppress_warnings: Optional[bool] = None,
@@ -31,10 +30,12 @@ def standardize(
     """
     Attempt to standardize an MH gene / allele symbol to be MRO- or IMGT-compliant.
 
+    # todo add documetnation on databse
+
     .. topic:: Supported species and databases
 
-        - ``"homosapiens"``: ``"MRO"``, ``"IMGT"``
-        - ``"musmusculus"``: ``"MRO"``, ``"IMGT"``
+        - ``"homosapiens"``: ``"MRO"``, ``"IPD"``
+        - ``"musmusculus"``: ``"MRO"``
 
     .. note::
         This function will only verify the validity of an MH gene/allele up to the level of the protein.
@@ -55,13 +56,6 @@ def standardize(
             From version 3, the default behaviour will change to ``"any"``.
 
     :type species:
-        str
-    :param database:
-        Which database to standardize against: ``"MRO"`` (https://github.com/IEDB/MRO) or ``"IMGT"``.
-        If species is ``"any"``, only species for which the database is available are attempted.
-        Note that IMGT uses a non-standard representation of mouse MH genes (e.g. ``MH1-K1`` rather than ``H2-Kb``).
-        Defaults to ``"MRO"``.
-    :type database:
         str
     :param log_failures:
         Report standardization failures through logging (at level ``WARNING``).
@@ -125,8 +119,7 @@ def standardize(
         'H2-Kb'
         >>> tt.mh.standardize("I-Ab", species="musmusculus").symbol
         'H2-IAb'
-        >>> tt.mh.standardize("CRW2", species="musmusculus", database="IMGT").gene
-        'MH1-M5'
+
 
         Known alternative MRO names are mapped to the current MRO name, and mutant molecules are supported.
 
@@ -136,13 +129,6 @@ def standardize(
         'HLA-A*02:01 K66A mutant'
         >>> tt.mh.standardize("HLA-A0201 K66A mutant").mutation
         'K66A'
-
-        IMGT can be selected instead of MRO, which may give a different result for the same input.
-
-        >>> tt.mh.standardize("I-Ab", species="musmusculus").symbol
-        'H2-IAb'
-        >>> tt.mh.standardize("I-Ab", species="musmusculus", database="IMGT").symbol
-        'MH2-AB'
 
 
         For failed standardizations, the 'error' attribute explains why the standardization failed, and
@@ -172,7 +158,7 @@ def standardize(
             IF the specified species is not supported for standardization:
                 RETURN original symbol and error message
 
-            IF the specified database is not available for the species:
+            IF the configured database is not available for the species:
                 RETURN original symbol and error message
 
             ELSE:
@@ -227,12 +213,6 @@ def standardize(
         .throw_error_if_not_of_type(str)
         .value
     )
-    database = (
-        Parameter(database, "database")
-        .set_default("MRO")
-        .throw_error_if_not_one_of("MRO", "IMGT")
-        .value
-    )
     suppress_warnings_inverted = (
         not suppress_warnings if suppress_warnings is not None else None
     )
@@ -246,45 +226,48 @@ def standardize(
 
     species = _utils.clean_and_lowercase(species)
 
-    if species == "any":
-        best_attempt_result = MhGene(symbol, f'Failed with any species')
-
-        for (
-            species,
-            standardizers,
-        ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
-            if database not in standardizers:
-                continue
-
-            mh_standardizer = standardizers[database](symbol)
-
-            if mh_standardizer.result.is_standardized:
-                return mh_standardizer.result
-
-            if species == "homosapiens":
-                best_attempt_result = mh_standardizer.result
-
-        if log_failures:
-            _utils.warn_result_failure(
-                result=best_attempt_result,
-                logger=logger,
-            )
-
-        return best_attempt_result
+    # if species == "any":
+    #     best_attempt_result = MhGene(symbol, f'Failed with any species')
+    #
+    #     for (
+    #         species,
+    #         standardizers,
+    #     ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
+    #         if database not in standardizers:
+    #             continue
+    #
+    #         mh_standardizer = standardizers[database](symbol)
+    #
+    #         if mh_standardizer.result.is_standardized:
+    #             return mh_standardizer.result
+    #
+    #         if species == "homosapiens":
+    #             best_attempt_result = mh_standardizer.result
+    #
+    #     if log_failures:
+    #         _utils.warn_result_failure(
+    #             result=best_attempt_result,
+    #             logger=logger,
+    #         )
+    #
+    #     return best_attempt_result
 
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
             _utils.warn_unsupported_species(species, "MH", logger)
         return MhGene(symbol, f'Unsupported species: {species}')
 
-    if database not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
+    if config.mhc_database not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
         if log_failures:
             logger.warning(
-                f'Unsupported database: "{database}" for species "{species}" (valid options are: {list(SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species])}). Skipping MH standardization.'
+                f'Unsupported mhc_database: "{config.mhc_database}" for species "{species}" '
+                f'(valid options are: {list(SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species])}). '
+                f'Use tidytcells.set_mhc_database() to switch. '
+                f'Skipping MH standardization.'
             )
-        return MhGene(symbol, f'Unsupported database: "{database}" for species "{species}"')
+        return MhGene(symbol, f'Unsupported database: "{config.mhc_database}" for species "{species}"')
 
-    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][database]
+    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][config.mhc_database]
     mh_standardizer = standardizer_cls(symbol)
 
     if (not mh_standardizer.result.is_standardized) and log_failures:

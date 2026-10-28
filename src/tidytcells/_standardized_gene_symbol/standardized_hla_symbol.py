@@ -5,10 +5,11 @@ from typing import Dict, List, Optional
 
 from tidytcells import _utils
 from tidytcells._resources import (
-    VALID_HOMOSAPIENS_MH,
-    HOMOSAPIENS_MH_SYNONYMS,
-    VALID_HOMOSAPIENS_MH_MRO,
-    HOMOSAPIENS_MH_SYNONYMS_ALLELE_MRO,
+    HOMOSAPIENS_MH_VALID_IPD,
+    HOMOSAPIENS_MH_SYNONYMS_GENE_HGNC_IPD,
+    HOMOSAPIENS_MH_VALID_PROTEIN_MRO,
+    HOMOSAPIENS_MH_SYNONYMS_GENE_HGNC_MRO,
+    HOMOSAPIENS_MH_SYNONYMS_ALLELE_MRO
 )
 from tidytcells.result import HLAGene
 
@@ -123,7 +124,7 @@ class HlaSymbolStandardizer(ABC):
         if self.get_reason_why_invalid() is None:
             return
 
-        if self._is_synonym():
+        if self._gene_name in self._gene_synonyms:
             self._gene_name = self._gene_synonyms[self._gene_name]
             if self.get_reason_why_invalid() is None:
                 return
@@ -152,8 +153,6 @@ class HlaSymbolStandardizer(ABC):
                 return
             self._gene_name = original
 
-    def _is_synonym(self) -> bool:
-        return self._gene_name in self._gene_synonyms
 
     def _resolve_common_errors(self) -> None:
         if not self._gene_name.startswith("HLA-"):
@@ -280,12 +279,12 @@ class HlaSymbolStandardizer(ABC):
 
 
 class ImgtHlaSymbolStandardizer(HlaSymbolStandardizer):
-    _valid_symbols = VALID_HOMOSAPIENS_MH
-    _gene_synonyms = HOMOSAPIENS_MH_SYNONYMS
+    _valid_symbols = HOMOSAPIENS_MH_VALID_IPD
+    _gene_synonyms = HOMOSAPIENS_MH_SYNONYMS_GENE_HGNC_IPD
     _allele_synonyms = {}
 
 
 class MroHlaSymbolStandardizer(HlaSymbolStandardizer):
-    _valid_symbols = VALID_HOMOSAPIENS_MH_MRO
-    _gene_synonyms = {}
+    _valid_symbols = HOMOSAPIENS_MH_VALID_PROTEIN_MRO
+    _gene_synonyms = HOMOSAPIENS_MH_SYNONYMS_GENE_HGNC_MRO
     _allele_synonyms = HOMOSAPIENS_MH_SYNONYMS_ALLELE_MRO

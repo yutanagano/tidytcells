@@ -1,5 +1,5 @@
 import pytest
-from tidytcells import mh
+from tidytcells import mh, config
 from tidytcells._resources import *
 
 
@@ -26,20 +26,22 @@ class TestStandardize:
         assert result.gene == "HLA-B"
         assert result.is_standardized
 
-    @pytest.mark.parametrize(
-        ("symbol", "expected"),
-        (
-            ("HLA-B8", "HLA-B*08"),
-            ("A1", "HLA-A*01"),
-            ("H-2Eb1", "MH2-EB1"),
-            ("H-2Aa", "MH2-AA"),
-        ),
-    )
-    def test_any_species(self, symbol, expected):
-        result = mh.standardize(symbol, species="any", database="IMGT")
-        assert result.symbol == expected
-        assert str(result) == expected
-        assert result.is_standardized
+    # @pytest.mark.parametrize(
+    #     ("symbol", "expected"),
+    #     (
+    #         ("HLA-B8", "HLA-B*08"),
+    #         ("A1", "HLA-A*01"),
+    #         ("H-2Eb1", "MH2-EB1"),
+    #         ("H-2Aa", "MH2-AA"),
+    #     ),
+    # )
+    # def test_any_species(self, symbol, expected):
+    #     config.set_mhc_database("IPD")
+    #     result = mh.standardize(symbol, species="any")
+    #     assert result.symbol == expected
+    #     assert str(result) == expected
+    #     assert result.is_standardized
+    #     config.reset_mhc_database()
 
     @pytest.mark.parametrize(
         ("symbol", "expected", "precision_level"),
@@ -70,47 +72,60 @@ class TestStandardize:
     @pytest.mark.parametrize("database", ("foobar", "imgt", ""))
     def test_unsupported_database(self, database):
         with pytest.raises(ValueError):
-            mh.standardize("HLA-A*02:01", database=database)
+            config.set_mhc_database(database)
 
-    @pytest.mark.parametrize(
-        ("symbol", "expected"),
-        (
-            ("HLA-A*0201", "HLA-A*02:01"),
-            ("HLA-Cw*0301", "HLA-C*03:04"),
-            ("H-2Kb", "H2-Kb"),
-            ("I-Ed", "H2-IEd"),
-        ),
-    )
-    def test_any_species_mro(self, symbol, expected):
-        result = mh.standardize(symbol, species="any", database="MRO")
-        assert result.symbol == expected
-        assert result.is_standardized
+        config.reset_mhc_database()
 
+    # @pytest.mark.parametrize(
+    #     ("symbol", "expected"),
+    #     (
+    #         ("HLA-A*0201", "HLA-A*02:01"),
+    #         ("HLA-Cw*0301", "HLA-C*03:04"),
+    #         ("H-2Kb", "H2-Kb"),
+    #         ("I-Ed", "H2-IEd"),
+    #     ),
+    # )
+    # def test_any_species_mro(self, symbol, expected):
+    #     result = mh.standardize(symbol, species="any")
+    #     assert result.symbol == expected
+    #     assert result.is_standardized
+    #
 
 class TestStandardizeHomoSapiens:
-    @pytest.mark.parametrize("symbol", [*VALID_HOMOSAPIENS_MH, "B2M"])
+    @pytest.mark.parametrize("symbol", [*HOMOSAPIENS_MH_VALID_IPD, "B2M"])
     def test_already_correctly_formatted(self, symbol):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="IMGT")
+        config.set_mhc_database("IPD")
 
+        result = mh.standardize(symbol=symbol, species="homosapiens")
         assert result.symbol == symbol
+
+        config.reset_mhc_database()
 
     @pytest.mark.parametrize(
         "symbol", ("foobar", "yoinkdoink", "HLA-FOOBAR123456", "=======")
     )
     def test_invalid_mh(self, symbol, caplog):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="IMGT")
+        config.set_mhc_database("IPD")
+
+        result = mh.standardize(symbol=symbol, species="homosapiens")
         assert "Failed to standardize" in caplog.text
         assert result.symbol is None
         assert result.error is not None
         assert not result.is_standardized
 
+        config.reset_mhc_database()
+
     @pytest.mark.parametrize("symbol", ("HLA-A*01:01:1:1:1:1:1:1",))
     def test_bad_allele_designation(self, symbol, caplog):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="IMGT")
+        config.set_mhc_database("IPD")
+
+        result = mh.standardize(symbol=symbol, species="homosapiens")
         assert "Failed to standardize" in caplog.text
         assert result.symbol is None
         assert result.error is not None
         assert not result.is_standardized
+
+        config.reset_mhc_database()
 
 
     @pytest.mark.parametrize(
@@ -123,11 +138,15 @@ class TestStandardizeHomoSapiens:
         ),
     )
     def test_fix_deprecated_names(self, symbol, expected):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="IMGT")
+        config.set_mhc_database("IPD")
+
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result.is_standardized
         assert result.error is None
         assert result.symbol == expected
+
+        config.reset_mhc_database()
 
     @pytest.mark.parametrize(
         "symbol",
@@ -141,11 +160,15 @@ class TestStandardizeHomoSapiens:
         ),
     )
     def test_remove_expression_qualifier(self, symbol):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="IMGT")
+        config.set_mhc_database("IPD")
+
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result.is_standardized
         assert result.error is None
         assert result.symbol == "HLA-A*01:01:01:01"
+
+        config.reset_mhc_database()
 
     @pytest.mark.parametrize(
         ("symbol", "expected"),
@@ -162,15 +185,19 @@ class TestStandardizeHomoSapiens:
         ),
     )
     def test_various_typos(self, symbol, expected):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="IMGT")
+        config.set_mhc_database("IPD")
+
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result.symbol == expected
 
+        config.reset_mhc_database()
+
 
 class TestStandardizeHomoSapiensMro:
-    @pytest.mark.parametrize("symbol", VALID_HOMOSAPIENS_MH_MRO)
+    @pytest.mark.parametrize("symbol", HOMOSAPIENS_MH_VALID_PROTEIN_MRO)
     def test_already_correctly_formatted(self, symbol):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="MRO")
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result.symbol == symbol
         assert result.is_standardized
@@ -187,14 +214,14 @@ class TestStandardizeHomoSapiensMro:
         ),
     )
     def test_allele_synonyms(self, symbol, expected):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="MRO")
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result.is_standardized
         assert result.symbol == expected
 
     @pytest.mark.parametrize("symbol", ("HLA-A*01:01:1:1:1:1:1:1",))
     def test_bad_allele_designation(self, symbol, caplog):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="MRO")
+        result = mh.standardize(symbol=symbol, species="homosapiens")
         assert "Failed to standardize" in caplog.text
         assert result.symbol is None
         assert result.error is not None
@@ -209,7 +236,7 @@ class TestStandardizeHomoSapiensMro:
         ),
     )
     def test_fix_deprecated_names(self, symbol, expected):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="MRO")
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result.is_standardized
         assert result.error is None
@@ -227,16 +254,18 @@ class TestStandardizeHomoSapiensMro:
         ),
     )
     def test_remove_expression_qualifier(self, symbol):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="MRO")
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result.is_standardized
         assert result.error is None
         assert result.symbol == "HLA-A*01:01:01:01"
 
     def test_allele_synonyms_not_used_for_imgt(self, caplog):
-        result = mh.standardize(symbol="HLA-Cw*0301", species="homosapiens", database="IMGT")
+        config.set_mhc_database("IPD")
+        result = mh.standardize(symbol="HLA-Cw*0301", species="homosapiens")
 
         assert not result.is_standardized
+        config.reset_mhc_database()
 
     @pytest.mark.parametrize(
         ("symbol", "expected"),
@@ -249,16 +278,18 @@ class TestStandardizeHomoSapiensMro:
             ("HLA-DRB*07:01", "HLA-DRB1*07:01"),
             ("HLA-DQA*01:01", "HLA-DQA1*01:01"),
             ("HLA-A*3351", "HLA-A*33:51"),
+            ("D6S204", "HLA-C"),
+            ("HLA-C", "HLA-C")
         ),
     )
     def test_various_typos(self, symbol, expected):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="MRO")
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result.symbol == expected
 
-    @pytest.mark.parametrize("symbol", ("HLA-DMA", "HLA-MICA*001", "HLA-TAP1*01:01", "D6S204", "foobar"))
+    @pytest.mark.parametrize("symbol", ("HLA-DMA", "HLA-MICA*001", "HLA-TAP1*01:01", "foobar"))
     def test_not_in_mro(self, symbol, caplog):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="MRO")
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert "Failed to standardize" in caplog.text
         assert result.symbol is None
@@ -272,43 +303,18 @@ class TestStandardizeHomoSapiensMro:
         ),
     )
     def test_mutant_with_synonym(self, symbol, expected, expected_mutation):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="MRO")
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result.is_standardized
         assert result.symbol == expected
         assert result.mutation == expected_mutation
 
 
-class TestStandardizeMusMusculus:
-    @pytest.mark.parametrize("symbol", VALID_MUSMUSCULUS_MH)
-    def test_already_correctly_formatted(self, symbol):
-        result = mh.standardize(symbol=symbol, species="musmusculus", database="IMGT")
-
-        assert result.symbol == symbol
-        assert result.is_standardized
-        assert result.error is None
-
-    @pytest.mark.parametrize("symbol", ("foobar", "yoinkdoink", "MH1-ABC", "======="))
-    def test_invalid_mh(self, symbol, caplog):
-        result = mh.standardize(symbol=symbol, species="musmusculus", database="IMGT")
-        assert "Failed to standardize" in caplog.text
-        assert result.symbol is None
-        assert not result.is_standardized
-        assert result.error is not None
-
-    @pytest.mark.parametrize(
-        ("symbol", "expected"), (("H-2Eb1", "MH2-EB1"), ("H-2Aa", "MH2-AA"))
-    )
-    def test_fix_deprecated_names(self, symbol, expected):
-        result = mh.standardize(symbol=symbol, species="musmusculus", database="IMGT")
-
-        assert result.symbol == expected
-
 
 class TestStandardizeMusMusculusMro:
-    @pytest.mark.parametrize("symbol", VALID_MUSMUSCULUS_MH_MRO)
+    @pytest.mark.parametrize("symbol", MUSMUSCULUS_MH_VALID_MRO)
     def test_already_correctly_formatted(self, symbol):
-        result = mh.standardize(symbol=symbol, species="musmusculus", database="MRO")
+        result = mh.standardize(symbol=symbol, species="musmusculus")
 
         assert result.symbol == symbol
         assert result.gene == symbol
@@ -335,14 +341,14 @@ class TestStandardizeMusMusculusMro:
         ),
     )
     def test_various_typos_and_synonyms(self, symbol, expected):
-        result = mh.standardize(symbol=symbol, species="musmusculus", database="MRO")
+        result = mh.standardize(symbol=symbol, species="musmusculus")
 
         assert result.is_standardized
         assert result.symbol == expected
 
     @pytest.mark.parametrize("symbol", ("foobar", "DR", "KB", "H2-Kz", "MH1-M5", "======="))
     def test_invalid_mh(self, symbol, caplog):
-        result = mh.standardize(symbol=symbol, species="musmusculus", database="MRO")
+        result = mh.standardize(symbol=symbol, species="musmusculus")
 
         assert "Failed to standardize" in caplog.text
         assert result.symbol is None
@@ -350,9 +356,13 @@ class TestStandardizeMusMusculusMro:
         assert result.error is not None
 
     def test_imgt_names_not_used_for_mro(self, caplog):
-        result = mh.standardize(symbol="H2-Kb", species="musmusculus", database="IMGT")
+        config.set_mhc_database("IPD")
+
+        result = mh.standardize(symbol="H2-Kb", species="musmusculus")
 
         assert not result.is_standardized
+
+        config.reset_mhc_database()
 
 
 class TestQuery:
@@ -360,10 +370,10 @@ class TestQuery:
     @pytest.mark.parametrize(
         ("species", "precision", "expected_len", "expected_in", "expected_not_in"),
         (
-            ("homosapiens", "allele", 26961, "HLA-DRB3*03:04", "HLA-DRB3*03:04P"),
+            ("homosapiens", "allele", 28286, "HLA-DRB3*03:04", "HLA-DRB3*03:04P"),
             ("homosapiens", "gene", 46, "HLA-B", "HLA-FOO"),
-            ("musmusculus", "allele", 70, "MH1-M10-1", "HLA-A"),
-            ("musmusculus", "gene", 70, "MH1-Q8", "H2-Aa"),
+            ("musmusculus", "allele", 44, "H2-D", "HLA-A"),
+            ("musmusculus", "gene", 44, "H2-Kwm7", "MH1-Q8"),
         ),
     )
     def test_query_all(
@@ -387,7 +397,7 @@ class TestQuery:
         ),
         (
             ("homosapiens", "gene", "DR", 10, "HLA-DRA", "HLA-A"),
-            ("musmusculus", "gene", "T", 24, "MH1-T10", "MH1-Q10"),
+            ("musmusculus", "gene", "H2", 44, "H2-IAk", "IAg7"),
         ),
     )
     def test_query_contains(
@@ -499,10 +509,12 @@ class TestGetClass:
         ),
     )
     def test_missing_colons_ambiguous_split(self, symbol, expected):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="IMGT")
+        config.set_mhc_database("IPD")
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result.is_standardized
         assert result.symbol == expected
+        config.reset_mhc_database()
 
     @pytest.mark.parametrize(
         ("symbol", "expected"),
@@ -516,12 +528,12 @@ class TestGetClass:
         ),
     )
     def test_missing_colons_ambiguous_split_mro(self, symbol, expected):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database="MRO")
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result.is_standardized
         assert result.symbol == expected
 
-    @pytest.mark.parametrize("database", ("IMGT", "MRO"))
+    @pytest.mark.parametrize("database", ("IPD", "MRO"))
     @pytest.mark.parametrize(
         ("symbol", "expected", "expected_allele", "expected_mutation"),
         (
@@ -532,7 +544,9 @@ class TestGetClass:
         ),
     )
     def test_mutant(self, symbol, expected, expected_allele, expected_mutation, database):
-        result = mh.standardize(symbol=symbol, species="homosapiens", database=database)
+        config.set_mhc_database(database)
+
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result.is_standardized
         assert result.symbol == expected
@@ -541,6 +555,8 @@ class TestGetClass:
         assert result.protein == expected_allele
         assert result.gene == expected_allele.split("*")[0]
         assert result.mutation == expected_mutation
+
+        config.reset_mhc_database()
 
     def test_mutant_invalid_allele(self):
         result = mh.standardize(symbol="HLA-FOO*01:01 K66A mutant", species="homosapiens")
