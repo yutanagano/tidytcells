@@ -17,27 +17,14 @@ RELEASE_URL = "https://github.com/IEDB/MRO/releases/latest/download"
 
 # Only these species will be included
 SPECIES_NAMES = {
-    "atlanticsalmon": "salmosalar",
-    "blackheadedspidermonkey": "atelesfusciceps",
-    "bonobo": "panpaniscus",
-    "borneanorangutan": "pongopygmaeus",
     "cattle": "bostaurus",
     "chimpanzee": "pantroglodytes",
-    "cottontoptamarin": "saguinusoedipus",
-    "dog": "canislupusfamiliaris",
-    "domesticsheep": "ovisaries",
-    "gorilla": "gorillagorilla",
-    "grivet": "chlorocebusaethiops",
-    "horse": "equuscaballus",
     "human": "homosapiens",
-    "marmoset": "callithrixjacchus",
     "mouse": "musmusculus",
-    "olivebaboon": "papioanubis",
     "pig": "susscrofa",
-    "rainbowtrout": "oncorhynchusmykiss",
     "rat": "rattusnorvegicus",
     "rhesusmacaque": "macacamulatta",
-    "stumptailedmacaque": "macacaarctoides",
+    # "crabeatingmacaque": "macacafascicularis", # to be added, waiting on MRO fix
 }
 
 
@@ -58,11 +45,11 @@ def main() -> None:
         allele_synonyms = build_mro_synonyms(df)
 
         script_utility.save_as_json(valid, f"mro/{species}_mh_valid_protein_mro.json")
-        script_utility.save_as_json(allele_synonyms, f"mro/{species}_mh_synonyms_allele_mro.json")
+        script_utility.save_as_json(allele_synonyms, f"mro/{species}_mh_synonyms_mro.json")
 
         if species == "homosapiens":
             print(f"Adding HGNC gene synonyms for homosapiens...")
-            script_utility.save_as_json(script_utility.get_hgnc_synonyms_data(valid), f"mro/{species}_mh_synonyms_gene_hgnc.json")
+            script_utility.save_as_json(script_utility.get_hgnc_synonyms_data(valid), f"mro/{species}_mh_synonyms_hgnc.json")
 
 
 def get_protein_complexes_path() -> Path:
@@ -71,7 +58,7 @@ def get_protein_complexes_path() -> Path:
     if not path.exists():
         PATH_TO_DATA_DIR.mkdir(parents=True, exist_ok=True)
         download(f"{RELEASE_URL}/mro-protein-complexes.tsv", path)
-
+    print(path)
     return path
 
 
