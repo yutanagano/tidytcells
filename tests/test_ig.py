@@ -266,7 +266,7 @@ class TestStandardizeHomoSapiens:
         result = ig.standardize("IGHJ1P")
         assert result.error == "Unrecognized gene name"
 
-        config.reset_defaults()
+        config.reset_receptor_database()
 
     def test_receptor_database_config_fetch_alleles(self):
         config.set_receptor_database("IMGT")
@@ -283,7 +283,7 @@ class TestStandardizeHomoSapiens:
         assert set(result.get_all_alleles()) == ogrdb_alleles
         assert set(result.get_aa_sequences("V-REGION")) == ogrdb_alleles
 
-        config.reset_defaults()
+        config.reset_receptor_database()
 
 
 class TestStandardizeMusMusculus:

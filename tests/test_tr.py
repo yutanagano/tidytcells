@@ -163,7 +163,7 @@ class TestStandardize:
         assert "Unsupported receptor_database" in caplog.text
         assert "Unsupported receptor_database" in result.error
 
-        config.reset_defaults()
+        config.reset_receptor_database()
 
 
 class TestStandardizeHomoSapiens:

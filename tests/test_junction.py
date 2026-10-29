@@ -154,7 +154,7 @@ class Teststandardize:
         assert result.junction == "CLASSPGVFGANVLTF"
         assert result.germline_database == "OGRDB"
 
-        config.reset_defaults()
+        config.reset_receptor_database()
 
 
     @pytest.mark.parametrize(
