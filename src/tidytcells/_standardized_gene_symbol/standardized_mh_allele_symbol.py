@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Optional
 
 from tidytcells import _utils
-from tidytcells.result import HLAGene, MhGene
+from tidytcells.result import MhGene
 
 from tidytcells._resources import *
 
@@ -323,13 +323,6 @@ class HlaSymbolStandardizer(MhAlleleSymbolStandardizer):
             return None
 
         return super().get_reason_why_invalid()
-
-    def _compile_result(self) -> None:
-        self.result = HLAGene(original_input=self.original_symbol,
-                              error=self.get_reason_why_invalid(),
-                              gene_name=self._canonical_gene_name(),
-                              allele_designation=self._canonical_allele_designation(),
-                              mutation=self._mutation)
 
 
 class ImgtHlaSymbolStandardizer(HlaSymbolStandardizer):
