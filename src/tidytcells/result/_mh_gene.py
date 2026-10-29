@@ -75,6 +75,12 @@ class MhGene:
             return self._gene_name
 
     @property
+    def protein(self) -> Optional[str]:
+        '''The protein name, if standardization was successful and protein-level information is available, otherwise ``None``.'''
+        if self.is_standardized and self._allele_designation is not None and self._gene_name is not None:
+            return f'{self._gene_name}*{":".join(self._allele_designation[:2])}'
+
+    @property
     def mutation(self) -> Optional[str]:
         '''The mutation description (e.g. ``'K66A'`` for ``'HLA-A*02:01 K66A mutant'``) if standardization was successful and the input was a mutant, otherwise ``None``.'''
         if self.is_standardized:
@@ -85,19 +91,3 @@ class MhGene:
         '''The species used to validate the gene name.'''
         return self._species
 
-
-class HLAGene(MhGene):
-    '''
-    A wrapper object for the HLA gene.
-
-    If standardization was successful, this object provides access to the standardized allele/protein/gene and other properties.
-    When failed, the error message(s) and attempted partially standardized gene symbol can be retrieved.
-    '''
-    def __init__(self, original_input, error, gene_name=None, allele_designation=None, mutation=None):
-        super().__init__(original_input, error, gene_name, allele_designation, species="homosapiens", mutation=mutation)
-
-    @property
-    def protein(self) -> Optional[str]:
-        '''The protein name, if standardization was successful and protein-level information is available, otherwise ``None``.'''
-        if self.is_standardized and self._allele_designation is not None and self._gene_name is not None:
-            return f'{self._gene_name}*{":".join(self._allele_designation[:2])}'
