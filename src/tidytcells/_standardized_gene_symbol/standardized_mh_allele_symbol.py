@@ -378,6 +378,4 @@ class MroSlaSymbolStandardizer(MhAlleleSymbolStandardizer):
 
 
 
-# RATTUSNORVEGICUS_MH_VALID_PROTEIN_MRO = get_json_resource("mro/rattusnorvegicus_mh_valid_protein_mro.json")
-# RATTUSNORVEGICUS_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro/rattusnorvegicus_mh_synonyms_mro.json")
-#
+

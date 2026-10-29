@@ -1,4 +1,5 @@
 from logging import Logger
+from tidytcells._config import config
 from typing import Union
 
 from tidytcells.result import MhGene, ReceptorGene, Junction
@@ -32,4 +33,14 @@ def warn_result_failure(
 def warn_unsupported_species(species: str, type: str, logger: Logger):
     logger.warning(
         f'Unsupported species: "{species}". ' f"Skipping {type} standardization."
+    )
+
+def warn_unsupported_mhc_database(species: str, options_dict: dict, logger: Logger):
+    options = "; ".join([f"{species} ({', '.join(options_dict[species].keys())})" for species in options_dict])
+
+    logger.warning(
+        f'Unsupported mhc_database: "{config.mhc_database}" for species "{species}". '
+        f'Valid options are: {options}). '
+        f'Use tidytcells.set_mh_database() to switch. '
+        f'Skipping MH standardization.'
     )
