@@ -18,7 +18,7 @@ class Config:
             raise ValueError(f'"receptor_database" must be one of {VALID_RECEPTOR_DATABASES}, got {name}.')
         config.receptor_database = name
 
-    def set_mhc_database(self, name: str) -> None:
+    def set_mh_database(self, name: str) -> None:
         if name not in VALID_MHC_DATABASES:
             raise ValueError(f'"mhc_database" must be one of {VALID_MHC_DATABASES}, got {name}.')
 
@@ -27,7 +27,7 @@ class Config:
     def reset_receptor_database(self) -> None:
         self.receptor_database = DEFAULT_RECEPTOR_DATABASE
 
-    def reset_mhc_database(self) -> None:
+    def reset_mh_database(self) -> None:
         self.mhc_database = DEFAULT_MHC_DATABASE
 
     def reset_all_defaults(self) -> None:
