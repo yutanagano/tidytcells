@@ -482,8 +482,8 @@ class TestQuery:
     @pytest.mark.parametrize(
         ("species", "precision", "expected_len", "expected_in", "expected_not_in"),
         (
-            ("homosapiens", "allele", 28286, "HLA-DRB3*03:04", "HLA-DRB3*03:04P"),
-            ("homosapiens", "gene", 46, "HLA-B", "HLA-FOO"),
+            ("homosapiens", "allele", 17127, "HLA-DRB3*03:04", "HLA-DRB3*03:04P"),
+            ("homosapiens", "gene", 18, "HLA-B", "HLA-FOO"),
             ("musmusculus", "allele", 44, "H2-D", "HLA-A"),
             ("musmusculus", "gene", 44, "H2-Kwm7", "MH1-Q8"),
         ),
@@ -508,7 +508,7 @@ class TestQuery:
             "expected_not_in",
         ),
         (
-            ("homosapiens", "gene", "DR", 10, "HLA-DRA", "HLA-A"),
+            ("homosapiens", "gene", "DR", 6, "HLA-DRA", "HLA-A"),
             ("musmusculus", "gene", "H2", 44, "H2-IAk", "IAg7"),
         ),
     )
@@ -526,7 +526,14 @@ class TestQuery:
     def test_query_default_species(self):
         result = mh.query(precision="gene", contains_pattern="DR")
 
+        assert len(result) == 6
+        assert "HLA-DRA" in result
+
+        config.set_mh_database("IPD")
+        result = mh.query(precision="gene", contains_pattern="DR")
+
         assert len(result) == 10
         assert "HLA-DRA" in result
+        config.reset_mh_database()
 
 

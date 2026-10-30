@@ -1,17 +1,19 @@
 import re
+from tidytcells._config import config
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 from tidytcells._query_engine import (
     QueryEngine,
-    HlaQueryEngine,
-    MusMusculusMhQueryEngine,
+    ImgtHlaQueryEngine,
+    MroHlaQueryEngine,
+    MroH2MhQueryEngine,
 )
 from typing import Dict, FrozenSet, Optional, Type, Literal
 
 
 QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
-    "homosapiens": HlaQueryEngine,
-    "musmusculus": MusMusculusMhQueryEngine,
+    "homosapiens": {"MRO": MroHlaQueryEngine, "IPD": ImgtHlaQueryEngine},
+    "musmusculus": {"MRO": MroH2MhQueryEngine},
 }
 
 
@@ -63,12 +65,12 @@ def query(
         List all known HLA-TAP1 variants.
 
         >>> tt.mh.query(species="homosapiens", contains_pattern="HLA-TAP1")
-        frozenset({'HLA-TAP1*03:01', 'HLA-TAP1*01:02', 'HLA-TAP1*06:01', 'HLA-TAP1*04:01', 'HLA-TAP1*02:01', 'HLA-TAP1*05:01', 'HLA-TAP1*01:01'})
+        frozenset({'HLA-TAP1*01:01', 'HLA-TAP1*01:04', 'HLA-TAP1*02:01', 'HLA-TAP1*01:06', 'HLA-TAP1*04:01', 'HLA-TAP1*03:01', 'HLA-TAP1*01:03', 'HLA-TAP1*06:01', 'HLA-TAP1*01:05', 'HLA-TAP1*01:07', 'HLA-TAP1*01:02', 'HLA-TAP1*05:01'})
 
-        List all known *Mus musculus* MH1-Q genes.
+        List all known *Mus musculus* haplotypes starting with H2-D.
 
-        >>> tt.mh.query(species="musmusculus", precision="gene", contains_pattern="MH1-Q")
-        frozenset({'MH1-Q3', 'MH1-Q9', 'MH1-Q1', 'MH1-Q2', 'MH1-Q6', 'MH1-Q10', 'MH1-Q5', 'MH1-Q8', 'MH1-Q7', 'MH1-Q4'})
+        >>> tt.mh.query(species="musmusculus", precision="gene", contains_pattern="H2-D")
+        frozenset({'H2-Dq', 'H2-Db', 'H2-Dr', 'H2-D', 'H2-Ds', 'H2-Dd', 'H2-Dk'})
     """
     species = (
         Parameter(species, "species")
@@ -94,7 +96,10 @@ def query(
     if not species_is_supported:
         raise ValueError(f"Unsupported species: {species}. No data available.")
 
-    query_engine = QUERY_ENGINES[species]
+    if config.mhc_database not in QUERY_ENGINES[species]:
+        raise ValueError(f"Unsupported mhc_database: {config.mhc_database}. No data available. Please use tidytcells.set_mh_database() to switch to: {", ".join(list(QUERY_ENGINES[species].keys()))}")
+
+    query_engine = QUERY_ENGINES[species][config.mhc_database]
     result = query_engine.query(precision, functionality=None)
 
     if contains_pattern is None:
