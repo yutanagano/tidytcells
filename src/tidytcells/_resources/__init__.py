@@ -25,30 +25,30 @@ MUSMUSCULUS_IG_AA_SEQUENCES = get_json_resource("musmusculus_ig_aa_sequences.jso
 
 
 
-HOMOSAPIENS_MH_VALID_IPD = get_json_resource("ipd/homosapiens_mh_valid_allele_ipd.json")
-HOMOSAPIENS_MH_SYNONYMS_GENE_HGNC_IPD = get_json_resource("ipd/homosapiens_mh_synonyms_hgnc.json")
+HOMOSAPIENS_MH_VALID_IPD = get_json_resource("ipd_homosapiens_mh_valid_allele.json")
+HOMOSAPIENS_MH_SYNONYMS_GENE_HGNC_IPD = get_json_resource("ipd_homosapiens_mh_synonyms_hgnc.json")
 
-HOMOSAPIENS_MH_VALID_PROTEIN_MRO = get_json_resource("mro/homosapiens_mh_valid_protein_mro.json")
-HOMOSAPIENS_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro/homosapiens_mh_synonyms_mro.json")
-HOMOSAPIENS_MH_SYNONYMS_GENE_HGNC_MRO = get_json_resource("mro/homosapiens_mh_synonyms_hgnc.json")
+HOMOSAPIENS_MH_VALID_PROTEIN_MRO = get_json_resource("mro_homosapiens_mh_valid_protein.json")
+HOMOSAPIENS_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro_homosapiens_mh_synonyms.json")
+HOMOSAPIENS_MH_SYNONYMS_GENE_HGNC_MRO = get_json_resource("mro_homosapiens_mh_synonyms_hgnc.json")
 
-MUSMUSCULUS_MH_VALID_PROTEIN_MRO = get_json_resource("mro/musmusculus_mh_valid_protein_mro.json")
-MUSMUSCULUS_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro/musmusculus_mh_synonyms_mro.json")
+MUSMUSCULUS_MH_VALID_PROTEIN_MRO = get_json_resource("mro_musmusculus_mh_valid_protein.json")
+MUSMUSCULUS_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro_musmusculus_mh_synonyms.json")
 
-BOSTAURUS_MH_VALID_PROTEIN_MRO = get_json_resource("mro/bostaurus_mh_valid_protein_mro.json")
-BOSTAURUS_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro/bostaurus_mh_synonyms_mro.json")
+BOSTAURUS_MH_VALID_PROTEIN_MRO = get_json_resource("mro_bostaurus_mh_valid_protein.json")
+BOSTAURUS_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro_bostaurus_mh_synonyms.json")
 
-MACACAMULATTA_MH_VALID_PROTEIN_MRO = get_json_resource("mro/macacamulatta_mh_valid_protein_mro.json")
-MACACAMULATTA_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro/macacamulatta_mh_synonyms_mro.json")
+MACACAMULATTA_MH_VALID_PROTEIN_MRO = get_json_resource("mro_macacamulatta_mh_valid_protein.json")
+MACACAMULATTA_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro_macacamulatta_mh_synonyms.json")
 
-PANTROGLODYTES_MH_VALID_PROTEIN_MRO = get_json_resource("mro/pantroglodytes_mh_valid_protein_mro.json")
-PANTROGLODYTES_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro/pantroglodytes_mh_synonyms_mro.json")
+PANTROGLODYTES_MH_VALID_PROTEIN_MRO = get_json_resource("mro_pantroglodytes_mh_valid_protein.json")
+PANTROGLODYTES_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro_pantroglodytes_mh_synonyms.json")
 
-RATTUSNORVEGICUS_MH_VALID_PROTEIN_MRO = get_json_resource("mro/rattusnorvegicus_mh_valid_protein_mro.json")
-RATTUSNORVEGICUS_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro/rattusnorvegicus_mh_synonyms_mro.json")
+RATTUSNORVEGICUS_MH_VALID_PROTEIN_MRO = get_json_resource("mro_rattusnorvegicus_mh_valid_protein.json")
+RATTUSNORVEGICUS_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro_rattusnorvegicus_mh_synonyms.json")
 
-SUSSCROFA_MH_VALID_PROTEIN_MRO = get_json_resource("mro/susscrofa_mh_valid_protein_mro.json")
-SUSSCROFA_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro/susscrofa_mh_synonyms_mro.json")
+SUSSCROFA_MH_VALID_PROTEIN_MRO = get_json_resource("mro_susscrofa_mh_valid_protein.json")
+SUSSCROFA_MH_SYNONYMS_ALLELE_MRO = get_json_resource("mro_susscrofa_mh_synonyms.json")
 
 
 SUPPORTED_SPECIES_AND_THEIR_TR_AA_SEQUENCES = {

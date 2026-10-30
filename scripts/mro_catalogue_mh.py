@@ -44,12 +44,12 @@ def main() -> None:
 
         allele_synonyms = build_mro_synonyms(df)
 
-        script_utility.save_as_json(valid, f"mro/{species}_mh_valid_protein_mro.json")
-        script_utility.save_as_json(allele_synonyms, f"mro/{species}_mh_synonyms_mro.json")
+        script_utility.save_as_json(valid, f"mro_{species}_mh_valid_protein.json")
+        script_utility.save_as_json(allele_synonyms, f"mro_{species}_mh_synonyms.json")
 
         if species == "homosapiens":
             print(f"Adding HGNC gene synonyms for homosapiens...")
-            script_utility.save_as_json(script_utility.get_hgnc_synonyms_data(valid), f"mro/{species}_mh_synonyms_hgnc.json")
+            script_utility.save_as_json(script_utility.get_hgnc_synonyms_data(valid), f"mro_{species}_mh_synonyms_hgnc.json")
 
 
 def get_protein_complexes_path() -> Path:
