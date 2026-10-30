@@ -11,11 +11,11 @@ from typing import Iterable
 def main() -> None:
     print("Fetching HLA allele data from IMGT...")
     valid_allele_tree = get_hla_alleles_tree()
-    script_utility.save_as_json(valid_allele_tree, "ipd/homosapiens_mh_valid_allele_ipd.json")
+    script_utility.save_as_json(valid_allele_tree, "ipd_homosapiens_mh_valid_allele.json")
 
     print("Fetching HLA symbol synonyms from HGNC...")
     synonyms_data = script_utility.get_hgnc_synonyms_data(valid_allele_tree)
-    script_utility.save_as_json(synonyms_data, "ipd/homosapiens_mh_synonyms_hgnc.json")
+    script_utility.save_as_json(synonyms_data, "ipd_homosapiens_mh_synonyms_hgnc.json")
 
 
 def get_hla_alleles_tree() -> dict:
