@@ -261,7 +261,7 @@ def standardize(
     if species == "any":
         tested_species = [species for species in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.keys()
                           if config.mhc_database in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species].keys()]
-        error = f'Failed with any of the following species: {', '.join(tested_species)}.'
+        error = f'Failed with any of the following species: {", ".join(tested_species)}.'
         if config.mhc_database == "IPD":
             error += " To test more species, please switch to MRO using: tidytcells.set_mh_database('MRO')"
         best_attempt_result = MhGene(symbol, error)
