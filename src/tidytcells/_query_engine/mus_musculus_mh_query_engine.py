@@ -4,7 +4,7 @@ from tidytcells._resources import MUSMUSCULUS_MH_VALID_PROTEIN_MRO
 import warnings
 
 
-class MusMusculusMhQueryEngine(QueryEngine):
+class MroH2MhQueryEngine(QueryEngine):
     @classmethod
     def query(cls, precision: str, functionality: str) -> FrozenSet[str]:
         if precision == "allele":
