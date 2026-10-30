@@ -1,10 +1,10 @@
 from typing import FrozenSet
 from tidytcells._query_engine import QueryEngine
-from tidytcells._resources import VALID_MUSMUSCULUS_MH
+from tidytcells._resources import MUSMUSCULUS_MH_VALID_PROTEIN_MRO
 import warnings
 
 
-class MusMusculusMhQueryEngine(QueryEngine):
+class MroH2MhQueryEngine(QueryEngine):
     @classmethod
     def query(cls, precision: str, functionality: str) -> FrozenSet[str]:
         if precision == "allele":
@@ -13,4 +13,4 @@ class MusMusculusMhQueryEngine(QueryEngine):
                 "and can only provide up to the level of the gene."
             )
 
-        return frozenset(VALID_MUSMUSCULUS_MH)
+        return frozenset(MUSMUSCULUS_MH_VALID_PROTEIN_MRO)
