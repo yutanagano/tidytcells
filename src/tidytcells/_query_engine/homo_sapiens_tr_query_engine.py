@@ -1,6 +1,6 @@
 from tidytcells._query_engine.tr_query_engine import TrIgQueryEngine
-from tidytcells._resources import VALID_HOMOSAPIENS_TR
+from tidytcells._resources import VALID_HOMOSAPIENS_TR_IMGT
 
 
 class HomoSapiensTrQueryEngine(TrIgQueryEngine):
-    _valid_gene_dictionary = VALID_HOMOSAPIENS_TR
+    _valid_gene_dictionary = VALID_HOMOSAPIENS_TR_IMGT

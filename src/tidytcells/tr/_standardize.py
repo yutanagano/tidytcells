@@ -1,22 +1,21 @@
 import logging
+from tidytcells._config import config
 from tidytcells import _utils
 from tidytcells.result import ReceptorGene
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import (
     ReceptorGeneSymbolStandardizer,
-    HomoSapiensTrSymbolStandardizer,
-    MusMusculusTrSymbolStandardizer,
+    HomoSapiensImgtTrSymbolStandardizer,
+    MusMusculusImgtTrSymbolStandardizer,
 )
 from typing import Dict, Optional, Type
 
 logger = logging.getLogger(__name__)
 
-
-SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[ReceptorGeneSymbolStandardizer]] = {
-    "homosapiens": HomoSapiensTrSymbolStandardizer,
-    "musmusculus": MusMusculusTrSymbolStandardizer,
+SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Dict[str, Type[ReceptorGeneSymbolStandardizer]]] = {
+    "homosapiens": {"IMGT": HomoSapiensImgtTrSymbolStandardizer},
+    "musmusculus": {"IMGT": MusMusculusImgtTrSymbolStandardizer},
 }
-
 
 def standardize(
     symbol: Optional[str] = None,
@@ -268,40 +267,52 @@ def standardize(
 
     species = _utils.clean_and_lowercase(species)
 
-    if species == "any":
-        best_attempt_result = ReceptorGene(symbol, f'Failed with any species')
-
-        for (
-                species,
-                standardizer_cls,
-        ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
-            tr_standardizer = standardizer_cls(symbol,
-                                                        enforce_functional=enforce_functional,
-                                                        allow_subgroup=allow_subgroup)
-
-            if tr_standardizer.result.is_standardized:
-                return tr_standardizer.result
-
-            if species == "homosapiens":
-                best_attempt_result = tr_standardizer.result
-
-        if log_failures:
-            _utils.warn_result_failure(
-                result=best_attempt_result,
-                logger=logger,
-            )
-
-        return best_attempt_result
+    # if species == "any":
+    #     best_attempt_result = ReceptorGene(symbol, f'Failed with any species')
+    #
+    #     for (
+    #             species,
+    #             standardizer_cls,
+    #     ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
+    #         tr_standardizer = standardizer_cls(symbol,
+    #                                                     enforce_functional=enforce_functional,
+    #                                                     allow_subgroup=allow_subgroup)
+    #
+    #         if tr_standardizer.result.is_standardized:
+    #             return tr_standardizer.result
+    #
+    #         if species == "homosapiens":
+    #             best_attempt_result = tr_standardizer.result
+    #
+    #     if log_failures:
+    #         _utils.warn_result_failure(
+    #             result=best_attempt_result,
+    #             logger=logger,
+    #         )
+    #
+    #     return best_attempt_result
 
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
             _utils.warn_unsupported_species(species, "TR", logger)
         return ReceptorGene(symbol, f'Unsupported species: {species}')
 
-    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]
+    if config.receptor_database not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
+        if log_failures:
+            logger.warning(
+                f'Unsupported receptor_database: "{config.receptor_database}" for species "{species}" '
+                f'(valid options are: {sorted(SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species])}). '
+                f'Use tidytcells.config.set_receptor_database() to switch. '
+                f'Skipping TR standardization.'
+            )
+
+        return ReceptorGene(symbol, f'Unsupported receptor_database: "{config.receptor_database}" for species "{species}". Use tidytcells.config.set_receptor_database() to switch.')
+
+    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][config.receptor_database]
+
     tr_standardizer = standardizer_cls(symbol,
-                                                enforce_functional=enforce_functional,
-                                                allow_subgroup=allow_subgroup)
+                                       enforce_functional=enforce_functional,
+                                       allow_subgroup=allow_subgroup)
 
     if (not tr_standardizer.result.is_standardized) and log_failures:
         _utils.warn_result_failure(

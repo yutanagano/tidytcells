@@ -1,6 +1,6 @@
 import pytest
-from tidytcells import tr
-from tidytcells._resources import VALID_HOMOSAPIENS_TR, VALID_MUSMUSCULUS_TR
+from tidytcells import tr, config
+from tidytcells._resources import VALID_HOMOSAPIENS_TR_IMGT, VALID_MUSMUSCULUS_TR_IMGT
 
 
 class TestStandardize:
@@ -28,19 +28,19 @@ class TestStandardize:
         assert result.gene_type == "V"
 
 
-    @pytest.mark.parametrize(
-        ("symbol", "expected"),
-        (
-            ("TRBV20/OR9-2*01", "TRBV20/OR9-2*01"),
-            ("TCRAV14/4", "TRAV14/DV4"),
-            ("TRAV15-1-DV6-1", "TRAV15-1/DV6-1"),
-        )
-    )
-    def test_any_species(self, symbol, expected):
-        result = tr.standardize(symbol, species="any")
-        assert result.is_standardized
-        assert result.error is None
-        assert result.symbol == expected
+    # @pytest.mark.parametrize(
+    #     ("symbol", "expected"),
+    #     (
+    #         ("TRBV20/OR9-2*01", "TRBV20/OR9-2*01"),
+    #         ("TCRAV14/4", "TRAV14/DV4"),
+    #         ("TRAV15-1-DV6-1", "TRAV15-1/DV6-1"),
+    #     )
+    # )
+    # def test_any_species(self, symbol, expected):
+    #     result = tr.standardize(symbol, species="any")
+    #     assert result.is_standardized
+    #     assert result.error is None
+    #     assert result.symbol == expected
 
     @pytest.mark.parametrize(
         ("symbol", "expected"),
@@ -155,9 +155,19 @@ class TestStandardize:
         tr.standardize("foobarbaz", log_failures=False)
         assert len(caplog.records) == 0
 
+    def test_receptor_database_config(self, caplog):
+        config.set_receptor_database("OGRDB")
+
+        result = tr.standardize("TRAV1-1", allow_subgroup=True)
+        assert result.is_standardized == False
+        assert "Unsupported receptor_database" in caplog.text
+        assert "Unsupported receptor_database" in result.error
+
+        config.reset_receptor_database()
+
 
 class TestStandardizeHomoSapiens:
-    @pytest.mark.parametrize("symbol", VALID_HOMOSAPIENS_TR)
+    @pytest.mark.parametrize("symbol", VALID_HOMOSAPIENS_TR_IMGT)
     def test_already_correctly_formatted(self, symbol):
         result = tr.standardize(symbol=symbol, species="homosapiens")
 
@@ -253,7 +263,7 @@ class TestStandardizeHomoSapiens:
 
 
 class TestStandardizeMusMusculus:
-    @pytest.mark.parametrize("symbol", VALID_MUSMUSCULUS_TR)
+    @pytest.mark.parametrize("symbol", VALID_MUSMUSCULUS_TR_IMGT)
     def test_already_correctly_formatted(self, symbol):
         result = tr.standardize(symbol=symbol, species="musmusculus")
 
