@@ -52,8 +52,8 @@ class JunctionStandardizer():
 
 
     def _resolve_juncton(self):
-        self.j_aa_dict = self.get_aa_dict_from_symbol(self.j_symbol, "J")
-        self.v_aa_dict = self.get_aa_dict_from_symbol(self.v_symbol, "V")
+        self.j_aa_dict = self.get_aa_dict_from_symbol("J")
+        self.v_aa_dict = self.get_aa_dict_from_symbol("V")
 
         self.j_alignments = self.align_j()
         self.v_alignments = self.align_v()
@@ -67,12 +67,13 @@ class JunctionStandardizer():
         if len(self.corrected_seq) < 6:
             self.reasons_invalid.append("Junction too short")
 
-    def get_aa_dict_from_symbol(self, symbol, gene) -> dict:
+    def get_aa_dict_from_symbol(self, gene) -> dict:
         '''
         Given the user-provided allele/gene/subgroup symbol (v_symbol, j_symbol), this function returns
         the sequence_dictionary information for any of the alleles applicable to the given symbol.
         '''
 
+        symbol = self.v_symbol if gene == "V" else self.j_symbol
         symbol = self.locus[0:2] if symbol is None else symbol
 
         aa_dict = dict()
