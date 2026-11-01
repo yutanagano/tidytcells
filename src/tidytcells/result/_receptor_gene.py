@@ -108,12 +108,12 @@ class ReceptorGene:
             return self.symbol[3]
 
     @property
-    def species(self) -> str:
+    def species(self) -> Optional[str]:
         '''The species used to validate the gene name.'''
         return self._species
 
     @property
-    def germline_database(self) -> str:
+    def germline_database(self) -> Optional[str]:
         ''' The germline database that was used to standardize this junction (IMGT or OGRDB)'''
         return self._germline_database
 

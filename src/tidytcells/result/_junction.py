@@ -62,18 +62,18 @@ class Junction:
                 return self._corrected_junction[1:-1]
 
     @property
-    def species(self) -> str:
+    def species(self) -> Optional[str]:
         '''The species used for the gene lookup to validate the CDR3 junction.'''
         return self._species
 
     @property
-    def j_gene_match(self) -> str:
+    def j_gene_match(self) -> Optional[str]:
         '''The closest matching J gene(s) that were used to validate or reconstruct the CDR3 junction.
         If multiple J genes have an identical matching score, the returned gene names will be separated by ', '.
         '''
         return self._j_gene_match
 
     @property
-    def germline_database(self) -> str:
+    def germline_database(self) -> Optional[str]:
         ''' The germline database that was used to standardize this junction (IMGT or OGRDB)'''
         return self._germline_database
