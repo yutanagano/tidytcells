@@ -295,7 +295,7 @@ def standardize(
                 f'Unsupported receptor_database: "{config.receptor_database}" for species "{species}" '
                 f'(valid options are: {sorted(SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species])}). '
                 f'Use tidytcells.config.set_receptor_database() to switch. '
-                f'Skipping TR standardization.'
+                f'Skipping IG standardization.'
             )
 
         return ReceptorGene(symbol, f'Unsupported receptor_database: "{config.receptor_database}" for species "{species}". Use tidytcells.config.set_receptor_database() to switch.')
