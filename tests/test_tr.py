@@ -27,21 +27,6 @@ class TestStandardize:
         assert result.species == "homosapiens"
         assert result.gene_type == "V"
 
-
-    # @pytest.mark.parametrize(
-    #     ("symbol", "expected"),
-    #     (
-    #         ("TRBV20/OR9-2*01", "TRBV20/OR9-2*01"),
-    #         ("TCRAV14/4", "TRAV14/DV4"),
-    #         ("TRAV15-1-DV6-1", "TRAV15-1/DV6-1"),
-    #     )
-    # )
-    # def test_any_species(self, symbol, expected):
-    #     result = tr.standardize(symbol, species="any")
-    #     assert result.is_standardized
-    #     assert result.error is None
-    #     assert result.symbol == expected
-
     @pytest.mark.parametrize(
         ("symbol", "expected"),
         (("TRAV3*01&nbsp;", "TRAV3*01"), (" TRAV3 * 01 ", "TRAV3*01")),
