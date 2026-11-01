@@ -159,7 +159,7 @@ class TestStandardize:
         config.set_receptor_database("OGRDB")
 
         result = tr.standardize("TRAV1-1", allow_subgroup=True)
-        assert result.is_standardized == False
+        assert not result.is_standardized
         assert "Unsupported receptor_database" in caplog.text
         assert "Unsupported receptor_database" in result.error
 

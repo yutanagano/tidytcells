@@ -126,7 +126,7 @@ def _get_max_score_from_matches(matching_aas, max_mismatches, mismatch_penalty, 
             else:
                 return -1
 
-        score = sum([1 if match == True else mismatch_penalty for match in matching_aas])
+        score = sum([1 if match else mismatch_penalty for match in matching_aas])
 
         if score > 0:
             return score
