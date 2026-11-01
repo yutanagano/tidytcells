@@ -85,7 +85,6 @@ class JunctionStandardizer():
                 if gene not in sub_symbol:
                     self.reasons_invalid.append(f"not a {gene} gene: {sub_symbol} ({self.species})")
                     continue
-                    # return dict()
 
                 if sub_symbol in  self.sequence_dictionary:
                     aa_dict.update({sub_symbol: self.sequence_dictionary[sub_symbol]})
@@ -281,7 +280,7 @@ class JunctionStandardizer():
 
             if self.j_symbol is None:
                 if len(corrected_seqs) > 1:
-                    corrected_seqs = {s for s in corrected_seqs if s[-1] in ("F", "W")} # , "C", "V
+                    corrected_seqs = {s for s in corrected_seqs if s[-1] in ("F", "W")}
 
             if len(corrected_seqs) > 1:
                 self.reasons_invalid.append(f"J side reconstruction ambiguous: {corrected_seqs}")
