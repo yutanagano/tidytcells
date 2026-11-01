@@ -15,12 +15,12 @@ class Config:
 
     def set_receptor_database(self, name: str) -> None:
         if name not in VALID_RECEPTOR_DATABASES:
-            raise ValueError(f'"receptor_database" must be one of {VALID_RECEPTOR_DATABASES}, got {name}.')
+            raise ValueError(f'"receptor_database" must be one of {sorted(VALID_RECEPTOR_DATABASES)}, got {name}.')
         config.receptor_database = name
 
     def set_mh_database(self, name: str) -> None:
         if name not in VALID_MH_DATABASES:
-            raise ValueError(f'"mh_database" must be one of {VALID_MH_DATABASES}, got {name}.')
+            raise ValueError(f'"mh_database" must be one of {sorted(VALID_MH_DATABASES)}, got {name}.')
 
         config.mh_database = name
 
