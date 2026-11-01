@@ -414,7 +414,7 @@ def standardize(
     if locus[0:2] not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species]:
         if log_failures:
             logger.warning(
-                f'Unsupported locus: "{locus}" for species "{species}" (valid options are: {SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species]}). ' f"Skipping {type} standardization."
+                f'Unsupported locus: "{locus}" for species "{species}" (valid options are: {sorted(SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species])}). ' f"Skipping {type} standardization."
             )
 
         return Junction(original_input, f'Unsupported locus: "{locus}" for species "{species}"')
