@@ -29,7 +29,7 @@ def get_is_valid_locus_multi_gene_fn(locus: str, gene: str):
     '''
 
     is_valid_locus_gene_fn = get_is_valid_locus_gene_fn(locus, gene)
-    return lambda symbol: all([is_valid_locus_gene_fn(sub_symbol.strip()) for sub_symbol in symbol.split(",")])
+    return lambda symbol: all(is_valid_locus_gene_fn(sub_symbol.strip()) for sub_symbol in symbol.split(","))
 
 def is_valid_functionality(aa_dict, candidate, enforce_functional):
     if (not enforce_functional) or (aa_dict[candidate]["functionality"] in {"F", "[F]", "(F)"}):
