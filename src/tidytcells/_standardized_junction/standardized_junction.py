@@ -21,10 +21,10 @@ BCR_MISMATCH_PENALTY = -0.5
 class JunctionStandardizer():
 
     def __init__(self, seq: str, locus: str, j_symbol: str, v_symbol: str,
+                 species: str, germline_database: str, sequence_dictionary: dict,
                  enforce_functional_v: bool = True, enforce_functional_j: bool = False,
                  allow_c_correction: bool = False, allow_fw_correction: bool = False,
-                 max_v_reconstruction: int = 1, max_j_reconstruction: int = 1,
-                 species: str = None, germline_database: str = None, sequence_dictionary: dict = None) -> None:
+                 max_v_reconstruction: int = 1, max_j_reconstruction: int = 1) -> None:
         self.orig_seq = seq
         self.corrected_seq = seq
         self.locus = locus
