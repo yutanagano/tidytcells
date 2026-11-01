@@ -1,5 +1,5 @@
 from logging import Logger
-from typing import Union
+from typing import Optional, Union
 
 from tidytcells.result import MhGene, ReceptorGene, Junction
 
@@ -34,3 +34,28 @@ def warn_unsupported_species(species: str, module: str, valid_species, logger: L
         f'Unsupported species: "{species}" (valid options are: {sorted(valid_species)}). '
         f"Skipping {module} standardization."
     )
+
+
+def warn_unsupported_receptor_database(
+    receptor_database: str,
+    species: str,
+    module: str,
+    valid_databases,
+    logger: Logger,
+    log_failures: bool = True,
+    locus: Optional[str] = None,
+) -> str:
+    '''
+    Log a warning for an unsupported receptor_database setting (if `log_failures`)
+    and return the corresponding error message.
+    '''
+    locus_part = f' and locus "{locus}"' if locus is not None else ""
+    error = (
+        f'Unsupported receptor_database: "{receptor_database}" for species "{species}"{locus_part} '
+        f'(valid options are: {sorted(valid_databases)}). '
+        f'Use tidytcells.config.set_receptor_database() to switch.'
+    )
+    if log_failures:
+        logger.warning(f'{error} Skipping {module} standardization.')
+
+    return error
