@@ -114,7 +114,7 @@ class ReceptorGene:
 
     @property
     def germline_database(self) -> Optional[str]:
-        ''' The germline database that was used to standardize this junction (IMGT or OGRDB)'''
+        ''' The germline database that was used to standardize this receptor gene (IMGT or OGRDB)'''
         return self._germline_database
 
     def get_all_alleles(self, enforce_functional=True):
