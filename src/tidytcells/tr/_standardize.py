@@ -1,5 +1,5 @@
 import logging
-from tidytcells.config import config
+from tidytcells import config
 from tidytcells import _utils
 from tidytcells.result import ReceptorGene
 from tidytcells._utils import Parameter
@@ -268,18 +268,18 @@ def standardize(
             _utils.warn_unsupported_species(species, "TR", SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.keys(), logger)
         return ReceptorGene(symbol, f'Unsupported species: {species}')
 
-    if config.receptor_database not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
+    if config.get_receptor_database() not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
         if log_failures:
             logger.warning(
-                f'Unsupported receptor_database: "{config.receptor_database}" for species "{species}" '
+                f'Unsupported receptor_database: "{config.get_receptor_database()}" for species "{species}" '
                 f'(valid options are: {sorted(SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species])}). '
                 f'Use tidytcells.config.set_receptor_database() to switch. '
                 f'Skipping TR standardization.'
             )
 
-        return ReceptorGene(symbol, f'Unsupported receptor_database: "{config.receptor_database}" for species "{species}". Use tidytcells.config.set_receptor_database() to switch.')
+        return ReceptorGene(symbol, f'Unsupported receptor_database: "{config.get_receptor_database()}" for species "{species}". Use tidytcells.config.set_receptor_database() to switch.')
 
-    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][config.receptor_database]
+    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][config.get_receptor_database()]
 
     tr_standardizer = standardizer_cls(symbol,
                                        enforce_functional=enforce_functional,

@@ -1,5 +1,5 @@
 import logging
-from tidytcells.config import config
+from tidytcells import config
 from tidytcells import _utils
 from tidytcells._resources import AMINO_ACIDS, AMINO_ACIDS_WITH_SPECIAL, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES
 
@@ -419,18 +419,18 @@ def standardize(
 
         return Junction(original_input, f'Unsupported locus: "{locus}" for species "{species}"')
 
-    if config.receptor_database not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]]:
+    if config.get_receptor_database() not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]]:
         if log_failures:
             logger.warning(
-                f'Unsupported receptor_database: "{config.receptor_database}" for species "{species}" and locus "{locus}" '
+                f'Unsupported receptor_database: "{config.get_receptor_database()}" for species "{species}" and locus "{locus}" '
                 f'(valid options are: {sorted(SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]])}). '
-                f'Use tidytcells.set_receptor_database() to switch. '
+                f'Use tidytcells.config.set_receptor_database() to switch. '
                 f'Skipping junction standardization.'
             )
 
-        return Junction(original_input, f'Unsupported receptor_database: "{config.receptor_database}" for species "{species}" and locus {locus}. Use tidytcells.set_receptor_database() to switch.')
+        return Junction(original_input, f'Unsupported receptor_database: "{config.get_receptor_database()}" for species "{species}" and locus {locus}. Use tidytcells.config.set_receptor_database() to switch.')
 
-    sequence_dictionary = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]][config.receptor_database]
+    sequence_dictionary = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]][config.get_receptor_database()]
 
     result = JunctionStandardizer(seq=seq, locus=locus, j_symbol=j_symbol, v_symbol=v_symbol,
                                   allow_c_correction=allow_c_correction,
@@ -440,7 +440,7 @@ def standardize(
                                   max_v_reconstruction=max_v_reconstruction,
                                   max_j_reconstruction=max_j_reconstruction,
                                   species=species,
-                                  germline_database=config.receptor_database,
+                                  germline_database=config.get_receptor_database(),
                                   sequence_dictionary=sequence_dictionary).result
 
     if (not result.is_standardized) and log_failures:
