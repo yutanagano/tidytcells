@@ -1,5 +1,5 @@
 import logging
-from tidytcells._config import config
+from tidytcells.config import config
 from tidytcells import _utils
 from tidytcells.result._receptor_gene import ReceptorGene
 from tidytcells._utils import Parameter

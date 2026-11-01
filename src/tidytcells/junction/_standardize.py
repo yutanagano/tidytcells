@@ -1,5 +1,5 @@
 import logging
-from tidytcells._config import config
+from tidytcells.config import config
 from tidytcells import _utils
 from tidytcells._resources import AMINO_ACIDS, AMINO_ACIDS_WITH_SPECIAL, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES
 
