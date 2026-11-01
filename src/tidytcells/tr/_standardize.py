@@ -40,11 +40,7 @@ def standardize(
         str
     :param species:
         Can be specified to standardize to a TR symbol that is known to be valid for that species (see above for supported species).
-        If set to ``"any"``, then first attempts standardization for *Homo sapiens*, then *Mus musculus*.
         Defaults to ``"homosapiens"``.
-
-        .. note::
-            From version 3, the default behaviour will change to ``"any"``.
 
     :type species:
         str
@@ -266,31 +262,6 @@ def standardize(
     )
 
     species = _utils.clean_and_lowercase(species)
-
-    # if species == "any":
-    #     best_attempt_result = ReceptorGene(symbol, f'Failed with any species')
-    #
-    #     for (
-    #             species,
-    #             standardizer_cls,
-    #     ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
-    #         tr_standardizer = standardizer_cls(symbol,
-    #                                                     enforce_functional=enforce_functional,
-    #                                                     allow_subgroup=allow_subgroup)
-    #
-    #         if tr_standardizer.result.is_standardized:
-    #             return tr_standardizer.result
-    #
-    #         if species == "homosapiens":
-    #             best_attempt_result = tr_standardizer.result
-    #
-    #     if log_failures:
-    #         _utils.warn_result_failure(
-    #             result=best_attempt_result,
-    #             logger=logger,
-    #         )
-    #
-    #     return best_attempt_result
 
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
