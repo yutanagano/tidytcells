@@ -244,7 +244,7 @@ def standardize(
 
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
-            _utils.warn_unsupported_species(species, "MH", logger)
+            _utils.warn_unsupported_species(species, "MH", SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.keys(), logger)
         return MhGene(symbol, f'Unsupported species: {species}')
 
     standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]

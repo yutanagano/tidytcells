@@ -29,7 +29,8 @@ def warn_result_failure(
                  species=result.species,
                  logger=logger)
 
-def warn_unsupported_species(species: str, type: str, logger: Logger):
+def warn_unsupported_species(species: str, module: str, valid_species, logger: Logger):
     logger.warning(
-        f'Unsupported species: "{species}". ' f"Skipping {type} standardization."
+        f'Unsupported species: "{species}" (valid options are: {sorted(valid_species)}). '
+        f"Skipping {module} standardization."
     )

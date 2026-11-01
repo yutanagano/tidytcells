@@ -265,7 +265,7 @@ def standardize(
 
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
-            _utils.warn_unsupported_species(species, "TR", logger)
+            _utils.warn_unsupported_species(species, "TR", SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.keys(), logger)
         return ReceptorGene(symbol, f'Unsupported species: {species}')
 
     if config.receptor_database not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
