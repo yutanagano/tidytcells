@@ -393,9 +393,9 @@ def standardize(
 
     seq = seq.upper().strip()
 
-    for char in seq:
-        legal_chars = AMINO_ACIDS_WITH_SPECIAL if allow_special_chars else AMINO_ACIDS
+    legal_chars = AMINO_ACIDS_WITH_SPECIAL if allow_special_chars else AMINO_ACIDS
 
+    for char in seq:
         if char not in legal_chars:
             if log_failures:
                 logger.warning(
