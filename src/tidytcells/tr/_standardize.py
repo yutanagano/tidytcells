@@ -3,19 +3,13 @@ from tidytcells import config
 from tidytcells import _utils
 from tidytcells.result import ReceptorGene
 from tidytcells._utils import Parameter
-from tidytcells._standardized_gene_symbol import (
-    ReceptorGeneSymbolStandardizer,
-    HomoSapiensImgtTrSymbolStandardizer,
-    MusMusculusImgtTrSymbolStandardizer,
-)
+from tidytcells._standardized_gene_symbol import TrSymbolStandardizer
+from tidytcells._resources import SUPPORTED_TR_SPECIES_AND_THEIR_GENES
+
 from typing import Dict, Optional, Type
 
 logger = logging.getLogger(__name__)
 
-SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Dict[str, Type[ReceptorGeneSymbolStandardizer]]] = {
-    "homosapiens": {"IMGT": HomoSapiensImgtTrSymbolStandardizer},
-    "musmusculus": {"IMGT": MusMusculusImgtTrSymbolStandardizer},
-}
 
 def standardize(
     symbol: Optional[str] = None,
@@ -263,29 +257,34 @@ def standardize(
 
     species = _utils.clean_and_lowercase(species)
 
-    if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
+    if species not in SUPPORTED_TR_SPECIES_AND_THEIR_GENES:
         if log_failures:
-            _utils.warn_unsupported_species(species, "TR", SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.keys(), logger)
+            _utils.warn_unsupported_species(species, "TR", SUPPORTED_TR_SPECIES_AND_THEIR_GENES.keys(), logger)
         return ReceptorGene(symbol, f'Unsupported species: {species}')
 
     receptor_database = config.get_receptor_database()
-    if receptor_database not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
+    if receptor_database not in SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species]:
         error = _utils.warn_unsupported_receptor_database(
             receptor_database,
             species,
             "TR",
-            SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species].keys(),
+            SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species].keys(),
             logger,
             log_failures=log_failures,
         )
 
         return ReceptorGene(symbol, error)
 
-    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][receptor_database]
+    valid_gene_dictionary = SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species][receptor_database]["genes"]
+    synonym_dictionary = SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species][receptor_database]["synonyms"]
 
-    tr_standardizer = standardizer_cls(symbol,
-                                       enforce_functional=enforce_functional,
-                                       allow_subgroup=allow_subgroup)
+    tr_standardizer = TrSymbolStandardizer(symbol,
+                                           enforce_functional=enforce_functional,
+                                           allow_subgroup=allow_subgroup,
+                                           species=species,
+                                           germline_database=receptor_database,
+                                           valid_gene_dictionary=valid_gene_dictionary,
+                                           synonym_dictionary=synonym_dictionary)
 
     if (not tr_standardizer.result.is_standardized) and log_failures:
         _utils.warn_result_failure(

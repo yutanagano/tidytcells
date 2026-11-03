@@ -49,6 +49,26 @@ SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES = {
 }
 
 
+SUPPORTED_IG_SPECIES_AND_THEIR_GENES = {
+    "homosapiens": {
+        "IMGT": {"genes": VALID_HOMOSAPIENS_IG_IMGT, "synonyms": HOMOSAPIENS_IG_SYNONYMS},
+        "OGRDB": {"genes": VALID_HOMOSAPIENS_IG_OGRDB, "synonyms": HOMOSAPIENS_IG_SYNONYMS},
+    },
+    "musmusculus": {
+        "IMGT": {"genes": VALID_MUSMUSCULUS_IG_IMGT, "synonyms": dict()},
+    }
+}
+
+SUPPORTED_TR_SPECIES_AND_THEIR_GENES = {
+    "homosapiens": {
+        "IMGT": {"genes": VALID_HOMOSAPIENS_TR_IMGT, "synonyms": HOMOSAPIENS_TR_SYNONYMS},
+    },
+    "musmusculus": {
+        "IMGT": {"genes": VALID_MUSMUSCULUS_TR_IMGT, "synonyms": dict()},
+    }
+}
+
+
 AMINO_ACIDS = frozenset(
     (
         "A",

@@ -46,7 +46,7 @@ class IgSymbolStandardizer(ReceptorGeneSymbolStandardizer):
 
     def _parse_symbol(self, ig_symbol: str) -> Tuple[Optional[str], Optional[str]]:
         cleaned_ig_symbol = self._safe_clean_ig_symbol(ig_symbol)
-        parsed_ig_symbol = IgSymbolParser(cleaned_ig_symbol, species=self._species, germline_database=self._germline_database)
+        parsed_ig_symbol = IgSymbolParser(cleaned_ig_symbol, species=self.species, germline_database=self.germline_database)
 
         return parsed_ig_symbol.gene_name, parsed_ig_symbol.allele_designation
 
@@ -58,7 +58,7 @@ class IgSymbolStandardizer(ReceptorGeneSymbolStandardizer):
         cleaned_ig_symbol = gene_part + star + allele_part
 
         # Deal with lowercase a/b in genes like IGHD1/OR15-1a*01
-        if self._species == "homosapiens":
+        if self.species == "homosapiens":
             match = re.search(r"(.*?OR15-\d)([AB])", cleaned_ig_symbol)
             if match:
                 cleaned_ig_symbol = (
@@ -66,7 +66,7 @@ class IgSymbolStandardizer(ReceptorGeneSymbolStandardizer):
                     + match.group(2).lower()
                     + cleaned_ig_symbol[match.end() :]
                 )
-        elif self._species == "musmusculus":
+        elif self.species == "musmusculus":
             match = re.search(r"(IGKV\d+-)([ABCDEF])", cleaned_ig_symbol)
             if match:
                 cleaned_ig_symbol = (
