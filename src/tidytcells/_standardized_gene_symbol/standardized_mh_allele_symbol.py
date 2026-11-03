@@ -21,7 +21,8 @@ class MhAlleleSymbolParser:
     allele_designation: List[str]
     mutation: Optional[str]
 
-    def __init__(self, symbol: str) -> None:
+    def __init__(self, symbol: str, species: str) -> None:
+        self.species = species
         symbol = self._parse_mutation(symbol)
         self.cleaned_symbol = _utils.clean_and_uppercase(symbol)
         self._parse_gene_and_allele(self._replace_periods_between_digits_with_colon(self.cleaned_symbol))
@@ -58,47 +59,58 @@ class MhAlleleSymbolParser:
         return [d.zfill(2) if d.isdigit() else d for d in allele_designation.split(":")]
 
 
-class MhAlleleSymbolStandardizer(ABC):
+class HlaSymbolParser(MhAlleleSymbolParser):
+    SYMBOL_REGEX = re.compile(r"^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?")
+    HLA_CLASS_II_REGEX = re.compile(r"^((HLA-)?(D[PQ][AB]|DRB|TAP)\d)(\*?([\d:]+G?P?)[LSCAQN]?)?")
+
+    def _parse_gene_and_allele(self, symbol: str) -> None:
+        if symbol == "B2M":
+            self.gene_name = "B2M"
+            self.allele_designation = []
+            return
+
+        parse_attempt = self.HLA_CLASS_II_REGEX.match(symbol)
+        if parse_attempt:
+            self.gene_name = parse_attempt.group(1)
+            self.allele_designation = self._listify_allele_designation(parse_attempt.group(5))
+            return
+
+        super()._parse_gene_and_allele(symbol)
+
+
+class MhAlleleSymbolStandardizer():
     """
-    Abstract base standardizer class for MH symbols with numbered alleles (e.g. HLA-A*02:01, Mamu-A1*001:01).
+    Standardizer class for MH symbols with numbered alleles (e.g. HLA-A*02:01, Mamu-A1*001:01).
     Input is matched case-insensitively; results are returned in the case used by the database.
     """
 
-    _parser_cls = MhAlleleSymbolParser
-    _gene_synonyms: Dict[str, str] = {}
-    _allow_zero_padded_three_digit_fields = True
-
-    @property
-    @abstractmethod
-    def _species(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def _valid_symbols(self) -> Dict[str, Dict]:
-        pass
-
-    @property
-    @abstractmethod
-    def _allele_synonyms(self) -> Dict[str, str]:
-        pass
-
-    def __init_subclass__(cls, **kwargs) -> None:
-        super().__init_subclass__(**kwargs)
-
-        if isinstance(cls._valid_symbols, dict):
-            cls._valid_symbols_upper = uppercase_tree(cls._valid_symbols)
-            cls._canonical_gene_names = {gene.upper(): gene for gene in cls._valid_symbols}
-            cls._prefixes = sorted({gene.split("-")[0].upper() for gene in cls._valid_symbols if "-" in gene})
-
-    def __init__(self, symbol: str) -> None:
+    def __init__(self, symbol: str, species: str, valid_symbols: Dict[str, Dict],
+                 allele_synonyms: Dict[str, str], gene_synonyms: Optional[Dict[str, str]] = None):
         self.original_symbol = symbol
+        self.species = species
+        self._valid_symbols = valid_symbols
+        self._allele_synonyms = allele_synonyms
+        self._gene_synonyms = gene_synonyms if gene_synonyms is not None else {}
+
+        if species in ("macacamulatta", "bostaurus"):
+            self._allow_zero_padded_three_digit_fields = True
+        elif species in ("homosapiens", "susscrofa", "pantroglodytes"):
+            self._allow_zero_padded_three_digit_fields = False
+        else:
+            raise NotImplementedError(f"Missing parameter allow_zero_padded_three_digit_fields for species: {species}")
+
+        self._parser_cls = HlaSymbolParser if self.species == "homosapiens" else MhAlleleSymbolParser
+
+        self._valid_symbols_upper = uppercase_tree(valid_symbols)
+        self._canonical_gene_names = {gene.upper(): gene for gene in valid_symbols}
+        self._prefixes = sorted({gene.split("-")[0].upper() for gene in valid_symbols if "-" in gene})
+
         self._parse_symbol(symbol)
         self._resolve_errors()
         self._compile_result()
 
     def _parse_symbol(self, symbol: str) -> None:
-        parsed_symbol = self._parser_cls(symbol)
+        parsed_symbol = self._parser_cls(symbol, self.species)
         self._mutation = parsed_symbol.mutation
         self._cleaned_symbol = parsed_symbol.cleaned_symbol
         self._gene_name = parsed_symbol.gene_name
@@ -109,7 +121,7 @@ class MhAlleleSymbolStandardizer(ABC):
             return
 
         if self._cleaned_symbol in self._allele_synonyms:
-            parsed_synonym = self._parser_cls(self._allele_synonyms[self._cleaned_symbol])
+            parsed_synonym = self._parser_cls(self._allele_synonyms[self._cleaned_symbol], self.species)
             self._gene_name = parsed_synonym.gene_name
             self._allele_designation = parsed_synonym.allele_designation
             if self.get_reason_why_invalid() is None:
@@ -140,6 +152,9 @@ class MhAlleleSymbolStandardizer(ABC):
 
     def _resolve_common_errors(self) -> None:
         self._add_missing_prefix()
+
+        if self.species == "homosapiens":
+            self._gene_name = self._gene_name.replace("CW", "C")
 
     def _add_missing_prefix(self) -> None:
         if any(self._gene_name.startswith(f"{prefix}-") for prefix in self._prefixes):
@@ -179,13 +194,13 @@ class MhAlleleSymbolStandardizer(ABC):
 
         self._allele_designation = original
 
-    @classmethod
-    def _split_into_designator_fields(cls, digits: str, max_fields: int = 4) -> List[List[str]]:
-        candidates = [f for f in cls._all_designator_field_splits(digits) if 2 <= len(f) <= max_fields]
-        return sorted(candidates, key=cls._field_lengths)
 
-    @classmethod
-    def _all_designator_field_splits(cls, digits: str) -> List[List[str]]:
+    def _split_into_designator_fields(self, digits: str, max_fields: int = 4) -> List[List[str]]:
+        candidates = [f for f in self._all_designator_field_splits(digits) if 2 <= len(f) <= max_fields]
+        return sorted(candidates, key=self._field_lengths)
+
+
+    def _all_designator_field_splits(self, digits: str) -> List[List[str]]:
         if not digits:
             return [[]]
 
@@ -194,8 +209,8 @@ class MhAlleleSymbolStandardizer(ABC):
             field = digits[:n]
             zero_padded = n == 3 and field.startswith("0")
 
-            if len(field) == n and (cls._allow_zero_padded_three_digit_fields or not zero_padded):
-                for tail in cls._all_designator_field_splits(digits[n:]):
+            if len(field) == n and (self._allow_zero_padded_three_digit_fields or not zero_padded):
+                for tail in self._all_designator_field_splits(digits[n:]):
                     splits.append([field] + tail)
 
         return splits
@@ -225,6 +240,10 @@ class MhAlleleSymbolStandardizer(ABC):
             self._gene_name = original
 
     def get_reason_why_invalid(self) -> Optional[str]:
+        if self.species == "homosapiens":
+            if self._gene_name == "B2M" and not self._allele_designation:
+                return None
+
         if self._gene_name not in self._valid_symbols_upper:
             return "Unrecognized gene name"
 
@@ -282,93 +301,5 @@ class MhAlleleSymbolStandardizer(ABC):
                              error=self.get_reason_why_invalid(),
                              gene_name=self._canonical_gene_name(),
                              allele_designation=self._canonical_allele_designation(),
-                             species=self._species,
+                             species=self.species,
                              mutation=self._mutation)
-
-
-class HlaSymbolParser(MhAlleleSymbolParser):
-    SYMBOL_REGEX = re.compile(r"^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?")
-    HLA_CLASS_II_REGEX = re.compile(r"^((HLA-)?(D[PQ][AB]|DRB|TAP)\d)(\*?([\d:]+G?P?)[LSCAQN]?)?")
-
-    def _parse_gene_and_allele(self, symbol: str) -> None:
-        if symbol == "B2M":
-            self.gene_name = "B2M"
-            self.allele_designation = []
-            return
-
-        parse_attempt = self.HLA_CLASS_II_REGEX.match(symbol)
-        if parse_attempt:
-            self.gene_name = parse_attempt.group(1)
-            self.allele_designation = self._listify_allele_designation(parse_attempt.group(5))
-            return
-
-        super()._parse_gene_and_allele(symbol)
-
-
-class HlaSymbolStandardizer(MhAlleleSymbolStandardizer):
-    """
-    Abstract base standardizer class for HLA symbols.
-    """
-
-    _species = "homosapiens"
-    _parser_cls = HlaSymbolParser
-    _allow_zero_padded_three_digit_fields = False
-
-    def _resolve_common_errors(self) -> None:
-        super()._resolve_common_errors()
-        self._gene_name = self._gene_name.replace("CW", "C")
-
-    def get_reason_why_invalid(self) -> Optional[str]:
-        if self._gene_name == "B2M" and not self._allele_designation:
-            return None
-
-        return super().get_reason_why_invalid()
-
-
-class ImgtHlaSymbolStandardizer(HlaSymbolStandardizer):
-    _valid_symbols = HOMOSAPIENS_MH_VALID_IPD
-    _gene_synonyms = HOMOSAPIENS_MH_SYNONYMS_GENE_HGNC_IPD
-    _allele_synonyms = {}
-
-class MroHlaSymbolStandardizer(HlaSymbolStandardizer):
-    _valid_symbols = HOMOSAPIENS_MH_VALID_PROTEIN_MRO
-    _gene_synonyms = HOMOSAPIENS_MH_SYNONYMS_GENE_HGNC_MRO
-    _allele_synonyms = HOMOSAPIENS_MH_SYNONYMS_ALLELE_MRO
-
-
-
-class MroBoLaSymbolStandardizer(MhAlleleSymbolStandardizer):
-    _species = "bostaurus"
-    _parser_cls = MhAlleleSymbolParser
-    _allow_zero_padded_three_digit_fields = True
-    _valid_symbols = BOSTAURUS_MH_VALID_PROTEIN_MRO
-    _gene_synonyms = {}
-    _allele_synonyms = BOSTAURUS_MH_SYNONYMS_ALLELE_MRO
-
-class MroMamuSymbolStandardizer(MhAlleleSymbolStandardizer):
-    _species = "macacamulatta"
-    _parser_cls = MhAlleleSymbolParser
-    _allow_zero_padded_three_digit_fields = True
-    _valid_symbols = MACACAMULATTA_MH_VALID_PROTEIN_MRO
-    _gene_synonyms = {}
-    _allele_synonyms = MACACAMULATTA_MH_SYNONYMS_ALLELE_MRO
-
-class MroPatrSymbolStandardizer(MhAlleleSymbolStandardizer):
-    _species = "pantroglodytes"
-    _parser_cls = MhAlleleSymbolParser
-    _allow_zero_padded_three_digit_fields = False
-    _valid_symbols = PANTROGLODYTES_MH_VALID_PROTEIN_MRO
-    _gene_synonyms = {}
-    _allele_synonyms = PANTROGLODYTES_MH_SYNONYMS_ALLELE_MRO
-
-class MroSlaSymbolStandardizer(MhAlleleSymbolStandardizer):
-    _species = "susscrofa"
-    _parser_cls = MhAlleleSymbolParser
-    _allow_zero_padded_three_digit_fields = False
-    _valid_symbols = SUSSCROFA_MH_VALID_PROTEIN_MRO
-    _gene_synonyms = {}
-    _allele_synonyms = SUSSCROFA_MH_SYNONYMS_ALLELE_MRO
-
-
-
-

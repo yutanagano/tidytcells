@@ -49,47 +49,33 @@ def build_prefixed_index(valid_symbols: Dict, allele_synonyms: Dict[str, str], p
     return index
 
 
-class MhHaplotypeSymbolStandardizer(ABC):
+class MhHaplotypeSymbolStandardizer:
     """
-    Abstract base standardizer class for MH symbols named by locus and haplotype (e.g. H2-Kb, H2-IAb).
+    Standardizer for MH symbols named by locus and haplotype (e.g. H2-Kb, H2-IAb).
     """
 
-    @property
-    @abstractmethod
-    def _species(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def _prefix_regex(self) -> re.Pattern:
-        pass
-
-    @property
-    @abstractmethod
-    def _valid_symbols(self) -> Dict[str, Dict]:
-        pass
-
-    @property
-    @abstractmethod
-    def _allele_synonyms(self) -> Dict[str, str]:
-        pass
-
-    def __init_subclass__(cls, **kwargs) -> None:
-        super().__init_subclass__(**kwargs)
-
-        if isinstance(cls._valid_symbols, dict):
-            cls._exact_index = {**cls._allele_synonyms, **{s.upper(): s for s in cls._valid_symbols}}
-            cls._prefixed_index = build_prefixed_index(cls._valid_symbols, cls._allele_synonyms, cls._prefix_regex)
-            cls._bare_index = {strip_prefix_and_hyphens(s, cls._prefix_regex): s for s in cls._valid_symbols}
-
-    def __init__(self, symbol: str) -> None:
+    def __init__(self, symbol: str, species: str, valid_symbols: Dict[str, Dict],
+                 allele_synonyms: Dict[str, str], gene_synonyms = None):
         self.original_symbol = symbol
+        self._species = species
+        self._valid_symbols = valid_symbols
+        self._allele_synonyms = allele_synonyms
+
+        if species == "musmusculus":
+            self._prefix_regex = re.compile(r"^H-?2-?", re.IGNORECASE)
+        elif species == "rattusnorvegicus":
+            self._prefix_regex = re.compile(r"^RT-?1-?", re.IGNORECASE)
+
+        self._exact_index = {**allele_synonyms, **{s.upper(): s for s in valid_symbols}}
+        self._prefixed_index = build_prefixed_index(valid_symbols, allele_synonyms, self._prefix_regex)
+        self._bare_index = {strip_prefix_and_hyphens(s, self._prefix_regex): s for s in valid_symbols}
 
         parsed_symbol = MhHaplotypeSymbolParser(symbol, self._prefix_regex)
         self._mutation = parsed_symbol.mutation
         self._gene_name = self._resolve(parsed_symbol)
 
         self._compile_result()
+
 
     def _resolve(self, parsed_symbol: MhHaplotypeSymbolParser) -> str:
         cleaned_symbol = parsed_symbol.cleaned_symbol
@@ -116,16 +102,3 @@ class MhHaplotypeSymbolStandardizer(ABC):
                              species=self._species,
                              mutation=self._mutation)
 
-
-class MroH2MhHaplotypeSymbolStandardizer(MhHaplotypeSymbolStandardizer):
-    _species = "musmusculus"
-    _prefix_regex = re.compile(r"^H-?2-?", re.IGNORECASE)
-    _valid_symbols = MUSMUSCULUS_MH_VALID_PROTEIN_MRO
-    _allele_synonyms = MUSMUSCULUS_MH_SYNONYMS_ALLELE_MRO
-
-
-class MroRT1MhHaplotypeSymbolStandardizer(MhHaplotypeSymbolStandardizer):
-    _species = "rattusnorvegicus"
-    _prefix_regex = re.compile(r"^RT-?1-?", re.IGNORECASE)
-    _valid_symbols = RATTUSNORVEGICUS_MH_VALID_PROTEIN_MRO
-    _allele_synonyms = RATTUSNORVEGICUS_MH_SYNONYMS_ALLELE_MRO

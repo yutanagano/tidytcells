@@ -96,10 +96,10 @@ def query(
     if not species_is_supported:
         raise ValueError(f'Unsupported species: {species}. No data available.')
 
-    if config.mhc_database not in QUERY_ENGINES[species]:
-        raise ValueError(f'Unsupported mhc_database: {config.mhc_database}. No data available. Please use tidytcells.set_mh_database() to switch to: {", ".join(list(QUERY_ENGINES[species].keys()))}')
+    if config.mh_database not in QUERY_ENGINES[species]:
+        raise ValueError(f'Unsupported mhc_database: {config.mh_database}. No data available. Please use tidytcells.set_mh_database() to switch to: {", ".join(list(QUERY_ENGINES[species].keys()))}')
 
-    query_engine = QUERY_ENGINES[species][config.mhc_database]
+    query_engine = QUERY_ENGINES[species][config.mh_database]
     result = query_engine.query(precision, functionality=None)
 
     if contains_pattern is None:

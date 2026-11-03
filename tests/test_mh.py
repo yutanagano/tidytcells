@@ -432,13 +432,9 @@ class TestStandardizeAnySpeciesMro:
     @pytest.mark.parametrize(
         ("species", "symbol"),
         (
-            *(("homosapiens", symbol) for symbol in HOMOSAPIENS_MH_VALID_PROTEIN_MRO),
-            *(("bostaurus", symbol) for symbol in BOSTAURUS_MH_VALID_PROTEIN_MRO),
-            *(("macacamulatta", symbol) for symbol in MACACAMULATTA_MH_VALID_PROTEIN_MRO),
-            *(("pantroglodytes", symbol) for symbol in PANTROGLODYTES_MH_VALID_PROTEIN_MRO),
-            *(("susscrofa", symbol) for symbol in SUSSCROFA_MH_VALID_PROTEIN_MRO),
-            *(("musmusculus", symbol) for symbol in MUSMUSCULUS_MH_VALID_PROTEIN_MRO),
-            *(("rattusnorvegicus", symbol) for symbol in RATTUSNORVEGICUS_MH_VALID_PROTEIN_MRO),
+            (species, symbol)
+            for species, databases in SUPPORTED_MH_SPECIES_AND_THEIR_GENES.items()
+            for symbol in databases["MRO"]["valid_symbols"]
         ),
     )
     def test_already_correctly_formatted(self, species, symbol):
@@ -454,13 +450,9 @@ class TestStandardizeAnySpeciesMro:
     @pytest.mark.parametrize(
         ("species", "symbol"),
         (
-            *(("homosapiens", symbol) for symbol in HOMOSAPIENS_MH_VALID_PROTEIN_MRO),
-            *(("bostaurus", symbol) for symbol in BOSTAURUS_MH_VALID_PROTEIN_MRO),
-            *(("macacamulatta", symbol) for symbol in MACACAMULATTA_MH_VALID_PROTEIN_MRO),
-            *(("pantroglodytes", symbol) for symbol in PANTROGLODYTES_MH_VALID_PROTEIN_MRO),
-            *(("susscrofa", symbol) for symbol in SUSSCROFA_MH_VALID_PROTEIN_MRO),
-            *(("musmusculus", symbol) for symbol in MUSMUSCULUS_MH_VALID_PROTEIN_MRO),
-            *(("rattusnorvegicus", symbol) for symbol in RATTUSNORVEGICUS_MH_VALID_PROTEIN_MRO),
+            (species, symbol)
+            for species, databases in SUPPORTED_MH_SPECIES_AND_THEIR_GENES.items()
+            for symbol in databases["MRO"]["valid_symbols"]
         ),
     )
     def test_case_insensitive(self, species, symbol):
@@ -472,9 +464,6 @@ class TestStandardizeAnySpeciesMro:
         assert result.is_standardized
         assert result.error is None
         assert result.species == species
-
-
-
 
 
 class TestQuery:
