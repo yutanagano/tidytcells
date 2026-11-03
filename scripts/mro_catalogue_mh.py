@@ -1,17 +1,14 @@
 import collections
+import io
 import re
-import shutil
-import tempfile
 import urllib.request
 import zipfile
 from pathlib import Path
-from typing import List, Optional, Tuple, Iterable
+from typing import List, Optional, Tuple
 import pandas as pd
 
 import script_utility
 
-
-PATH_TO_DATA_DIR = Path("data") / "MRO"
 
 RELEASE_URL = "https://github.com/IEDB/MRO/releases/latest/download"
 
@@ -30,7 +27,7 @@ SPECIES_NAMES = {
 
 def main() -> None:
     print("Fetching MRO data...")
-    molecules = load_molecules(get_protein_complexes_path(), get_molecule_export_path())
+    molecules = load_molecules(fetch_protein_complexes(), fetch_molecule_export())
     molecules["species"] = [get_species_name(taxon) for taxon in molecules["In Taxon"]]
 
     for species, df in molecules[molecules["species"].notna()].groupby("species"):
@@ -52,45 +49,31 @@ def main() -> None:
             script_utility.save_as_json(script_utility.get_hgnc_synonyms_data(valid), f"mro_{species}_mh_synonyms_hgnc.json")
 
 
-def get_protein_complexes_path() -> Path:
-    path = PATH_TO_DATA_DIR / "mro-protein-complexes.tsv"
-
-    if not path.exists():
-        PATH_TO_DATA_DIR.mkdir(parents=True, exist_ok=True)
-        download(f"{RELEASE_URL}/mro-protein-complexes.tsv", path)
-    print(path)
-    return path
+def fetch_protein_complexes() -> pd.DataFrame:
+    return read_tsv(io.BytesIO(download(f"{RELEASE_URL}/mro-protein-complexes.tsv")))
 
 
-def get_molecule_export_path() -> Path:
-    path = PATH_TO_DATA_DIR / "molecule_export.tsv"
+def fetch_molecule_export() -> pd.DataFrame:
+    file_name = "molecule_export.tsv"
 
-    if not path.exists():
-        PATH_TO_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(io.BytesIO(download(f"{RELEASE_URL}/iedb.zip"))) as archive:
+        members = [m for m in archive.namelist() if Path(m).name == file_name]
+        assert len(members) == 1, f"Expected one {file_name} in iedb.zip, found {len(members)}"
 
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            zip_path = Path(tmp_dir) / "iedb.zip"
-            download(f"{RELEASE_URL}/iedb.zip", zip_path)
-
-            with zipfile.ZipFile(zip_path) as archive:
-                members = [m for m in archive.namelist() if Path(m).name == path.name]
-                assert len(members) == 1, f"Expected one {path.name} in iedb.zip, found {len(members)}"
-
-                with archive.open(members[0]) as source, open(path, "wb") as target:
-                    shutil.copyfileobj(source, target)
-
-    return path
+        with archive.open(members[0]) as f:
+            return read_tsv(f)
 
 
-def download(url: str, path: Path) -> None:
-    with urllib.request.urlopen(url) as response, open(path, "wb") as f:
-        shutil.copyfileobj(response, f)
+def download(url: str) -> bytes:
+    with urllib.request.urlopen(url) as response:
+        return response.read()
 
 
-def load_molecules(protein_complexes_path: Path, molecule_export_path: Path) -> pd.DataFrame:
-    complexes = pd.read_csv(protein_complexes_path, sep="\t", dtype=str).fillna("")
-    molecules = pd.read_csv(molecule_export_path, sep="\t", dtype=str).fillna("")
+def read_tsv(file) -> pd.DataFrame:
+    return pd.read_csv(file, sep="\t", dtype=str).fillna("")
 
+
+def load_molecules(complexes: pd.DataFrame, molecules: pd.DataFrame) -> pd.DataFrame:
     return complexes.merge(molecules[["MRO ID", "In Taxon", "In Taxon ID"]], left_on="id", right_on="MRO ID")
 
 
