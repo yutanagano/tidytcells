@@ -26,20 +26,6 @@ class TestStandardize:
         assert result.symbol == "IGHV1/OR15-1*01"
         assert result.species == "homosapiens"
 
-    # @pytest.mark.parametrize(
-    #     ("symbol", "expected"),
-    #     (
-    #         ("IGHV1/OR15-1*01", "IGHV1/OR15-1*01"),
-    #         ("IGHV6-1", "IGHV6-1"),
-    #         ("LV2-18", "IGLV2-18"),
-    #     )
-    # )
-    # def test_any_species(self, symbol, expected):
-    #     result = ig.standardize(symbol, species="any")
-    #     assert result.is_standardized
-    #     assert result.error is None
-    #     assert result.symbol == expected
-
     @pytest.mark.parametrize(
         ("symbol", "expected"),
         (("IGLJ1*01&nbsp;", "IGLJ1*01"), (" IGLJ1 * 01 ", "IGLJ1*01")),

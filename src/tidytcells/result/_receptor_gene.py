@@ -108,13 +108,13 @@ class ReceptorGene:
             return self.symbol[3]
 
     @property
-    def species(self) -> str:
+    def species(self) -> Optional[str]:
         '''The species used to validate the gene name.'''
         return self._species
 
     @property
-    def germline_database(self) -> str:
-        ''' The germline database that was used to standardize this junction (IMGT or OGRDB)'''
+    def germline_database(self) -> Optional[str]:
+        ''' The germline database that was used to standardize this receptor gene (IMGT or OGRDB)'''
         return self._germline_database
 
     def get_all_alleles(self, enforce_functional=True):

@@ -21,10 +21,10 @@ BCR_MISMATCH_PENALTY = -0.5
 class JunctionStandardizer():
 
     def __init__(self, seq: str, locus: str, j_symbol: str, v_symbol: str,
+                 species: str, germline_database: str, sequence_dictionary: dict,
                  enforce_functional_v: bool = True, enforce_functional_j: bool = False,
                  allow_c_correction: bool = False, allow_fw_correction: bool = False,
-                 max_v_reconstruction: int = 1, max_j_reconstruction: int = 1,
-                 species: str = None, germline_database: str = None, sequence_dictionary: dict = None) -> None:
+                 max_v_reconstruction: int = 1, max_j_reconstruction: int = 1) -> None:
         self.orig_seq = seq
         self.corrected_seq = seq
         self.locus = locus
@@ -52,8 +52,8 @@ class JunctionStandardizer():
 
 
     def _resolve_juncton(self):
-        self.j_aa_dict = self.get_aa_dict_from_symbol(self.j_symbol, "J")
-        self.v_aa_dict = self.get_aa_dict_from_symbol(self.v_symbol, "V")
+        self.j_aa_dict = self.get_aa_dict_from_symbol("J")
+        self.v_aa_dict = self.get_aa_dict_from_symbol("V")
 
         self.j_alignments = self.align_j()
         self.v_alignments = self.align_v()
@@ -67,12 +67,13 @@ class JunctionStandardizer():
         if len(self.corrected_seq) < 6:
             self.reasons_invalid.append("Junction too short")
 
-    def get_aa_dict_from_symbol(self, symbol, gene) -> dict:
+    def get_aa_dict_from_symbol(self, gene) -> dict:
         '''
         Given the user-provided allele/gene/subgroup symbol (v_symbol, j_symbol), this function returns
         the sequence_dictionary information for any of the alleles applicable to the given symbol.
         '''
 
+        symbol = self.v_symbol if gene == "V" else self.j_symbol
         symbol = self.locus[0:2] if symbol is None else symbol
 
         aa_dict = dict()
@@ -85,7 +86,6 @@ class JunctionStandardizer():
                 if gene not in sub_symbol:
                     self.reasons_invalid.append(f"not a {gene} gene: {sub_symbol} ({self.species})")
                     continue
-                    # return dict()
 
                 if sub_symbol in  self.sequence_dictionary:
                     aa_dict.update({sub_symbol: self.sequence_dictionary[sub_symbol]})
@@ -281,7 +281,7 @@ class JunctionStandardizer():
 
             if self.j_symbol is None:
                 if len(corrected_seqs) > 1:
-                    corrected_seqs = {s for s in corrected_seqs if s[-1] in ("F", "W")} # , "C", "V
+                    corrected_seqs = {s for s in corrected_seqs if s[-1] in ("F", "W")}
 
             if len(corrected_seqs) > 1:
                 self.reasons_invalid.append(f"J side reconstruction ambiguous: {corrected_seqs}")

@@ -1,5 +1,5 @@
 import logging
-from tidytcells._config import config
+from tidytcells import config
 from tidytcells import _utils
 from tidytcells.result._receptor_gene import ReceptorGene
 from tidytcells._utils import Parameter
@@ -40,11 +40,7 @@ def standardize(
         str
     :param species:
         Can be specified to standardize to an IG symbol that is known to be valid for that species (see above for supported species).
-        If set to ``"any"``, then first attempts standardization for *Homo sapiens*, then *Mus musculus*.
         Defaults to ``"homosapiens"``.
-
-        .. note::
-            From version 3, the default behaviour will change to ``"any"``.
     :type species:
         str
     :param enforce_functional:
@@ -259,48 +255,25 @@ def standardize(
 
     species = _utils.clean_and_lowercase(species)
 
-    # if species == "any":
-    #     best_attempt_result = ReceptorGene(symbol, f'Failed with any species')
-    #
-    #     for (
-    #         species,
-    #         standardizer_cls,
-    #     ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
-    #         ig_standardizer = standardizer_cls(symbol,
-    #                                                     enforce_functional=enforce_functional,
-    #                                                     allow_subgroup=allow_subgroup)
-    #
-    #         if ig_standardizer.result.is_standardized:
-    #             return ig_standardizer.result
-    #
-    #         if species == "homosapiens":
-    #             best_attempt_result = ig_standardizer.result
-    #
-    #     if log_failures:
-    #         _utils.warn_result_failure(
-    #             result=best_attempt_result,
-    #             logger=logger,
-    #         )
-    #
-    #     return best_attempt_result
-
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
-            _utils.warn_unsupported_species(species, "IG", logger)
+            _utils.warn_unsupported_species(species, "IG", SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.keys(), logger)
         return ReceptorGene(symbol, f'Unsupported species: {species}')
 
-    if config.receptor_database not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
-        if log_failures:
-            logger.warning(
-                f'Unsupported receptor_database: "{config.receptor_database}" for species "{species}" '
-                f'(valid options are: {sorted(SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species])}). '
-                f'Use tidytcells.config.set_receptor_database() to switch. '
-                f'Skipping TR standardization.'
-            )
+    receptor_database = config.get_receptor_database()
+    if receptor_database not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]:
+        error = _utils.warn_unsupported_receptor_database(
+            receptor_database,
+            species,
+            "IG",
+            SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species].keys(),
+            logger,
+            log_failures=log_failures,
+        )
 
-        return ReceptorGene(symbol, f'Unsupported receptor_database: "{config.receptor_database}" for species "{species}". Use tidytcells.config.set_receptor_database() to switch.')
+        return ReceptorGene(symbol, error)
 
-    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][config.receptor_database]
+    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species][receptor_database]
 
     ig_standardizer = standardizer_cls(symbol,
                                        enforce_functional=enforce_functional,

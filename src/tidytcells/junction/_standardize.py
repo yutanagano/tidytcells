@@ -1,5 +1,5 @@
 import logging
-from tidytcells._config import config
+from tidytcells import config
 from tidytcells import _utils
 from tidytcells._resources import AMINO_ACIDS, AMINO_ACIDS_WITH_SPECIAL, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES
 
@@ -393,9 +393,9 @@ def standardize(
 
     seq = seq.upper().strip()
 
-    for char in seq:
-        legal_chars = AMINO_ACIDS_WITH_SPECIAL if allow_special_chars else AMINO_ACIDS
+    legal_chars = AMINO_ACIDS_WITH_SPECIAL if allow_special_chars else AMINO_ACIDS
 
+    for char in seq:
         if char not in legal_chars:
             if log_failures:
                 logger.warning(
@@ -406,7 +406,7 @@ def standardize(
 
     if species not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES:
         if log_failures:
-            _utils.warn_unsupported_species(species, "junction", logger)
+            _utils.warn_unsupported_species(species, "junction", SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES.keys(), logger)
 
         return Junction(original_input, f'Unsupported species: {species}')
 
@@ -414,23 +414,26 @@ def standardize(
     if locus[0:2] not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species]:
         if log_failures:
             logger.warning(
-                f'Unsupported locus: "{locus}" for species "{species}" (valid options are: {SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species]}). ' f"Skipping {type} standardization."
+                f'Unsupported locus: "{locus}" for species "{species}" (valid options are: {sorted(SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species])}). ' f"Skipping junction standardization."
             )
 
         return Junction(original_input, f'Unsupported locus: "{locus}" for species "{species}"')
 
-    if config.receptor_database not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]]:
-        if log_failures:
-            logger.warning(
-                f'Unsupported receptor_database: "{config.receptor_database}" for species "{species}" and locus "{locus}" '
-                f'(valid options are: {sorted(SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]])}). '
-                f'Use tidytcells.set_receptor_database() to switch. '
-                f'Skipping junction standardization.'
-            )
+    receptor_database = config.get_receptor_database()
+    if receptor_database not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]]:
+        error = _utils.warn_unsupported_receptor_database(
+            receptor_database,
+            species,
+            "junction",
+            SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]].keys(),
+            logger,
+            log_failures=log_failures,
+            locus=locus,
+        )
 
-        return Junction(original_input, f'Unsupported receptor_database: "{config.receptor_database}" for species "{species}" and locus {locus}. Use tidytcells.set_receptor_database() to switch.')
+        return Junction(original_input, error)
 
-    sequence_dictionary = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]][config.receptor_database]
+    sequence_dictionary = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]][receptor_database]
 
     result = JunctionStandardizer(seq=seq, locus=locus, j_symbol=j_symbol, v_symbol=v_symbol,
                                   allow_c_correction=allow_c_correction,
@@ -440,7 +443,7 @@ def standardize(
                                   max_v_reconstruction=max_v_reconstruction,
                                   max_j_reconstruction=max_j_reconstruction,
                                   species=species,
-                                  germline_database=config.receptor_database,
+                                  germline_database=receptor_database,
                                   sequence_dictionary=sequence_dictionary).result
 
     if (not result.is_standardized) and log_failures:
