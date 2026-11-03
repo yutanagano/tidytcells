@@ -4,11 +4,9 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
-from typing import Tuple
+from typing import Dict
 import script_utility
 
-
-PATH_TO_DATA_DIR = Path("data") / "OGRDB"
 
 LOCI = ("IGH", "IGK", "IGL")
 
@@ -42,10 +40,10 @@ CODON_TABLE = {
 
 def main() -> None:
     print("Fetching IG germline sets from OGRDB...")
-    paths = tuple(get_germline_set_path(locus) for locus in LOCI)
+    germline_sets = {locus: download_germline_set(locus) for locus in LOCI}
 
     print("Converting IG gene sequence data...")
-    sequence_data = get_ig_aa_sequence_data(paths)
+    sequence_data = get_ig_aa_sequence_data(germline_sets)
     script_utility.save_as_json(sequence_data, "homosapiens_ig_aa_sequences_ogrdb.json")
 
     print("Compiling valid IG genes...")
@@ -53,16 +51,7 @@ def main() -> None:
     script_utility.save_as_json(valid_genes, "valid_homosapiens_ig_ogrdb.json")
 
 
-def get_germline_set_path(locus: str) -> Path:
-    path = PATH_TO_DATA_DIR / f"Homo_sapiens_{locus}.json"
-
-    if not path.exists():
-        download_germline_set(locus, path)
-
-    return path
-
-
-def download_germline_set(locus: str, path: Path) -> None:
+def download_germline_set(locus: str) -> dict:
     if shutil.which("download_germline_set") is None:
         raise RuntimeError("download_germline_set not found, install with 'pip install receptor-utils'")
 
@@ -71,18 +60,18 @@ def download_germline_set(locus: str, path: Path) -> None:
     if locus == "IGH":
         command += ["-n", "IGH_VDJ"]
 
-    PATH_TO_DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-    # the tool picks its own file name, so download into a temporary directory and rename
+    # the tool can only write to a file (with a name it picks), so read it back from a temporary directory
     with tempfile.TemporaryDirectory() as tmp_dir:
         subprocess.run(command, cwd=tmp_dir, check=True)
         downloaded = list(Path(tmp_dir).glob("*.json"))
         assert len(downloaded) == 1, f"Expected one downloaded file for {locus}, found {len(downloaded)}"
-        shutil.move(downloaded[0], path)
+
+        with open(downloaded[0], "r") as f:
+            return json.load(f)
 
 
-def get_ig_aa_sequence_data(paths: Tuple[Path]) -> dict:
-    alleles = get_alleles(paths)
+def get_ig_aa_sequence_data(germline_sets: Dict[str, dict]) -> dict:
+    alleles = get_alleles(germline_sets)
 
     v_gene_sequence_data = get_v_gene_sequence_data(alleles)
     d_gene_sequence_data = get_d_gene_sequence_data(alleles)
@@ -100,16 +89,14 @@ def get_valid_gene_data(sequence_data: dict) -> dict:
     return {gene: dict(sorted(alleles.items())) for gene, alleles in sorted(valid_genes.items())}
 
 
-def get_alleles(paths: Tuple[Path]) -> dict:
+def get_alleles(germline_sets: Dict[str, dict]) -> dict:
     alleles = dict()
 
-    for path in paths:
-        with open(path, "r") as f:
-            germline_sets = json.load(f)["GermlineSet"]
+    for locus, germline_set_file in germline_sets.items():
+        germline_set = germline_set_file["GermlineSet"]
+        assert len(germline_set) == 1, f"Found multiple germline sets for {locus}"
 
-        assert len(germline_sets) == 1, f"Found multiple germline sets in {path}"
-
-        for allele in germline_sets[0]["allele_descriptions"]:
+        for allele in germline_set[0]["allele_descriptions"]:
             alleles[allele["label"]] = allele
 
     return alleles
