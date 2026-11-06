@@ -234,7 +234,10 @@ def get_best_j_alignment_for_region(seq, j_region, j_conserved_idx, max_mismatch
     best_offset = None
     best_score = -1
 
-    for j_offset in range(len(seq) - len(j_region), len(seq)):
+    min_offset_j_region = len(seq) - len(j_region)
+    min_offset_anchor = -j_conserved_idx
+
+    for j_offset in range(max(min_offset_j_region, min_offset_anchor), len(seq)):
         if j_anchor_is_valid(seq, j_region, j_conserved_idx, j_offset):
             score = get_j_alignment_score(seq, j_region, j_offset, max_mismatches=max_mismatches, mismatch_penalty=mismatch_penalty)
 
