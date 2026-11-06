@@ -245,7 +245,7 @@ def standardize(
     )
 
     species = _utils.clean_and_lowercase(species)
-    mh_database = config.mh_database
+    mh_database = config.get_mh_database()
 
     if species == "any":
         tested_species = [species for species in SUPPORTED_MH_SPECIES_AND_THEIR_GENES.keys()
@@ -277,7 +277,7 @@ def standardize(
 
     if species not in SUPPORTED_MH_SPECIES_AND_THEIR_GENES:
         if log_failures:
-            _utils.warn_unsupported_species(species, "MH", SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.keys(), logger)
+            _utils.warn_unsupported_species(species, "MH", SUPPORTED_MH_SPECIES_AND_THEIR_GENES.keys(), logger)
         return MhGene(symbol, f'Unsupported species: {species}')
 
     if mh_database not in SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species]:

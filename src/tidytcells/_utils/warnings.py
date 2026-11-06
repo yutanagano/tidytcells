@@ -65,7 +65,7 @@ def warn_unsupported_mhc_database(species: str, options_dict: dict, logger: Logg
     options = "; ".join([f"{species} ({', '.join(options_dict[species].keys())})" for species in options_dict])
 
     logger.warning(
-        f'Unsupported mhc_database: "{config.mh_database}" for species "{species}". '
+        f'Unsupported mhc_database: "{config.get_mh_database()}" for species "{species}". '
         f'Valid options are: {options}). '
         f'Use tidytcells.set_mh_database() to switch. '
         f'Skipping MH standardization.'

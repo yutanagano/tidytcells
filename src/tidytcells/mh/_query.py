@@ -1,5 +1,5 @@
 import re
-from tidytcells._config import config
+from tidytcells import config
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 from tidytcells._query_engine import (
@@ -96,10 +96,11 @@ def query(
     if not species_is_supported:
         raise ValueError(f'Unsupported species: {species}. No data available.')
 
-    if config.mh_database not in QUERY_ENGINES[species]:
-        raise ValueError(f'Unsupported mhc_database: {config.mh_database}. No data available. Please use tidytcells.set_mh_database() to switch to: {", ".join(list(QUERY_ENGINES[species].keys()))}')
+    mh_database = config.get_mh_database()
+    if mh_database not in QUERY_ENGINES[species]:
+        raise ValueError(f'Unsupported mhc_database: {mh_database}. No data available. Please use tidytcells.set_mh_database() to switch to: {", ".join(list(QUERY_ENGINES[species].keys()))}')
 
-    query_engine = QUERY_ENGINES[species][config.mh_database]
+    query_engine = QUERY_ENGINES[species][mh_database]
     result = query_engine.query(precision, functionality=None)
 
     if contains_pattern is None:

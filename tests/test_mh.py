@@ -462,11 +462,11 @@ class TestStandardizeMusMusculusMro:
 class TestStandardizeAnySpeciesMro:
     @pytest.mark.parametrize(
         ("species", "symbol"),
-        (
+        [
             (species, symbol)
             for species, databases in SUPPORTED_MH_SPECIES_AND_THEIR_GENES.items()
             for symbol in databases["MRO"]["valid_symbols"]
-        ),
+        ],
     )
     def test_already_correctly_formatted(self, species, symbol):
         result = mh.standardize(symbol=symbol, species=species)
@@ -480,11 +480,11 @@ class TestStandardizeAnySpeciesMro:
 
     @pytest.mark.parametrize(
         ("species", "symbol"),
-        (
+        [
             (species, symbol)
             for species, databases in SUPPORTED_MH_SPECIES_AND_THEIR_GENES.items()
             for symbol in databases["MRO"]["valid_symbols"]
-        ),
+        ],
     )
     def test_case_insensitive(self, species, symbol):
         result = mh.standardize(symbol=symbol.lower(), species=species)
