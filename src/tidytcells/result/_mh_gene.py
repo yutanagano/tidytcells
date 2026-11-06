@@ -8,13 +8,14 @@ class MhGene:
     If standardization was successful, this object provides access to the standardized allele/gene and other properties.
     When failed, the error message(s) and attempted partially standardized gene symbol can be retrieved.
     '''
-    def __init__(self, original_input, error, gene_name=None, allele_designation=None, species=None, mutation=None):
+    def __init__(self, original_input, error, gene_name=None, allele_designation=None, species=None, mutation=None, mh_database=None):
         self._original_input = original_input
         self._error = error
         self._gene_name = gene_name
         self._allele_designation = allele_designation if allele_designation is not None and len(allele_designation) > 0 else None
         self._species = species
         self._mutation = mutation
+        self._mh_database = mh_database
 
         self._highest_precision_symbol = self._gene_name
 
@@ -90,4 +91,9 @@ class MhGene:
     def species(self) -> str:
         '''The species used to validate the gene name.'''
         return self._species
+
+    @property
+    def mh_database(self) -> str:
+        '''The species used to validate the gene name.'''
+        return self._mh_database
 

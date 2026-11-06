@@ -261,8 +261,8 @@ def standardize(
             gene_synonyms = SUPPORTED_MH_SPECIES_AND_THEIR_GENES["homosapiens"][mh_database]["hgnc_synonyms"] if species == "homosapiens" else None
 
 
-            result = SPECIES_TO_STANDARDIZER[species](symbol, species=species, valid_symbols=valid_symbols,
-                                                      allele_synonyms=allele_synonyms, gene_synonyms=gene_synonyms).result
+            result = SPECIES_TO_STANDARDIZER[species](symbol, species=species, valid_symbols=valid_symbols, allele_synonyms=allele_synonyms,
+                                                      gene_synonyms=gene_synonyms, mh_database=mh_database).result
 
             if result.is_standardized:
                 return result
@@ -289,8 +289,8 @@ def standardize(
     allele_synonyms = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database]["allele_synonyms"]
     gene_synonyms = SUPPORTED_MH_SPECIES_AND_THEIR_GENES["homosapiens"][mh_database]["hgnc_synonyms"] if species == "homosapiens" else None
 
-    result = SPECIES_TO_STANDARDIZER[species](symbol, species=species, valid_symbols=valid_symbols,
-                                              allele_synonyms=allele_synonyms, gene_synonyms=gene_synonyms).result
+    result = SPECIES_TO_STANDARDIZER[species](symbol, species=species, valid_symbols=valid_symbols, allele_synonyms=allele_synonyms,
+                                              gene_synonyms=gene_synonyms, mh_database=mh_database).result
 
     if (not result.is_standardized) and log_failures:
         _utils.warn_result_failure(

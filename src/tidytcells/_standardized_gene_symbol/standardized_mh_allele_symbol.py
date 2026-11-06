@@ -84,10 +84,11 @@ class MhAlleleSymbolStandardizer():
     Input is matched case-insensitively; results are returned in the case used by the database.
     """
 
-    def __init__(self, symbol: str, species: str, valid_symbols: Dict[str, Dict],
+    def __init__(self, symbol: str, species: str, mh_database: str, valid_symbols: Dict[str, Dict],
                  allele_synonyms: Dict[str, str], gene_synonyms: Optional[Dict[str, str]] = None):
         self.original_symbol = symbol
         self.species = species
+        self.mh_database = mh_database
         self._valid_symbols = valid_symbols
         self._allele_synonyms = allele_synonyms
         self._gene_synonyms = gene_synonyms if gene_synonyms is not None else {}
@@ -308,4 +309,5 @@ class MhAlleleSymbolStandardizer():
                              gene_name=self._canonical_gene_name(),
                              allele_designation=self._canonical_allele_designation(),
                              species=self.species,
-                             mutation=self._mutation)
+                             mutation=self._mutation,
+                             mh_database=self.mh_database)

@@ -52,10 +52,11 @@ class MhHaplotypeSymbolStandardizer:
     Standardizer for MH symbols named by locus and haplotype (e.g. H2-Kb, H2-IAb).
     """
 
-    def __init__(self, symbol: str, species: str, valid_symbols: Dict[str, Dict],
+    def __init__(self, symbol: str, species: str, mh_database: str, valid_symbols: Dict[str, Dict],
                  allele_synonyms: Dict[str, str], gene_synonyms = None):
         self.original_symbol = symbol
-        self._species = species
+        self.species = species
+        self.mh_database = mh_database
         self._valid_symbols = valid_symbols
         self._allele_synonyms = allele_synonyms
 
@@ -103,6 +104,7 @@ class MhHaplotypeSymbolStandardizer:
         self.result = MhGene(original_input=self.original_symbol,
                              error=self.get_reason_why_invalid(),
                              gene_name=self._gene_name,
-                             species=self._species,
-                             mutation=self._mutation)
+                             species=self.species,
+                             mutation=self._mutation,
+                             mh_database=self.mh_database)
 
