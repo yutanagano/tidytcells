@@ -1,10 +1,16 @@
-from typing import FrozenSet
+from abc import abstractmethod
+from typing import Dict, FrozenSet
 from tidytcells._query_engine import QueryEngine
-from tidytcells._resources import VALID_HOMOSAPIENS_MH
+from tidytcells._resources import HOMOSAPIENS_MH_VALID_IPD, HOMOSAPIENS_MH_VALID_PROTEIN_MRO
 import warnings
 
 
 class HlaQueryEngine(QueryEngine):
+    @property
+    @abstractmethod
+    def _valid_symbols(self) -> Dict[str, Dict]:
+        pass
+
     @classmethod
     def query(cls, precision: str, functionality: str) -> FrozenSet[str]:
         if precision == "allele":
@@ -16,7 +22,7 @@ class HlaQueryEngine(QueryEngine):
 
         query_results = []
 
-        for gene_symbol, allele_dictionary in VALID_HOMOSAPIENS_MH.items():
+        for gene_symbol, allele_dictionary in cls._valid_symbols.items():
             if precision == "gene":
                 query_results.append(gene_symbol)
                 continue
@@ -41,3 +47,11 @@ class HlaQueryEngine(QueryEngine):
     @classmethod
     def _is_g_or_p_group(cls, second_allele_designation: str) -> bool:
         return not second_allele_designation.isdigit()
+
+
+class ImgtHlaQueryEngine(HlaQueryEngine):
+    _valid_symbols = HOMOSAPIENS_MH_VALID_IPD
+
+
+class MroHlaQueryEngine(HlaQueryEngine):
+    _valid_symbols = HOMOSAPIENS_MH_VALID_PROTEIN_MRO

@@ -4,5 +4,6 @@ from .warnings import (
     warn_failure,
     warn_result_failure,
     warn_unsupported_species,
+    warn_unsupported_mhc_database,
     warn_unsupported_receptor_database,
 )
