@@ -179,7 +179,7 @@ def get_v_alignment_score(seq, v_region, v_offset, max_mismatches = 1, mismatch_
 
 
 
-def j_anchor_is_valid(seq, j_region, j_conserved_idx, j_offset):
+def j_anchor_is_valid(seq, j_region, j_conserved_idx, j_offset, allow_flank_mismatches = True):
     '''
     Given a J alignment offset, this function checks if the CDR3 sequence does not contradict the conserved anchor
     residues (anything after the conserved F/W).
@@ -191,17 +191,27 @@ def j_anchor_is_valid(seq, j_region, j_conserved_idx, j_offset):
 
     seq_anchor_start = j_offset + j_conserved_idx
 
-    # case 1: conserved anchor would be just after the last aa of sequence
-    if seq_anchor_start == len(seq):
+    # case 1: conserved anchor would be after the last aa of sequence
+    if seq_anchor_start >= len(seq):
         return True
 
-    # case 2: conserved anchor is within seq, check if tail matches J region
+    # case 2: conserved anchor is within seq, check if tail sufficiently matches J region
     seq_tail = seq[seq_anchor_start:]
     j_tail = j_region[j_conserved_idx:j_conserved_idx + len(seq_tail)]
-    return seq_tail == j_tail
+    matches_tail = [seq_aa == j_aa for seq_aa, j_aa in zip(seq_tail, j_tail)]
+
+    # conserved anchor *must* match
+    if not matches_tail[0]:
+        return False
+
+    if allow_flank_mismatches:
+        # at least 2/3 of amino acids must match (rest accounts for SHM/errors)
+        return 3 * sum(matches_tail) >= 2 * len(matches_tail)
+    else:
+        return all(matches_tail)
 
 
-def v_anchor_is_valid(seq, v_region, v_conserved_idx_neg, v_offset):
+def v_anchor_is_valid(seq, v_region, v_conserved_idx_neg, v_offset, allow_flank_mismatches = True):
     '''
     Given a V alignment offset, this function checks if the CDR3 sequence does not contradict the conserved anchor
     residues (anything before the conserved C).
@@ -214,10 +224,23 @@ def v_anchor_is_valid(seq, v_region, v_conserved_idx_neg, v_offset):
         return True
 
     # case 2: conserved C is somewhere in the seq, make sure seq head matches V
-    seq_conserved = seq[0:(v_conserved_idx_neg - v_offset) + 1]
-    v_conserved = v_region[v_conserved_idx_neg - len(seq_conserved) + 1:v_conserved_idx_neg + 1]
+    seq_frw = seq[0:(v_conserved_idx_neg - v_offset) + 1]
 
-    return seq_conserved == v_conserved
+    v_conserved_pos = len(v_region) + v_conserved_idx_neg
+    v_frw = v_region[v_conserved_pos - len(seq_frw) + 1:v_conserved_pos + 1]
+
+    matches_frw = [seq_aa == v_aa for seq_aa, v_aa in zip(seq_frw, v_frw)]
+
+    # conserved anchor *must* match
+    if not matches_frw[-1]:
+        return False
+
+    if allow_flank_mismatches:
+        # at least 2/3 of amino acids must match (rest accounts for SHM/errors)
+        return 3 * sum(matches_frw) >= 2 * len(matches_frw)
+    else:
+        return all(matches_frw)
+
 
 
 def get_best_j_alignment_for_region(seq, j_region, j_conserved_idx, max_mismatches = 1, mismatch_penalty = -1.5):
