@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tidytcells"
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 authors = [
     {name = "Yuta Nagano", email = "yutanagano51@proton.me"}
 ]
