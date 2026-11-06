@@ -284,18 +284,25 @@ class TestStandardizeHomoSapiensMro:
         assert not result.is_standardized
 
     @pytest.mark.parametrize(
-        ("symbol", "expected", "expected_mutation"),
+        ("symbol", "expected", "expected_mutation", "is_standardized", "error_mssg"),
         (
-            ("HLA-Cw*0301 W167A mutant", "HLA-C*03:04 W167A mutant", "W167A"),
-            ("HLA-A*02:01 K66A MUTANT", "HLA-A*02:01 K66A mutant", "K66A"),
+            ("HLA-A*02:01 K66A MUTANT", "HLA-A*02:01 K66A mutant", "K66A", True, None),
+            ("HLA-B*35:08 Q65A, T69A, Q155A mutant", "HLA-B*35:08 Q65A, T69A, Q155A mutant", "Q65A, T69A, Q155A", True, None),
+            ("HLA-B*08:01 B:I66A mutant", "HLA-B*08:01 B:I66A mutant", "B:I66A", True, None),
+            ("HLA-Cw*0301 W167A mutant", "HLA-C*03:04 W167A mutant", "W167A", True, None),
+            ("HLA-A*02:01 random MUTANT", None, None, False, "Invalid mutation"),
+            ("HLA-FOO*01:01 K66A mutant", None, None, False, "Unrecognized gene name"),
         ),
     )
-    def test_mutant_with_synonym(self, symbol, expected, expected_mutation):
+    def test_mutant_with_synonym(self, symbol, expected, expected_mutation, is_standardized, error_mssg):
         result = mh.standardize(symbol=symbol, species="homosapiens")
 
-        assert result.is_standardized
+        assert result.is_standardized == is_standardized
         assert result.symbol == expected
         assert result.mutation == expected_mutation
+
+        if error_mssg is not None:
+            assert error_mssg in result.error
 
     @pytest.mark.parametrize(
         ("symbol", "expected"),
@@ -424,6 +431,27 @@ class TestStandardizeMusMusculusMro:
         assert not result.is_standardized
 
         config.reset_mh_database()
+
+    @pytest.mark.parametrize(
+        ("symbol", "expected", "expected_mutation", "is_standardized", "error_mssg"),
+        (
+            ("H2-Kb Y84A mutant", "H2-Kb Y84A mutant", "Y84A", True, None),
+            ("H2-Kb Y22F, M23I, E24S, D30N mutant", "H2-Kb Y22F, M23I, E24S, D30N mutant", "Y22F, M23I, E24S, D30N", True, None),
+            ("H-2Db H155A MUTANT", "H2-Db H155A mutant", "H155A", True, None),
+            ("I-Ab I67F, R70Q, T71K mutant", "H2-IAb I67F, R70Q, T71K mutant", "I67F, R70Q, T71K", True, None),
+            ("H2-Kb random mutant", None, None, False, "Invalid mutation"),
+            ("H2-Kz Y84A mutant", None, None, False, "Unrecognized gene name"),
+        ),
+    )
+    def test_mutant(self, symbol, expected, expected_mutation, is_standardized, error_mssg):
+        result = mh.standardize(symbol=symbol, species="musmusculus")
+
+        assert result.is_standardized == is_standardized
+        assert result.symbol == expected
+        assert result.mutation == expected_mutation
+
+        if error_mssg is not None:
+            assert error_mssg in result.error
 
 
 

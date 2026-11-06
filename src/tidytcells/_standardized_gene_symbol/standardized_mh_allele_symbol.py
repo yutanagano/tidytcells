@@ -274,6 +274,12 @@ class MhAlleleSymbolStandardizer():
                 if len(field) < 2:
                     return "Non-2-digit allele designators"
 
+        # validate mutation formatting
+        if self._mutation is not None:
+            substitution = r"(?:[A-Z]:)?[ACDEFGHIKLMNPQRSTVWY]\d+[ACDEFGHIKLMNPQRSTVWY]"
+            if not re.fullmatch(rf"{substitution}(?:(?:\s*,\s*|\s+){substitution})*", self._mutation, re.IGNORECASE):
+                return f"Invalid mutation: {self._mutation}"
+
         return None
 
     def _is_group(self) -> bool:

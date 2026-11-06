@@ -1,9 +1,7 @@
 import re
-from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Dict, Optional
 
-from tidytcells._resources import *
 from tidytcells.result import MhGene
 
 
@@ -92,6 +90,12 @@ class MhHaplotypeSymbolStandardizer:
     def get_reason_why_invalid(self) -> Optional[str]:
         if self._gene_name not in self._valid_symbols:
             return "Unrecognized gene name"
+
+        # validate mutation formatting
+        if self._mutation is not None:
+            substitution = r"(?:[A-Z]:)?[ACDEFGHIKLMNPQRSTVWY]\d+[ACDEFGHIKLMNPQRSTVWY]"
+            if not re.fullmatch(rf"{substitution}(?:(?:\s*,\s*|\s+){substitution})*", self._mutation, re.IGNORECASE):
+                return f"Invalid mutation: {self._mutation}"
 
         return None
 
