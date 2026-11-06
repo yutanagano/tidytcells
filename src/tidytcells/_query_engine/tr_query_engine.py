@@ -50,6 +50,6 @@ class TrIgQueryEngine(QueryEngine):
             return True
         if functionality_setting == allele_functionality:
             return True
-        if functionality_setting == "NF" and allele_functionality in ("P", "ORF"):
+        if functionality_setting == "NF" and allele_functionality in ("P", "ORF", "NF"):
             return True
         return False

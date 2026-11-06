@@ -8,32 +8,24 @@ from tidytcells.result import ReceptorGene
 
 class ReceptorGeneSymbolStandardizer(ABC):
 
-    @property
-    @abstractmethod
-    def _synonym_dictionary(self) -> Dict[str, str]:
-        pass
-
     def _is_synonym(self) -> bool:
         return self._gene_name in self._synonym_dictionary
 
-    @property
-    @abstractmethod
-    def _valid_gene_dictionary(self) -> Dict[str, Dict[int, str]]:
-        pass
 
-    @property
-    @abstractmethod
-    def _valid_subgroups(self) -> Set[str]:
-        pass
-
-    @property
-    @abstractmethod
-    def _species(self) -> str:
-        pass
-
-    def __init__(self, symbol: str, enforce_functional: bool, allow_subgroup: bool) -> None:
+    def __init__(self, symbol: str, enforce_functional: bool, allow_subgroup: bool,
+                 species: str, germline_database: str,
+                 valid_gene_dictionary: dict, synonym_dictionary: dict) -> None:
         self.original_symbol = symbol
         self.enforce_functional = enforce_functional
+
+        self.species = species
+        self.germline_database = germline_database
+
+
+        self._valid_gene_dictionary = valid_gene_dictionary
+        self._synonym_dictionary = {key: value for key, value in synonym_dictionary.items() if value in valid_gene_dictionary}
+        self._valid_subgroups = {key.split("-")[0] for key in valid_gene_dictionary}
+
 
         self._gene_name, self._allele_designation = self._parse_symbol(symbol)
         self._allow_subgroup = self._allele_designation is None and allow_subgroup
@@ -102,4 +94,5 @@ class ReceptorGeneSymbolStandardizer(ABC):
                                     allele_designation=self._allele_designation,
                                     gene_name=gene_name,
                                     subgroup_name=subgroup_name,
-                                    species=self._species)
+                                    species=self.species,
+                                    germline_database=self.germline_database)

@@ -1,21 +1,14 @@
 import logging
+from tidytcells import config
 from tidytcells import _utils
 from tidytcells.result import ReceptorGene
 from tidytcells._utils import Parameter
-from tidytcells._standardized_gene_symbol import (
-    ReceptorGeneSymbolStandardizer,
-    HomoSapiensTrSymbolStandardizer,
-    MusMusculusTrSymbolStandardizer,
-)
+from tidytcells._standardized_gene_symbol import TrSymbolStandardizer
+from tidytcells._resources import SUPPORTED_TR_SPECIES_AND_THEIR_GENES
+
 from typing import Dict, Optional, Type
 
 logger = logging.getLogger(__name__)
-
-
-SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[ReceptorGeneSymbolStandardizer]] = {
-    "homosapiens": HomoSapiensTrSymbolStandardizer,
-    "musmusculus": MusMusculusTrSymbolStandardizer,
-}
 
 
 def standardize(
@@ -41,11 +34,7 @@ def standardize(
         str
     :param species:
         Can be specified to standardize to a TR symbol that is known to be valid for that species (see above for supported species).
-        If set to ``"any"``, then first attempts standardization for *Homo sapiens*, then *Mus musculus*.
         Defaults to ``"homosapiens"``.
-
-        .. note::
-            From version 3, the default behaviour will change to ``"any"``.
 
     :type species:
         str
@@ -268,40 +257,34 @@ def standardize(
 
     species = _utils.clean_and_lowercase(species)
 
-    if species == "any":
-        best_attempt_result = ReceptorGene(symbol, f'Failed with any species')
-
-        for (
-                species,
-                standardizer_cls,
-        ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
-            tr_standardizer = standardizer_cls(symbol,
-                                                        enforce_functional=enforce_functional,
-                                                        allow_subgroup=allow_subgroup)
-
-            if tr_standardizer.result.is_standardized:
-                return tr_standardizer.result
-
-            if species == "homosapiens":
-                best_attempt_result = tr_standardizer.result
-
+    if species not in SUPPORTED_TR_SPECIES_AND_THEIR_GENES:
         if log_failures:
-            _utils.warn_result_failure(
-                result=best_attempt_result,
-                logger=logger,
-            )
-
-        return best_attempt_result
-
-    if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
-        if log_failures:
-            _utils.warn_unsupported_species(species, "TR", logger)
+            _utils.warn_unsupported_species(species, "TR", SUPPORTED_TR_SPECIES_AND_THEIR_GENES.keys(), logger)
         return ReceptorGene(symbol, f'Unsupported species: {species}')
 
-    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]
-    tr_standardizer = standardizer_cls(symbol,
-                                                enforce_functional=enforce_functional,
-                                                allow_subgroup=allow_subgroup)
+    receptor_database = config.get_receptor_database()
+    if receptor_database not in SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species]:
+        error = _utils.warn_unsupported_receptor_database(
+            receptor_database,
+            species,
+            "TR",
+            SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species].keys(),
+            logger,
+            log_failures=log_failures,
+        )
+
+        return ReceptorGene(symbol, error)
+
+    valid_gene_dictionary = SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species][receptor_database]["genes"]
+    synonym_dictionary = SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species][receptor_database]["synonyms"]
+
+    tr_standardizer = TrSymbolStandardizer(symbol,
+                                           enforce_functional=enforce_functional,
+                                           allow_subgroup=allow_subgroup,
+                                           species=species,
+                                           germline_database=receptor_database,
+                                           valid_gene_dictionary=valid_gene_dictionary,
+                                           synonym_dictionary=synonym_dictionary)
 
     if (not tr_standardizer.result.is_standardized) and log_failures:
         _utils.warn_result_failure(

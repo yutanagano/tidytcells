@@ -64,7 +64,7 @@ class Parameter:
         if optional and self.value is None:
             return self
 
-        if not test(self.value) == True:
+        if not test(self.value):
             raise ValueError(
                 f'"{self.name}" {self.value} {mssg}'
             )

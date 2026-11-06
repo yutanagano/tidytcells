@@ -76,7 +76,7 @@ def standardize(
         bool
 
     :return:
-        A standardized MHC gene wrapped in a :py:class:`~tidytcells.result.MhGene` object.
+        A standardized MH gene wrapped in a :py:class:`~tidytcells.result.MhGene` object.
         For details on how to use this output, please refer to the class documentation.
     :rtype:
         :py:class:`~tidytcells.result.MhGene`
@@ -244,7 +244,7 @@ def standardize(
 
     if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
         if log_failures:
-            _utils.warn_unsupported_species(species, "MH", logger)
+            _utils.warn_unsupported_species(species, "MH", SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.keys(), logger)
         return MhGene(symbol, f'Unsupported species: {species}')
 
     standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]

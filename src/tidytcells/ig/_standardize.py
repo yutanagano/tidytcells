@@ -1,19 +1,16 @@
 import logging
+from tidytcells import config
 from tidytcells import _utils
+from tidytcells._standardized_gene_symbol import IgSymbolStandardizer
 from tidytcells.result._receptor_gene import ReceptorGene
 from tidytcells._utils import Parameter
-from tidytcells._standardized_gene_symbol import (
-    HomoSapiensIgSymbolStandardizer, MusMusculusIgSymbolStandardizer, ReceptorGeneSymbolStandardizer,
-)
+from tidytcells._resources import SUPPORTED_IG_SPECIES_AND_THEIR_GENES
+
+
 from typing import Dict, Optional, Type
 
 logger = logging.getLogger(__name__)
 
-
-SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS: Dict[str, Type[ReceptorGeneSymbolStandardizer]] = {
-    "homosapiens": HomoSapiensIgSymbolStandardizer,
-    "musmusculus": MusMusculusIgSymbolStandardizer,
-}
 
 
 def standardize(
@@ -39,11 +36,7 @@ def standardize(
         str
     :param species:
         Can be specified to standardize to an IG symbol that is known to be valid for that species (see above for supported species).
-        If set to ``"any"``, then first attempts standardization for *Homo sapiens*, then *Mus musculus*.
         Defaults to ``"homosapiens"``.
-
-        .. note::
-            From version 3, the default behaviour will change to ``"any"``.
     :type species:
         str
     :param enforce_functional:
@@ -158,7 +151,7 @@ def standardize(
         >>> result = tt.ig.standardize("IGHV1-67")
         >>> result.get_all_alleles(enforce_functional=True)
         []
-        >>> result.get_all_alleles(enforce_functional=True)
+        >>> result.get_all_alleles(enforce_functional=False)
         ['IGHV1-67*02', 'IGHV1-67*03', 'IGHV1-67*01']
 
         Utility method 'get_aa_sequences' can be used to retrieve known amino acid sequences per allele.
@@ -258,40 +251,34 @@ def standardize(
 
     species = _utils.clean_and_lowercase(species)
 
-    if species == "any":
-        best_attempt_result = ReceptorGene(symbol, f'Failed with any species')
-
-        for (
-            species,
-            standardizer_cls,
-        ) in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS.items():
-            ig_standardizer = standardizer_cls(symbol,
-                                                        enforce_functional=enforce_functional,
-                                                        allow_subgroup=allow_subgroup)
-
-            if ig_standardizer.result.is_standardized:
-                return ig_standardizer.result
-
-            if species == "homosapiens":
-                best_attempt_result = ig_standardizer.result
-
+    if species not in SUPPORTED_IG_SPECIES_AND_THEIR_GENES:
         if log_failures:
-            _utils.warn_result_failure(
-                result=best_attempt_result,
-                logger=logger,
-            )
-
-        return best_attempt_result
-
-    if species not in SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS:
-        if log_failures:
-            _utils.warn_unsupported_species(species, "IG", logger)
+            _utils.warn_unsupported_species(species, "IG", SUPPORTED_IG_SPECIES_AND_THEIR_GENES.keys(), logger)
         return ReceptorGene(symbol, f'Unsupported species: {species}')
 
-    standardizer_cls = SUPPORTED_SPECIES_AND_THEIR_STANDARDIZERS[species]
-    ig_standardizer = standardizer_cls(symbol,
-                                                enforce_functional=enforce_functional,
-                                                allow_subgroup=allow_subgroup)
+    receptor_database = config.get_receptor_database()
+    if receptor_database not in SUPPORTED_IG_SPECIES_AND_THEIR_GENES[species]:
+        error = _utils.warn_unsupported_receptor_database(
+            receptor_database,
+            species,
+            "IG",
+            SUPPORTED_IG_SPECIES_AND_THEIR_GENES[species].keys(),
+            logger,
+            log_failures=log_failures,
+        )
+
+        return ReceptorGene(symbol, error)
+
+    valid_gene_dictionary = SUPPORTED_IG_SPECIES_AND_THEIR_GENES[species][receptor_database]["genes"]
+    synonym_dictionary = SUPPORTED_IG_SPECIES_AND_THEIR_GENES[species][receptor_database]["synonyms"]
+
+    ig_standardizer = IgSymbolStandardizer(symbol,
+                                           enforce_functional=enforce_functional,
+                                           allow_subgroup=allow_subgroup,
+                                           species=species,
+                                           germline_database=receptor_database,
+                                           valid_gene_dictionary=valid_gene_dictionary,
+                                           synonym_dictionary=synonym_dictionary)
 
     if (not ig_standardizer.result.is_standardized) and log_failures:
         _utils.warn_result_failure(

@@ -3,7 +3,7 @@ from typing import Optional
 
 class MhGene:
     '''
-    A wrapper object for the MHC gene.
+    A wrapper object for the MH gene.
 
     If standardization was successful, this object provides access to the standardized allele/gene and other properties.
     When failed, the error message(s) and attempted partially standardized gene symbol can be retrieved.
