@@ -10,12 +10,12 @@ F_MISMATCH_AAS = {"I", "L", "V", "Y", "S", "C"}
 W_MISMATCH_AAS = {"C", "G", "L", "R", "S"}
 FW_MISMATCH_AAS = F_MISMATCH_AAS.union(W_MISMATCH_AAS)
 
-MIN_J_SCORE = 1
-MIN_V_SCORE = 1
-MAX_J_MISMATCHES = 1
-MAX_V_MISMATCHES = 0
-TCR_MISMATCH_PENALTY = -1.5
-BCR_MISMATCH_PENALTY = -0.5
+MIN_ALIGNMENT_SCORES = {"TR": {"V": 2, "J": 2},
+                        "IG": {"V": 1, "J": 1}}
+
+
+MISMATCH_PENALTY = {"TR": -1.5,
+                    "IG": -0.75}
 
 
 class JunctionStandardizer():
@@ -40,7 +40,6 @@ class JunctionStandardizer():
         self.germline_database = germline_database
         self.sequence_dictionary = sequence_dictionary
 
-        self.mismatch_penalty = TCR_MISMATCH_PENALTY if self.locus.startswith("T") else BCR_MISMATCH_PENALTY
         self.corrected_first_aa = False
         self.corrected_last_aa = False
         self.correction_j_genes = None
@@ -115,8 +114,10 @@ class JunctionStandardizer():
         best_score = -1 if len(best_alignments_orig) == 0 else best_alignments_orig[0]["score"]
         corrected_seq = self.orig_seq[:-1] + conserved_aa
 
-        corr_best_alignments = align_j_regions(corrected_seq, self.j_aa_dict, MIN_J_SCORE + 1,
-                                               self.mismatch_penalty, max_mismatches=0)
+        min_j_score = MIN_ALIGNMENT_SCORES[self.locus[0:2]]["J"]
+        mismatch_penalty = MISMATCH_PENALTY[self.locus[0:2]]
+        corr_best_alignments = align_j_regions(corrected_seq, self.j_aa_dict, min_j_score + 1,
+                                               mismatch_penalty, allow_mismatches=False)
         keep_alignments = []
 
         for alignment in corr_best_alignments:
@@ -143,8 +144,10 @@ class JunctionStandardizer():
         best_score = -1 if len(best_alignments_orig) == 0 else best_alignments_orig[0]["score"]
         corrected_seq = "C" + self.orig_seq[1:]
 
-        corr_best_alignments = align_v_regions(corrected_seq, self.v_aa_dict, MIN_V_SCORE + 1,
-                                               self.mismatch_penalty, 0)
+        min_v_score = MIN_ALIGNMENT_SCORES[self.locus[0:2]]["V"]
+        mismatch_penalty = MISMATCH_PENALTY[self.locus[0:2]]
+        corr_best_alignments = align_v_regions(corrected_seq, self.v_aa_dict, min_v_score + 1,
+                                               mismatch_penalty, allow_mismatches=False)
         keep_alignments = []
 
         for alignment in corr_best_alignments:
@@ -165,8 +168,10 @@ class JunctionStandardizer():
         '''
         Compute alignments for each sequence in self.j_aa_dict, keep only the best alignments
         '''
-
-        best_alignments = align_j_regions(self.orig_seq, self.j_aa_dict, MIN_J_SCORE, self.mismatch_penalty, MAX_J_MISMATCHES)
+        min_j_score = MIN_ALIGNMENT_SCORES[self.locus[0:2]]["J"]
+        mismatch_penalty = MISMATCH_PENALTY[self.locus[0:2]]
+        best_alignments = align_j_regions(self.orig_seq, self.j_aa_dict, min_j_score,
+                                          mismatch_penalty=mismatch_penalty, allow_mismatches=True)
 
         if self.allow_fw_correction and self.orig_seq[-1] in F_MISMATCH_AAS:
             best_alignments = self.correct_sequencing_err_j_side(best_alignments, conserved_aa="F")
@@ -193,8 +198,10 @@ class JunctionStandardizer():
         '''
         Compute alignments for each sequence in self.v_aa_dict, keep only the best alignments
         '''
-
-        best_alignments = align_v_regions(self.orig_seq, self.v_aa_dict, MIN_V_SCORE, self.mismatch_penalty, MAX_V_MISMATCHES)
+        min_v_score = MIN_ALIGNMENT_SCORES[self.locus[0:2]]["V"]
+        mismatch_penalty = MISMATCH_PENALTY[self.locus[0:2]]
+        best_alignments = align_v_regions(self.orig_seq, self.v_aa_dict, min_v_score,
+                                          mismatch_penalty, allow_mismatches=True)
 
         if self.allow_c_correction and self.orig_seq[0] in C_MISMATCH_AAS:
             best_alignments = self.correct_sequencing_err_v_side(best_alignments)
