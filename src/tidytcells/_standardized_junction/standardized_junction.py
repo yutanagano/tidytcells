@@ -290,11 +290,6 @@ class JunctionStandardizer():
                 if len(corrected_seqs) > 1:
                     corrected_seqs = {s for s in corrected_seqs if s[-1] in ("F", "W")}
 
-            #todo test corrected version
-            # species
-            # if len(corrected_seqs) > 1 and self.species =="homosapiens":
-            #     corrected_seqs = {s for s in corrected_seqs if s[-1] in ("F", "W", "C")}
-
             if len(corrected_seqs) > 1:
                 self.reasons_invalid.append(f"J side reconstruction ambiguous: {corrected_seqs}")
                 return seq, None
