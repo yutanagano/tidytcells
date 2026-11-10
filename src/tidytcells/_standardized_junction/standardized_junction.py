@@ -281,22 +281,24 @@ class JunctionStandardizer():
         if len(corrected_seqs) > 1:
             # When Junction-reconstruction results are ambiguous (different J's)
             # - prefer the junctions which add 1 aa (conserved anchor), if there are any
-            # - without J symbol, prefer to keep only canonical F/W anchors
+            # - if the only difference is the last aa, prefer to keep only canonical F/W anchors
 
             if len(seq) + 1 in {len(s) for s in corrected_seqs}:
                 corrected_seqs = {s for s in corrected_seqs if len(s) == len(seq) + 1}
 
-            if self.j_symbol is None:
-                if len(corrected_seqs) > 1:
-                    corrected_seqs = {s for s in corrected_seqs if s[-1] in ("F", "W")}
+            if len({s[:-1] for s in corrected_seqs}) == 1:
+                canonical_seqs = {s for s in corrected_seqs if s[-1] in ("F", "W")}
 
-            if len(corrected_seqs) > 1:
-                self.reasons_invalid.append(f"J side reconstruction ambiguous: {corrected_seqs}")
-                return seq, None
+                if len(canonical_seqs) > 0:
+                    corrected_seqs = canonical_seqs
 
         if len(corrected_seqs) == 0:
             self.reasons_invalid.append(f"J side reconstruction unsuccessful")
             self.reasons_invalid.extend(alignment_too_long)
+            return seq, None
+
+        if len(corrected_seqs) > 1:
+            self.reasons_invalid.append(f"J side reconstruction ambiguous: {corrected_seqs}")
             return seq, None
 
         corrected_seq = corrected_seqs.pop()
