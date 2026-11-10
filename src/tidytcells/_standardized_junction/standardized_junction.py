@@ -13,7 +13,6 @@ FW_MISMATCH_AAS = F_MISMATCH_AAS.union(W_MISMATCH_AAS)
 MIN_ALIGNMENT_SCORES = {"TR": 2,
                         "IG": 1}
 
-
 MISMATCH_PENALTY = {"TR": -1.5,
                     "IG": -0.75}
 
@@ -121,6 +120,9 @@ class JunctionStandardizer():
         keep_alignments = []
 
         for alignment in corr_best_alignments:
+            # Correct for the "+1" that was added by correcting the anchor residue
+            alignment["score"] -= 1
+
             if alignment["score"] > best_score:
                 new_seq_len = alignment["j_offset"] + alignment["j_conserved_idx"] + 1
                 if len(corrected_seq) == new_seq_len:
@@ -151,6 +153,9 @@ class JunctionStandardizer():
         keep_alignments = []
 
         for alignment in corr_best_alignments:
+            # Correct for the "+1" that was added by correcting the anchor residue
+            alignment["score"] -= 1
+
             if alignment["score"] > best_score:
                 # only allow alignments that keep the same length
                 if alignment["v_conserved_idx"] == alignment["v_offset"]:
