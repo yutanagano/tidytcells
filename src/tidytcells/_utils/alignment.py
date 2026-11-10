@@ -180,11 +180,11 @@ def get_v_alignment_score(seq, v_region, v_offset, allow_mismatches = True, mism
     return _get_max_score_from_matches(matching_aas, allow_mismatches, mismatch_penalty, gene="V")
 
 
-
 def j_anchor_is_valid(seq, j_region, j_conserved_idx, j_offset, allow_flank_mismatches = True):
     '''
-    Given a J alignment offset, this function checks if the CDR3 sequence does not contradict the conserved anchor
-    residues (anything after the conserved F/W).
+    Given a J alignment offset, this function checks if the CDR3 sequence
+    - Matches at the conserved anchor position (if this falls inside the alignment)
+    - Sufficiently matches the J end region (match at least 2/3 of amino acids for long alignments)
     '''
 
     # safety check: index exists in J region
@@ -207,7 +207,8 @@ def j_anchor_is_valid(seq, j_region, j_conserved_idx, j_offset, allow_flank_mism
         return False
 
     if allow_flank_mismatches:
-        # at least 2/3 of amino acids must match (rest accounts for SHM/errors)
+        # permit some amount of mismatches in J end to account for SHM/errors
+        # at least 2/3 of amino acids must match
         return 3 * sum(matches_tail) >= 2 * len(matches_tail)
     else:
         return all(matches_tail)
@@ -215,8 +216,10 @@ def j_anchor_is_valid(seq, j_region, j_conserved_idx, j_offset, allow_flank_mism
 
 def v_anchor_is_valid(seq, v_region, v_conserved_idx_neg, v_offset, allow_flank_mismatches = True):
     '''
-    Given a V alignment offset, this function checks if the CDR3 sequence does not contradict the conserved anchor
-    residues (anything before the conserved C).
+    Given a V alignment offset, this function checks if the CDR3 sequence
+    - Matches at the conserved anchor position (if this falls inside the alignment)
+    - Sufficiently matches the V frw region (1 mismatch for short alignments, or
+      at least 2/3 of amino acids for long alignments)
     '''
     assert v_conserved_idx_neg < 0
     assert v_offset < 0
@@ -225,7 +228,7 @@ def v_anchor_is_valid(seq, v_region, v_conserved_idx_neg, v_offset, allow_flank_
     if v_offset - 1 >= v_conserved_idx_neg:
         return True
 
-    # case 2: conserved C is somewhere in the seq, make sure seq head matches V
+    # case 2: conserved C is somewhere in the seq, make sure seq head (sufficiently) matches V
     seq_frw = seq[0:(v_conserved_idx_neg - v_offset) + 1]
 
     v_conserved_pos = len(v_region) + v_conserved_idx_neg
@@ -237,8 +240,15 @@ def v_anchor_is_valid(seq, v_region, v_conserved_idx_neg, v_offset, allow_flank_
     if not matches_frw[-1]:
         return False
 
+    # permit some amount of mismatches in frw to account for SHM/errors
     if allow_flank_mismatches:
-        # at least 2/3 of amino acids must match (rest accounts for SHM/errors)
+        # if conserved anchor matches, and frw contains at most 1 additional aa (len 2),
+        # then we say 'anchor is valid' regardless of if that second aa mismatches
+        # note that this only applies to the V side: the J FGxG motif is far more conserved
+        if len(matches_frw) <= 2:
+            return True
+
+        # for longer flanks at least 2/3 of amino acids must match
         return 3 * sum(matches_frw) >= 2 * len(matches_frw)
     else:
         return all(matches_frw)

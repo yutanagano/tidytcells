@@ -287,7 +287,6 @@ class JunctionStandardizer():
             # When Junction-reconstruction results are ambiguous (different J's)
             # - prefer the junctions which add 1 aa (conserved anchor), if there are any
             # - if the only difference is the last aa, prefer to keep only canonical F/W anchors
-
             if len(seq) + 1 in {len(s) for s in corrected_seqs}:
                 corrected_seqs = {s for s in corrected_seqs if len(s) == len(seq) + 1}
 
