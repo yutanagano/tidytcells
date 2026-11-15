@@ -1,12 +1,10 @@
 import itertools
 import re
-from abc import ABC, abstractmethod
 from typing import Dict, List, Optional
 
 from tidytcells import _utils
 from tidytcells.result import MhGene
 
-from tidytcells._resources import *
 
 def uppercase_tree(tree: Dict[str, Dict]) -> Dict[str, Dict]:
     return {key.upper(): uppercase_tree(subtree) for key, subtree in tree.items()}
@@ -25,7 +23,9 @@ class MhAlleleSymbolParser:
         self.species = species
         symbol = self._parse_mutation(symbol)
         self.cleaned_symbol = _utils.clean_and_uppercase(symbol)
-        self._parse_gene_and_allele(self._replace_periods_between_digits_with_colon(self.cleaned_symbol))
+        self._parse_gene_and_allele(
+            self._replace_periods_between_digits_with_colon(self.cleaned_symbol)
+        )
 
     def _parse_mutation(self, symbol: str) -> str:
         self.mutation = None
@@ -41,7 +41,9 @@ class MhAlleleSymbolParser:
 
         if parse_attempt:
             self.gene_name = parse_attempt.group(1)
-            self.allele_designation = self._listify_allele_designation(parse_attempt.group(3))
+            self.allele_designation = self._listify_allele_designation(
+                parse_attempt.group(3)
+            )
             return
 
         self.gene_name = symbol
@@ -50,7 +52,9 @@ class MhAlleleSymbolParser:
     def _replace_periods_between_digits_with_colon(self, string: str) -> str:
         return re.sub(r"(?<=\d)\.(?=\d)", ":", string)
 
-    def _listify_allele_designation(self, allele_designation: Optional[str]) -> List[str]:
+    def _listify_allele_designation(
+        self, allele_designation: Optional[str]
+    ) -> List[str]:
         if allele_designation is None:
             return []
 
@@ -61,7 +65,9 @@ class MhAlleleSymbolParser:
 
 class HlaSymbolParser(MhAlleleSymbolParser):
     SYMBOL_REGEX = re.compile(r"^([A-Z0-9\-\.\:\/]+)(\*([\d:]+G?P?)[LSCAQN]?)?")
-    HLA_CLASS_II_REGEX = re.compile(r"^((HLA-)?(D[PQ][AB]|DRB|TAP)\d)(\*?([\d:]+G?P?)[LSCAQN]?)?")
+    HLA_CLASS_II_REGEX = re.compile(
+        r"^((HLA-)?(D[PQ][AB]|DRB|TAP)\d)(\*?([\d:]+G?P?)[LSCAQN]?)?"
+    )
 
     def _parse_gene_and_allele(self, symbol: str) -> None:
         if symbol == "B2M":
@@ -72,20 +78,29 @@ class HlaSymbolParser(MhAlleleSymbolParser):
         parse_attempt = self.HLA_CLASS_II_REGEX.match(symbol)
         if parse_attempt:
             self.gene_name = parse_attempt.group(1)
-            self.allele_designation = self._listify_allele_designation(parse_attempt.group(5))
+            self.allele_designation = self._listify_allele_designation(
+                parse_attempt.group(5)
+            )
             return
 
         super()._parse_gene_and_allele(symbol)
 
 
-class MhAlleleSymbolStandardizer():
+class MhAlleleSymbolStandardizer:
     """
     Standardizer class for MH symbols with numbered alleles (e.g. HLA-A*02:01, Mamu-A1*001:01).
     Input is matched case-insensitively; results are returned in the case used by the database.
     """
 
-    def __init__(self, symbol: str, species: str, mh_database: str, valid_symbols: Dict[str, Dict],
-                 allele_synonyms: Dict[str, str], gene_synonyms: Optional[Dict[str, str]] = None):
+    def __init__(
+        self,
+        symbol: str,
+        species: str,
+        mh_database: str,
+        valid_symbols: Dict[str, Dict],
+        allele_synonyms: Dict[str, str],
+        gene_synonyms: Optional[Dict[str, str]] = None,
+    ):
         self.original_symbol = symbol
         self.species = species
         self.mh_database = mh_database
@@ -98,13 +113,19 @@ class MhAlleleSymbolStandardizer():
         elif species in ("homosapiens", "susscrofa", "pantroglodytes"):
             self._allow_zero_padded_three_digit_fields = False
         else:
-            raise NotImplementedError(f"Missing parameter allow_zero_padded_three_digit_fields for species: {species}")
+            raise NotImplementedError(
+                f"Missing parameter allow_zero_padded_three_digit_fields for species: {species}"
+            )
 
-        self._parser_cls = HlaSymbolParser if self.species == "homosapiens" else MhAlleleSymbolParser
+        self._parser_cls = (
+            HlaSymbolParser if self.species == "homosapiens" else MhAlleleSymbolParser
+        )
 
         self._valid_symbols_upper = uppercase_tree(valid_symbols)
         self._canonical_gene_names = {gene.upper(): gene for gene in valid_symbols}
-        self._prefixes = sorted({gene.split("-")[0].upper() for gene in valid_symbols if "-" in gene})
+        self._prefixes = sorted(
+            {gene.split("-")[0].upper() for gene in valid_symbols if "-" in gene}
+        )
 
         self._parse_symbol(symbol)
         self._resolve_errors()
@@ -122,7 +143,9 @@ class MhAlleleSymbolStandardizer():
             return
 
         if self._cleaned_symbol in self._allele_synonyms:
-            parsed_synonym = self._parser_cls(self._allele_synonyms[self._cleaned_symbol], self.species)
+            parsed_synonym = self._parser_cls(
+                self._allele_synonyms[self._cleaned_symbol], self.species
+            )
             self._gene_name = parsed_synonym.gene_name
             self._allele_designation = parsed_synonym.allele_designation
             if self.get_reason_why_invalid() is None:
@@ -168,7 +191,9 @@ class MhAlleleSymbolStandardizer():
             if self._gene_name in self._valid_symbols_upper:
                 return
 
-        self._gene_name = f"{self._prefixes[0]}-{original}" if len(self._prefixes) == 1 else original
+        self._gene_name = (
+            f"{self._prefixes[0]}-{original}" if len(self._prefixes) == 1 else original
+        )
 
     def _handle_forgotten_asterisk(self) -> None:
         if self._allele_designation:
@@ -177,12 +202,16 @@ class MhAlleleSymbolStandardizer():
         for split_idx in range(len(self._gene_name) - 1, 0, -1):
             gene, designation = self._gene_name[:split_idx], self._gene_name[split_idx:]
 
-            if gene in self._valid_symbols_upper and re.fullmatch(r"[\d:]+", designation):
+            if gene in self._valid_symbols_upper and re.fullmatch(
+                r"[\d:]+", designation
+            ):
                 self._gene_name = gene
                 self._allele_designation = designation.split(":")
                 return
 
-    def _handle_forgotten_colon_between_first_and_second_allele_designator(self) -> None:
+    def _handle_forgotten_colon_between_first_and_second_allele_designator(
+        self,
+    ) -> None:
         if not self._allele_designation or not self._allele_designation[0].isdigit():
             return
 
@@ -195,11 +224,15 @@ class MhAlleleSymbolStandardizer():
 
         self._allele_designation = original
 
-
-    def _split_into_designator_fields(self, digits: str, max_fields: int = 4) -> List[List[str]]:
-        candidates = [f for f in self._all_designator_field_splits(digits) if 2 <= len(f) <= max_fields]
+    def _split_into_designator_fields(
+        self, digits: str, max_fields: int = 4
+    ) -> List[List[str]]:
+        candidates = [
+            f
+            for f in self._all_designator_field_splits(digits)
+            if 2 <= len(f) <= max_fields
+        ]
         return sorted(candidates, key=self._field_lengths)
-
 
     def _all_designator_field_splits(self, digits: str) -> List[List[str]]:
         if not digits:
@@ -210,7 +243,9 @@ class MhAlleleSymbolStandardizer():
             field = digits[:n]
             zero_padded = n == 3 and field.startswith("0")
 
-            if len(field) == n and (self._allow_zero_padded_three_digit_fields or not zero_padded):
+            if len(field) == n and (
+                self._allow_zero_padded_three_digit_fields or not zero_padded
+            ):
                 for tail in self._all_designator_field_splits(digits[n:]):
                     splits.append([field] + tail)
 
@@ -220,10 +255,13 @@ class MhAlleleSymbolStandardizer():
     def _field_lengths(fields: List[str]) -> List[int]:
         return [len(field) for field in fields]
 
-    def _try_different_amounts_of_leading_zeros_in_first_2_allele_designators(self) -> None:
+    def _try_different_amounts_of_leading_zeros_in_first_2_allele_designators(
+        self,
+    ) -> None:
         original = self._allele_designation
         reformatted_allele_designators = [
-            [f"{int(ad):02}", f"{int(ad):03}"] if ad.isdigit() else [ad] for ad in original[:2]
+            [f"{int(ad):02}", f"{int(ad):03}"] if ad.isdigit() else [ad]
+            for ad in original[:2]
         ]
 
         for new_designators in itertools.product(*reformatted_allele_designators):
@@ -278,7 +316,11 @@ class MhAlleleSymbolStandardizer():
         # validate mutation formatting
         if self._mutation is not None:
             substitution = r"(?:[A-Z]:)?[ACDEFGHIKLMNPQRSTVWY]\d+[ACDEFGHIKLMNPQRSTVWY]"
-            if not re.fullmatch(rf"{substitution}(?:(?:\s*,\s*|\s+){substitution})*", self._mutation, re.IGNORECASE):
+            if not re.fullmatch(
+                rf"{substitution}(?:(?:\s*,\s*|\s+){substitution})*",
+                self._mutation,
+                re.IGNORECASE,
+            ):
                 return f"Invalid mutation: {self._mutation}"
 
         return None
@@ -304,10 +346,12 @@ class MhAlleleSymbolStandardizer():
         return canonical
 
     def _compile_result(self) -> None:
-        self.result = MhGene(original_input=self.original_symbol,
-                             error=self.get_reason_why_invalid(),
-                             gene_name=self._canonical_gene_name(),
-                             allele_designation=self._canonical_allele_designation(),
-                             species=self.species,
-                             mutation=self._mutation,
-                             mh_database=self.mh_database)
+        self.result = MhGene(
+            original_input=self.original_symbol,
+            error=self.get_reason_why_invalid(),
+            gene_name=self._canonical_gene_name(),
+            allele_designation=self._canonical_allele_designation(),
+            species=self.species,
+            mutation=self._mutation,
+            mh_database=self.mh_database,
+        )
