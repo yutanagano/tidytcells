@@ -6,10 +6,6 @@ from tidytcells import _utils
 from tidytcells.result import MhGene
 
 
-def uppercase_tree(tree: Dict[str, Dict]) -> Dict[str, Dict]:
-    return {key.upper(): uppercase_tree(subtree) for key, subtree in tree.items()}
-
-
 class MhAlleleSymbolParser:
     MUTANT_REGEX = re.compile(r"^\s*(\S+)\s+(.+?)\s+mutant\s*$", re.IGNORECASE)
     SYMBOL_REGEX = re.compile(r"^([A-Z0-9\-\.\:\/]+)(\*([A-Z\d:]+))?")
@@ -121,7 +117,6 @@ class MhAlleleSymbolStandardizer:
             HlaSymbolParser if self.species == "homosapiens" else MhAlleleSymbolParser
         )
 
-        self._valid_symbols_upper = uppercase_tree(valid_symbols)
         self._canonical_gene_names = {gene.upper(): gene for gene in valid_symbols}
         self._prefixes = sorted(
             {gene.split("-")[0].upper() for gene in valid_symbols if "-" in gene}
@@ -188,7 +183,7 @@ class MhAlleleSymbolStandardizer:
 
         for prefix in self._prefixes:
             self._gene_name = f"{prefix}-{original}"
-            if self._gene_name in self._valid_symbols_upper:
+            if self._gene_name in self._canonical_gene_names:
                 return
 
         self._gene_name = (
@@ -202,7 +197,7 @@ class MhAlleleSymbolStandardizer:
         for split_idx in range(len(self._gene_name) - 1, 0, -1):
             gene, designation = self._gene_name[:split_idx], self._gene_name[split_idx:]
 
-            if gene in self._valid_symbols_upper and re.fullmatch(
+            if gene in self._canonical_gene_names and re.fullmatch(
                 r"[\d:]+", designation
             ):
                 self._gene_name = gene
@@ -283,19 +278,25 @@ class MhAlleleSymbolStandardizer:
             if self._gene_name == "B2M" and not self._allele_designation:
                 return None
 
-        if self._gene_name not in self._valid_symbols_upper:
+        canonical_gene_name = self._canonical_gene_names.get(self._gene_name)
+        if canonical_gene_name is None:
             return "Unrecognized gene name"
 
         # Verify allele designators up to the level of the protein (or G/P)
         allele_designation = self._allele_designation.copy()
         if not self._is_group():
             allele_designation = allele_designation[:2]
-        current_root = self._valid_symbols_upper[self._gene_name]
+        current_root = self._valid_symbols[canonical_gene_name]
 
         while len(allele_designation) > 0:
-            try:
-                current_root = current_root[allele_designation.pop(0)]
-            except KeyError:
+            # case-insensitive: a few designator keys in the data are not
+            # uppercase (e.g. "Mamu-B*074:03Sp")
+            field = allele_designation.pop(0).upper()
+            current_root = next(
+                (value for key, value in current_root.items() if key.upper() == field),
+                None,
+            )
+            if current_root is None:
                 return "Nonexistent allele for recognized gene"
 
         # If there are designator fields past the protein level, just make sure
