@@ -2,6 +2,7 @@ import re
 from collections import defaultdict
 from typing import Dict, Optional
 
+from tidytcells._resources import SUPPORTED_MH_SPECIES_AND_THEIR_GENES
 from tidytcells._standardized_gene_symbol.mutation import interpret_remainder
 from tidytcells.result import MhGene
 
@@ -11,19 +12,15 @@ def standardize_haplotype(
     *,
     species: str,
     mh_database: str,
-    valid_symbols: Dict[str, Dict],
-    allele_synonyms: Dict[str, str],
-    prefix_regex: str,
+    prefix_regex: re.Pattern,
 ) -> MhGene:
     """
     Standardize an MH symbol named by locus and haplotype (e.g. H2-Kb, H2-IAb).
     """
-    prefix_regex = re.compile(prefix_regex, re.IGNORECASE)
+    valid_symbols, allele_synonyms = _mh_data(species, mh_database)
     exact_index = {**allele_synonyms, **{s.upper(): s for s in valid_symbols}}
     prefixed_index = build_prefixed_index(valid_symbols, allele_synonyms, prefix_regex)
-    bare_index = {
-        strip_prefix_and_hyphens(s, prefix_regex): s for s in valid_symbols
-    }
+    bare_index = {strip_prefix_and_hyphens(s, prefix_regex): s for s in valid_symbols}
 
     stripped_symbol = symbol.strip()
     parts = stripped_symbol.split(None, 1)
@@ -68,6 +65,14 @@ def standardize_haplotype(
         mutation=mutation,
         mh_database=mh_database,
     )
+
+
+def _mh_data(species: str, mh_database: str):
+    """
+    The valid-symbol and synonym data for a species and MH database.
+    """
+    data = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database]
+    return data["valid_symbols"], data["allele_synonyms"]
 
 
 def _resolve(

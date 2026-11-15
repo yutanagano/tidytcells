@@ -1,4 +1,6 @@
 import logging
+import re
+from functools import partial
 from typing import Callable, Dict, Optional
 
 from tidytcells import config
@@ -13,69 +15,41 @@ from tidytcells.result._mh_gene import MhGene
 logger = logging.getLogger(__name__)
 
 
-def _mh_data(species: str, mh_database: str) -> Dict[str, Dict]:
-    """
-    The valid-symbol and synonym data for a species and MH database.
-    """
-    data = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database]
-    return {
-        "valid_symbols": data["valid_symbols"],
-        "allele_synonyms": data["allele_synonyms"],
-    }
-
-
 SPECIES_TO_STANDARDIZER: Dict[str, Callable] = {
-    "homosapiens": lambda symbol, mh_database: standardize_allele(
-        symbol,
+    "homosapiens": partial(
+        standardize_allele,
         species="homosapiens",
-        mh_database=mh_database,
         allow_zero_padded_three_digit_fields=False,
-        gene_synonyms=SUPPORTED_MH_SPECIES_AND_THEIR_GENES["homosapiens"][mh_database][
-            "hgnc_synonyms"
-        ],
-        **_mh_data("homosapiens", mh_database),
     ),
-    "bostaurus": lambda symbol, mh_database: standardize_allele(
-        symbol,
+    "bostaurus": partial(
+        standardize_allele,
         species="bostaurus",
-        mh_database=mh_database,
         allow_zero_padded_three_digit_fields=True,
-        **_mh_data("bostaurus", mh_database),
     ),
-    "macacamulatta": lambda symbol, mh_database: standardize_allele(
-        symbol,
+    "macacamulatta": partial(
+        standardize_allele,
         species="macacamulatta",
-        mh_database=mh_database,
         allow_zero_padded_three_digit_fields=True,
-        **_mh_data("macacamulatta", mh_database),
     ),
-    "pantroglodytes": lambda symbol, mh_database: standardize_allele(
-        symbol,
+    "pantroglodytes": partial(
+        standardize_allele,
         species="pantroglodytes",
-        mh_database=mh_database,
         allow_zero_padded_three_digit_fields=False,
-        **_mh_data("pantroglodytes", mh_database),
     ),
-    "susscrofa": lambda symbol, mh_database: standardize_allele(
-        symbol,
+    "susscrofa": partial(
+        standardize_allele,
         species="susscrofa",
-        mh_database=mh_database,
         allow_zero_padded_three_digit_fields=False,
-        **_mh_data("susscrofa", mh_database),
     ),
-    "musmusculus": lambda symbol, mh_database: standardize_haplotype(
-        symbol,
+    "musmusculus": partial(
+        standardize_haplotype,
         species="musmusculus",
-        mh_database=mh_database,
-        prefix_regex=r"^H-?2-?",
-        **_mh_data("musmusculus", mh_database),
+        prefix_regex=re.compile(r"^H-?2-?", re.IGNORECASE),
     ),
-    "rattusnorvegicus": lambda symbol, mh_database: standardize_haplotype(
-        symbol,
+    "rattusnorvegicus": partial(
+        standardize_haplotype,
         species="rattusnorvegicus",
-        mh_database=mh_database,
-        prefix_regex=r"^RT-?1-?",
-        **_mh_data("rattusnorvegicus", mh_database),
+        prefix_regex=re.compile(r"^RT-?1-?", re.IGNORECASE),
     ),
 }
 
@@ -328,7 +302,7 @@ def standardize(
         )
         return MhGene(symbol, error)
 
-    result = SPECIES_TO_STANDARDIZER[species](symbol, mh_database)
+    result = SPECIES_TO_STANDARDIZER[species](symbol, mh_database=mh_database)
 
     if (not result.is_standardized) and log_failures:
         _utils.warn_result_failure(

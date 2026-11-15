@@ -4,6 +4,7 @@ from functools import partial
 from typing import Callable, Dict, List, Optional, Tuple
 
 from tidytcells import _utils
+from tidytcells._resources import SUPPORTED_MH_SPECIES_AND_THEIR_GENES
 from tidytcells._standardized_gene_symbol.mutation import interpret_remainder
 from tidytcells.result import MhGene
 
@@ -23,9 +24,6 @@ def standardize_allele(
     *,
     species: str,
     mh_database: str,
-    valid_symbols: Dict[str, Dict],
-    allele_synonyms: Dict[str, str],
-    gene_synonyms: Optional[Dict[str, str]] = None,
     allow_zero_padded_three_digit_fields: bool,
 ) -> MhGene:
     """
@@ -33,7 +31,7 @@ def standardize_allele(
     Mamu-A1*001:01). Input is matched case-insensitively; results are
     returned in the case used by the database.
     """
-    gene_synonyms = gene_synonyms if gene_synonyms is not None else {}
+    valid_symbols, allele_synonyms, gene_synonyms = _mh_data(species, mh_database)
     canonical_gene_names = {gene.upper(): gene for gene in valid_symbols}
     prefixes = sorted(
         {gene.split("-")[0].upper() for gene in valid_symbols if "-" in gene}
@@ -153,6 +151,19 @@ def parse_allele_symbol(
             )
 
     return _utils.clean_and_uppercase(symbol), symbol, [], ""
+
+
+def _mh_data(species: str, mh_database: str):
+    """
+    The valid-symbol, synonym, and HGNC gene-synonym data for a species and
+    MH database.
+    """
+    data = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database]
+    return (
+        data["valid_symbols"],
+        data["allele_synonyms"],
+        data.get("hgnc_synonyms") or {},
+    )
 
 
 def _replace_periods_between_digits_with_colon(string: str) -> str:
