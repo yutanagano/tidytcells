@@ -159,12 +159,12 @@ def build_mro_synonyms(df: pd.DataFrame) -> dict:
         if " " in term or "/" in term:
             continue
 
-        for alternative in filter(None, alternatives.split("|")):
+        for alternative in re.split(r"[|,]", alternatives):
+            key = alternative.strip().upper()
             # skips junk alternative names without any digits, e.g. "A" for HLA-DRB3*01:52
-            if not re.search(r"\d", alternative):
+            if not key or not re.search(r"\d", key):
                 continue
 
-            key = alternative.upper()
             if key != term.upper():
                 candidates[key].add(term)
 
