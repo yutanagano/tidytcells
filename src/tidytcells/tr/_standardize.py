@@ -276,16 +276,22 @@ def standardize(
             logger.warning(f"{msg} Skipping TR standardization.")
         return ReceptorGene(symbol, msg)
 
-    valid_gene_dictionary = SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species][receptor_database]["genes"]
-    synonym_dictionary = SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species][receptor_database]["synonyms"]
+    valid_gene_dictionary = SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species][
+        receptor_database
+    ]["genes"]
+    synonym_dictionary = SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species][
+        receptor_database
+    ]["synonyms"]
 
-    tr_standardizer = TrSymbolStandardizer(symbol,
-                                           enforce_functional=enforce_functional,
-                                           allow_subgroup=allow_subgroup,
-                                           species=species,
-                                           germline_database=receptor_database,
-                                           valid_gene_dictionary=valid_gene_dictionary,
-                                           synonym_dictionary=synonym_dictionary)
+    tr_standardizer = TrSymbolStandardizer(
+        symbol,
+        enforce_functional=enforce_functional,
+        allow_subgroup=allow_subgroup,
+        species=species,
+        germline_database=receptor_database,
+        valid_gene_dictionary=valid_gene_dictionary,
+        synonym_dictionary=synonym_dictionary,
+    )
 
     if (not tr_standardizer.result.is_standardized) and log_failures:
         logger.warning(_utils.standardization_failure_message(tr_standardizer.result))

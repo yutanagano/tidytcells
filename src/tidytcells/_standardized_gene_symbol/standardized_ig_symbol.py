@@ -18,7 +18,7 @@ class IgSymbolParser:
             gene_pattern = r"^([A-Z0-9\-\.\(\)\/]+)"
 
         if germline_database == "OGRDB":
-            allele_pattern =  r"(\*(i?\d+))?"
+            allele_pattern = r"(\*(i?\d+))?"
         else:
             allele_pattern = r"(\*(\d+))?"
 
@@ -46,7 +46,11 @@ class IgSymbolStandardizer(ReceptorGeneSymbolStandardizer):
 
     def _parse_symbol(self, ig_symbol: str) -> Tuple[Optional[str], Optional[str]]:
         cleaned_ig_symbol = self._safe_clean_ig_symbol(ig_symbol)
-        parsed_ig_symbol = IgSymbolParser(cleaned_ig_symbol, species=self.species, germline_database=self.germline_database)
+        parsed_ig_symbol = IgSymbolParser(
+            cleaned_ig_symbol,
+            species=self.species,
+            germline_database=self.germline_database,
+        )
 
         return parsed_ig_symbol.gene_name, parsed_ig_symbol.allele_designation
 
@@ -70,9 +74,9 @@ class IgSymbolStandardizer(ReceptorGeneSymbolStandardizer):
             match = re.search(r"(IGKV\d+-)([ABCDEF])", cleaned_ig_symbol)
             if match:
                 cleaned_ig_symbol = (
-                        match.group(1)
-                        + match.group(2).lower()
-                        + cleaned_ig_symbol[match.end():]
+                    match.group(1)
+                    + match.group(2).lower()
+                    + cleaned_ig_symbol[match.end() :]
                 )
 
         return cleaned_ig_symbol
@@ -145,6 +149,3 @@ class IgSymbolStandardizer(ReceptorGeneSymbolStandardizer):
             if variant in self._valid_gene_dictionary:
                 self._gene_name = variant
                 return
-
-
-

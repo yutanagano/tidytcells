@@ -12,7 +12,6 @@ from typing import Dict, Optional, Type
 logger = logging.getLogger(__name__)
 
 
-
 def standardize(
     symbol: Optional[str] = None,
     species: Optional[str] = None,
@@ -270,22 +269,27 @@ def standardize(
             logger.warning(f"{msg} Skipping IG standardization.")
         return ReceptorGene(symbol, msg)
 
-    valid_gene_dictionary = SUPPORTED_IG_SPECIES_AND_THEIR_GENES[species][receptor_database]["genes"]
-    synonym_dictionary = SUPPORTED_IG_SPECIES_AND_THEIR_GENES[species][receptor_database]["synonyms"]
+    valid_gene_dictionary = SUPPORTED_IG_SPECIES_AND_THEIR_GENES[species][
+        receptor_database
+    ]["genes"]
+    synonym_dictionary = SUPPORTED_IG_SPECIES_AND_THEIR_GENES[species][
+        receptor_database
+    ]["synonyms"]
 
-    ig_standardizer = IgSymbolStandardizer(symbol,
-                                           enforce_functional=enforce_functional,
-                                           allow_subgroup=allow_subgroup,
-                                           species=species,
-                                           germline_database=receptor_database,
-                                           valid_gene_dictionary=valid_gene_dictionary,
-                                           synonym_dictionary=synonym_dictionary)
+    ig_standardizer = IgSymbolStandardizer(
+        symbol,
+        enforce_functional=enforce_functional,
+        allow_subgroup=allow_subgroup,
+        species=species,
+        germline_database=receptor_database,
+        valid_gene_dictionary=valid_gene_dictionary,
+        synonym_dictionary=synonym_dictionary,
+    )
 
     if (not ig_standardizer.result.is_standardized) and log_failures:
         logger.warning(_utils.standardization_failure_message(ig_standardizer.result))
 
     return ig_standardizer.result
-
 
 
 def standardise(*args, **kwargs) -> ReceptorGene:

@@ -1,6 +1,5 @@
 import tidytcells
 
-
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -27,7 +26,6 @@ templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 autosummary_imported_members = True
 autodoc_typehints = "description"
-
 
 
 # -- Options for HTML output -------------------------------------------------

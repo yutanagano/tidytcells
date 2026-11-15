@@ -7,7 +7,6 @@ import tempfile
 from typing import Dict
 import script_utility
 
-
 LOCI = ("IGH", "IGK", "IGL")
 
 V_REGIONS = (
@@ -19,22 +18,70 @@ V_REGIONS = (
 )
 
 CODON_TABLE = {
-    "TTT": "F", "TTC": "F", "TTA": "L", "TTG": "L",
-    "CTT": "L", "CTC": "L", "CTA": "L", "CTG": "L",
-    "ATT": "I", "ATC": "I", "ATA": "I", "ATG": "M",
-    "GTT": "V", "GTC": "V", "GTA": "V", "GTG": "V",
-    "TCT": "S", "TCC": "S", "TCA": "S", "TCG": "S",
-    "CCT": "P", "CCC": "P", "CCA": "P", "CCG": "P",
-    "ACT": "T", "ACC": "T", "ACA": "T", "ACG": "T",
-    "GCT": "A", "GCC": "A", "GCA": "A", "GCG": "A",
-    "TAT": "Y", "TAC": "Y", "TAA": "*", "TAG": "*",
-    "CAT": "H", "CAC": "H", "CAA": "Q", "CAG": "Q",
-    "AAT": "N", "AAC": "N", "AAA": "K", "AAG": "K",
-    "GAT": "D", "GAC": "D", "GAA": "E", "GAG": "E",
-    "TGT": "C", "TGC": "C", "TGA": "*", "TGG": "W",
-    "CGT": "R", "CGC": "R", "CGA": "R", "CGG": "R",
-    "AGT": "S", "AGC": "S", "AGA": "R", "AGG": "R",
-    "GGT": "G", "GGC": "G", "GGA": "G", "GGG": "G",
+    "TTT": "F",
+    "TTC": "F",
+    "TTA": "L",
+    "TTG": "L",
+    "CTT": "L",
+    "CTC": "L",
+    "CTA": "L",
+    "CTG": "L",
+    "ATT": "I",
+    "ATC": "I",
+    "ATA": "I",
+    "ATG": "M",
+    "GTT": "V",
+    "GTC": "V",
+    "GTA": "V",
+    "GTG": "V",
+    "TCT": "S",
+    "TCC": "S",
+    "TCA": "S",
+    "TCG": "S",
+    "CCT": "P",
+    "CCC": "P",
+    "CCA": "P",
+    "CCG": "P",
+    "ACT": "T",
+    "ACC": "T",
+    "ACA": "T",
+    "ACG": "T",
+    "GCT": "A",
+    "GCC": "A",
+    "GCA": "A",
+    "GCG": "A",
+    "TAT": "Y",
+    "TAC": "Y",
+    "TAA": "*",
+    "TAG": "*",
+    "CAT": "H",
+    "CAC": "H",
+    "CAA": "Q",
+    "CAG": "Q",
+    "AAT": "N",
+    "AAC": "N",
+    "AAA": "K",
+    "AAG": "K",
+    "GAT": "D",
+    "GAC": "D",
+    "GAA": "E",
+    "GAG": "E",
+    "TGT": "C",
+    "TGC": "C",
+    "TGA": "*",
+    "TGG": "W",
+    "CGT": "R",
+    "CGC": "R",
+    "CGA": "R",
+    "CGG": "R",
+    "AGT": "S",
+    "AGC": "S",
+    "AGA": "R",
+    "AGG": "R",
+    "GGT": "G",
+    "GGC": "G",
+    "GGA": "G",
+    "GGG": "G",
 }
 
 
@@ -53,7 +100,9 @@ def main() -> None:
 
 def download_germline_set(locus: str) -> dict:
     if shutil.which("download_germline_set") is None:
-        raise RuntimeError("download_germline_set not found, install with 'pip install receptor-utils'")
+        raise RuntimeError(
+            "download_germline_set not found, install with 'pip install receptor-utils'"
+        )
 
     command = ["download_germline_set", "Homo sapiens", locus, "-f", "AIRRC-JSON"]
 
@@ -64,7 +113,9 @@ def download_germline_set(locus: str) -> dict:
     with tempfile.TemporaryDirectory() as tmp_dir:
         subprocess.run(command, cwd=tmp_dir, check=True)
         downloaded = list(Path(tmp_dir).glob("*.json"))
-        assert len(downloaded) == 1, f"Expected one downloaded file for {locus}, found {len(downloaded)}"
+        assert (
+            len(downloaded) == 1
+        ), f"Expected one downloaded file for {locus}, found {len(downloaded)}"
 
         with open(downloaded[0], "r") as f:
             return json.load(f)
@@ -86,7 +137,10 @@ def get_valid_gene_data(sequence_data: dict) -> dict:
         gene, designation = allele.split("*")
         valid_genes[gene][designation] = data["functionality"]
 
-    return {gene: dict(sorted(alleles.items())) for gene, alleles in sorted(valid_genes.items())}
+    return {
+        gene: dict(sorted(alleles.items()))
+        for gene, alleles in sorted(valid_genes.items())
+    }
 
 
 def get_alleles(germline_sets: Dict[str, dict]) -> dict:
@@ -152,7 +206,7 @@ def get_j_gene_sequence_data(alleles: dict) -> dict:
             print(f"Warning: {name} has no J codon frame, skipping")
             continue
 
-        j_region = translate(allele["coding_sequence"].upper()[frame - 1:])
+        j_region = translate(allele["coding_sequence"].upper()[frame - 1 :])
 
         aa_seqs[name]["functionality"] = get_functionality(allele)
         aa_seqs[name]["J-REGION"] = j_region
@@ -170,7 +224,11 @@ def get_j_gene_sequence_data(alleles: dict) -> dict:
 
 
 def get_v_regions(name: str, allele: dict, nt_seq: str) -> dict:
-    delineations = [d for d in allele["v_gene_delineations"] or [] if d["delineation_scheme"] == "IMGT"]
+    delineations = [
+        d
+        for d in allele["v_gene_delineations"] or []
+        if d["delineation_scheme"] == "IMGT"
+    ]
 
     if len(delineations) == 0:
         print(f"Warning: {name} has no IMGT delineation, only V-REGION available")
@@ -190,7 +248,7 @@ def get_v_regions(name: str, allele: dict, nt_seq: str) -> dict:
             print(f"Warning: {name} {label} is not codon aligned, region omitted")
             continue
 
-        regions[label] = translate(nt_seq[start - 1:end])
+        regions[label] = translate(nt_seq[start - 1 : end])
 
     return regions
 
@@ -204,18 +262,23 @@ def get_conserved_aa(name: str, allele: dict, j_region: str) -> str:
     offset = allele["j_cdr3_end"] - allele["j_codon_frame"]
 
     if offset < 0 or offset % 3 != 0 or offset // 3 >= len(j_region):
-        print(f"Warning: {name} j_cdr3_end is not codon aligned, conserved residue unknown")
+        print(
+            f"Warning: {name} j_cdr3_end is not codon aligned, conserved residue unknown"
+        )
         return None
 
     return j_region[offset // 3]
+
 
 def get_functionality(allele: dict) -> str:
     return "F" if allele["functional"] else "NF"
 
 
 def translate(nt_seq: str) -> str:
-    codons = [nt_seq[i:i + 3] for i in range(0, len(nt_seq) - len(nt_seq) % 3, 3)]
-    return "".join(CODON_TABLE[codon] if codon in CODON_TABLE else "X" for codon in codons)
+    codons = [nt_seq[i : i + 3] for i in range(0, len(nt_seq) - len(nt_seq) % 3, 3)]
+    return "".join(
+        CODON_TABLE[codon] if codon in CODON_TABLE else "X" for codon in codons
+    )
 
 
 if __name__ == "__main__":

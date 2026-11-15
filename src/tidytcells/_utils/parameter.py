@@ -60,13 +60,13 @@ class Parameter:
 
         return self
 
-    def throw_error_if_failed_test(self, test, mssg, optional: bool = True) -> "Parameter":
+    def throw_error_if_failed_test(
+        self, test, mssg, optional: bool = True
+    ) -> "Parameter":
         if optional and self.value is None:
             return self
 
         if not test(self.value):
-            raise ValueError(
-                f'"{self.name}" {self.value} {mssg}'
-            )
+            raise ValueError(f'"{self.name}" {self.value} {mssg}')
 
         return self
