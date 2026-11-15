@@ -32,26 +32,27 @@ def query(
 
     .. note::
 
-        :py:mod:`tidytcells`' knowledge of MH alleles is limited, especially outside of humans.
-        :py:mod:`tidytcells` will allow you to query HLA alleles up to the level of the protein (first two allele designators), but that is the highest resolution available.
-        For *Mus musculus*, there is currently only support for gene-level querying.
+        :py:mod:`tidytcells`' knowledge of MH alleles is limited, especially
+        outside of humans. :py:mod:`tidytcells` will allow you to query HLA
+        alleles up to the level of the protein (first two allele designators),
+        but that is the highest resolution available. For *Mus musculus*, there
+        is currently only support for gene-level querying.
 
     :param species:
-        Species to query (see above for supported species).
-        Defaults to ``"homosapiens"``.
+        Species to query (see above for supported species). Defaults to
+        ``"homosapiens"``.
     :type species:
         str
     :param precision:
-        The level of precision to query.
-        ``allele`` will query from the set of all possible alleles.
-        ``gene`` will query from the set of all possible genes.
-        Defaults to ``allele``.
+        The level of precision to query. ``allele`` will query from the set of
+        all possible alleles. ``gene`` will query from the set of all possible
+        genes. Defaults to ``allele``.
     :type precision:
         str
     :param contains_pattern:
-        An optional **regular expression** string which will be used to filter the query result.
-        If supplied, only genes / alleles which contain the regular expression will be returned.
-        Defaults to ``None``.
+        An optional **regular expression** string which will be used to filter
+        the query result. If supplied, only genes / alleles which contain the
+        regular expression will be returned. Defaults to ``None``.
     :type contains_pattern:
         str
 
@@ -94,11 +95,15 @@ def query(
 
     species_is_supported = species in QUERY_ENGINES
     if not species_is_supported:
-        raise ValueError(f'Unsupported species: {species}. No data available.')
+        raise ValueError(f"Unsupported species: {species}. No data available.")
 
     mh_database = config.get_mh_database()
     if mh_database not in QUERY_ENGINES[species]:
-        raise ValueError(f'Unsupported mhc_database: {mh_database}. No data available. Please use tidytcells.set_mh_database() to switch to: {", ".join(list(QUERY_ENGINES[species].keys()))}')
+        raise ValueError(
+            f"Unsupported mh_database: {mh_database}. No data available. "
+            "Please use tidytcells.config.set_mh_database() to switch to: "
+            f"{', '.join(list(QUERY_ENGINES[species].keys()))}"
+        )
 
     query_engine = QUERY_ENGINES[species][mh_database]
     result = query_engine.query(precision, functionality=None)

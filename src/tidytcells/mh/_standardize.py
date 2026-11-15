@@ -3,20 +3,25 @@ from tidytcells import config
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 from tidytcells._resources import SUPPORTED_MH_SPECIES_AND_THEIR_GENES
-from tidytcells._standardized_gene_symbol import MhAlleleSymbolStandardizer, MhHaplotypeSymbolStandardizer
+from tidytcells._standardized_gene_symbol import (
+    MhAlleleSymbolStandardizer,
+    MhHaplotypeSymbolStandardizer,
+)
 from typing import Dict, Optional, Type
 
 from tidytcells.result._mh_gene import MhGene
 
 logger = logging.getLogger(__name__)
 
-SPECIES_TO_STANDARDIZER = {"homosapiens": MhAlleleSymbolStandardizer,
-                           "bostaurus": MhAlleleSymbolStandardizer,
-                           "macacamulatta": MhAlleleSymbolStandardizer,
-                           "pantroglodytes": MhAlleleSymbolStandardizer,
-                           "susscrofa": MhAlleleSymbolStandardizer,
-                           "musmusculus": MhHaplotypeSymbolStandardizer,
-                           "rattusnorvegicus": MhHaplotypeSymbolStandardizer,}
+SPECIES_TO_STANDARDIZER = {
+    "homosapiens": MhAlleleSymbolStandardizer,
+    "bostaurus": MhAlleleSymbolStandardizer,
+    "macacamulatta": MhAlleleSymbolStandardizer,
+    "pantroglodytes": MhAlleleSymbolStandardizer,
+    "susscrofa": MhAlleleSymbolStandardizer,
+    "musmusculus": MhHaplotypeSymbolStandardizer,
+    "rattusnorvegicus": MhHaplotypeSymbolStandardizer,
+}
 
 
 def standardize(
@@ -27,10 +32,13 @@ def standardize(
     suppress_warnings: Optional[bool] = None,
 ) -> MhGene:
     """
-    Attempt to standardize an MH gene / allele symbol to its name in the MHC Restriction Ontology (MRO).
+    Attempt to standardize an MH gene / allele symbol to its name in the MHC
+    Restriction Ontology (MRO).
 
-    For most species, MRO follows IPD-MHC allele nomenclature (e.g. ``HLA-A*02:01``, ``Mamu-A1*001:01``).
-    For *Mus musculus* and *Rattus norvegicus*, MRO names molecules by locus and haplotype (e.g. ``H2-Kb``, ``RT1-Aa``).
+    For most species, MRO follows IPD-MHC allele nomenclature (e.g.
+    ``HLA-A*02:01``, ``Mamu-A1*001:01``). For *Mus musculus* and *Rattus
+    norvegicus*, MRO names molecules by locus and haplotype (e.g. ``H2-Kb``,
+    ``RT1-Aa``).
 
     .. topic:: Supported species and databases
 
@@ -42,25 +50,30 @@ def standardize(
         - ``"pantroglodytes"``: ``"MRO"``
         - ``"rattusnorvegicus"``: ``"MRO"``
 
-        The database is set for all MH standardization with ``tidytcells.set_mh_database()``.
-        MRO covers the MH molecules that present antigens to T cells.
-        For *Homo sapiens*, the ``"IPD"`` database (IPD-IMGT/HLA) additionally covers other genes in the HLA region,
-        such as pseudogenes, HLA-DM, HLA-DO and MICA, as well as G and P groups.
+        The database is set for all MH standardization with
+        ``tidytcells.config.set_mh_database()``. MRO covers the MH molecules
+        that present antigens to T cells. For *Homo sapiens*, the ``"IPD"``
+        database (IPD-IMGT/HLA) additionally covers other genes in the HLA
+        region, such as pseudogenes, HLA-DM, HLA-DO and MICA, as well as G and
+        P groups.
 
     .. note::
-        For species with numbered alleles (e.g. ``HLA-A*02:01``), this function only verifies an allele up to the level of the protein (the first two fields).
-        Further fields are not verified, apart from the requirement that they look valid (numerical, at least two digits).
-        For *Mus musculus* and *Rattus norvegicus*, symbols are verified as a whole (e.g. ``H2-Kb``).
+        For species with numbered alleles (e.g. ``HLA-A*02:01``), this function
+        only verifies an allele up to the level of the protein (the first two
+        fields). Further fields are not verified, apart from the requirement
+        that they look valid (numerical, at least two digits). For *Mus
+        musculus* and *Rattus norvegicus*, symbols are verified as a whole
+        (e.g. ``H2-Kb``).
 
     :param symbol:
         Potentially non-standardized MH gene / allele symbol.
     :type symbol:
         str
     :param species:
-        Species to standardize the symbol for (see above for supported species).
-        If set to ``"any"``, each species available for the configured database is tried in the order listed above,
-        and the first successful result is returned.
-        Defaults to ``"homosapiens"``.
+        Species to standardize the symbol for (see above for supported
+        species). If set to ``"any"``, each species available for the
+        configured database is tried in the order listed above, and the first
+        successful result is returned. Defaults to ``"homosapiens"``.
     :type species:
         str
     :param log_failures:
@@ -79,14 +92,16 @@ def standardize(
         bool
 
     :return:
-        A standardized MH gene wrapped in a :py:class:`~tidytcells.result.MhGene` object.
-        For details on how to use this output, please refer to the class documentation.
+        A standardized MH gene wrapped in a
+        :py:class:`~tidytcells.result.MhGene` object. For details on how to use
+        this output, please refer to the class documentation.
     :rtype:
         :py:class:`~tidytcells.result.MhGene`
 
     .. topic:: Example usage
 
-        When standardization is a success, attributes 'allele', 'protein' and 'gene' can be used to retrieve the corrected information.
+        When standardization is a success, attributes 'allele', 'protein' and
+        'gene' can be used to retrieve the corrected information.
 
         >>> result = tt.mh.standardize("HLA-DRB3*01:01:02:01")
         >>> result.is_standardized
@@ -98,9 +113,10 @@ def standardize(
         >>> result.gene
         'HLA-DRB3'
 
-        Attributes 'allele', 'protein' and 'gene' only return a result if the symbol could be standardized up to that level.
-        Attribute 'symbol' is never None for a successful standardization, and always returns the most
-        detailed available result between 'allele', 'protein' and 'gene'.
+        Attributes 'allele', 'protein' and 'gene' only return a result if the
+        symbol could be standardized up to that level. Attribute 'symbol' is
+        never None for a successful standardization, and always returns the
+        most detailed available result between 'allele', 'protein' and 'gene'.
 
         >>> tt.mh.standardize("HLA-DRB3*01:01:02:01").symbol
         'HLA-DRB3*01:01:02:01'
@@ -109,7 +125,8 @@ def standardize(
         >>> tt.mh.standardize("HLA-DRB3").allele is None
         True
 
-        Non-standardized input strings will intelligently be corrected to valid symbols.
+        Non-standardized input strings will intelligently be corrected to valid
+        symbols.
 
         >>> tt.mh.standardize("A1").symbol
         'HLA-A*01'
@@ -118,7 +135,8 @@ def standardize(
         >>> tt.mh.standardize("D6S204").symbol
         'HLA-C'
 
-        Known alternative names in MRO are mapped to the current name, and mutant molecules are supported.
+        Known alternative names in MRO are mapped to the current name, and
+        mutant molecules are supported.
 
         >>> tt.mh.standardize("HLA-Cw*0301").symbol
         'HLA-C*03:04'
@@ -149,8 +167,9 @@ def standardize(
         >>> result.species
         'susscrofa'
 
-        For failed standardizations, the 'error' attribute explains why the standardization failed, and
-        the 'attempted_fix' attribute contains the best attempted result found during standardization.
+        For failed standardizations, the 'error' attribute explains why the
+        standardization failed, and the 'attempted_fix' attribute contains the
+        best attempted result found during standardization.
 
         >>> result = tt.mh.standardize("HLA-DRB365")
         >>> result.is_standardized
@@ -169,8 +188,11 @@ def standardize(
 
     .. topic:: Decision Logic
 
-        To provide an easy way to gauge the scope and limitations of standardization, below is a simplified overview of the decision logic employed when attempting to standardize an MH symbol.
-        For more detail, please refer to the `source code <https://github.com/yutanagano/tidytcells>`_.
+        To provide an easy way to gauge the scope and limitations of
+        standardization, below is a simplified overview of the decision logic
+        employed when attempting to standardize an MH symbol. For more detail,
+        please refer to the `source code
+        <https://github.com/yutanagano/tidytcells>`_.
 
         .. code-block:: none
 
@@ -248,21 +270,41 @@ def standardize(
     mh_database = config.get_mh_database()
 
     if species == "any":
-        tested_species = [species for species in SUPPORTED_MH_SPECIES_AND_THEIR_GENES.keys()
-                          if mh_database in SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species].keys()]
-        error = f'Failed with any of the following species: {", ".join(tested_species)}.'
+        tested_species = [
+            species
+            for species in SUPPORTED_MH_SPECIES_AND_THEIR_GENES.keys()
+            if mh_database in SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species].keys()
+        ]
+        error = (
+            f"Failed with any of the following species: {', '.join(tested_species)}."
+        )
         if mh_database == "IPD":
-            error += " To test more species, please switch to MRO using: tidytcells.set_mh_database('MRO')"
+            error += " To test more species, please switch to MRO using: tidytcells.config.set_mh_database('MRO')"
         best_attempt_result = MhGene(symbol, error)
 
         for species in tested_species:
-            valid_symbols = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database]["valid_symbols"]
-            allele_synonyms = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database]["allele_synonyms"]
-            gene_synonyms = SUPPORTED_MH_SPECIES_AND_THEIR_GENES["homosapiens"][mh_database]["hgnc_synonyms"] if species == "homosapiens" else None
+            valid_symbols = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database][
+                "valid_symbols"
+            ]
+            allele_synonyms = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][
+                mh_database
+            ]["allele_synonyms"]
+            gene_synonyms = (
+                SUPPORTED_MH_SPECIES_AND_THEIR_GENES["homosapiens"][mh_database][
+                    "hgnc_synonyms"
+                ]
+                if species == "homosapiens"
+                else None
+            )
 
-
-            result = SPECIES_TO_STANDARDIZER[species](symbol, species=species, valid_symbols=valid_symbols, allele_synonyms=allele_synonyms,
-                                                      gene_synonyms=gene_synonyms, mh_database=mh_database).result
+            result = SPECIES_TO_STANDARDIZER[species](
+                symbol,
+                species=species,
+                valid_symbols=valid_symbols,
+                allele_synonyms=allele_synonyms,
+                gene_synonyms=gene_synonyms,
+                mh_database=mh_database,
+            ).result
 
             if result.is_standardized:
                 return result
@@ -277,20 +319,43 @@ def standardize(
 
     if species not in SUPPORTED_MH_SPECIES_AND_THEIR_GENES:
         if log_failures:
-            _utils.warn_unsupported_species(species, "MH", SUPPORTED_MH_SPECIES_AND_THEIR_GENES.keys(), logger)
-        return MhGene(symbol, f'Unsupported species: {species}')
+            _utils.warn_unsupported_species(
+                species, "MH", SUPPORTED_MH_SPECIES_AND_THEIR_GENES.keys(), logger
+            )
+        return MhGene(symbol, f"Unsupported species: {species}")
 
     if mh_database not in SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species]:
-        if log_failures:
-            _utils.warn_unsupported_mhc_database(species, SUPPORTED_MH_SPECIES_AND_THEIR_GENES, logger)
-        return MhGene(symbol, f'Unsupported database: "{mh_database}" for species "{species}"')
+        error = _utils.warn_unsupported_mh_database(
+            mh_database,
+            species,
+            SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species].keys(),
+            logger,
+            log_failures=log_failures,
+        )
+        return MhGene(symbol, error)
 
-    valid_symbols = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database]["valid_symbols"]
-    allele_synonyms = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database]["allele_synonyms"]
-    gene_synonyms = SUPPORTED_MH_SPECIES_AND_THEIR_GENES["homosapiens"][mh_database]["hgnc_synonyms"] if species == "homosapiens" else None
+    valid_symbols = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database][
+        "valid_symbols"
+    ]
+    allele_synonyms = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database][
+        "allele_synonyms"
+    ]
+    gene_synonyms = (
+        SUPPORTED_MH_SPECIES_AND_THEIR_GENES["homosapiens"][mh_database][
+            "hgnc_synonyms"
+        ]
+        if species == "homosapiens"
+        else None
+    )
 
-    result = SPECIES_TO_STANDARDIZER[species](symbol, species=species, valid_symbols=valid_symbols, allele_synonyms=allele_synonyms,
-                                              gene_synonyms=gene_synonyms, mh_database=mh_database).result
+    result = SPECIES_TO_STANDARDIZER[species](
+        symbol,
+        species=species,
+        valid_symbols=valid_symbols,
+        allele_synonyms=allele_synonyms,
+        gene_synonyms=gene_synonyms,
+        mh_database=mh_database,
+    ).result
 
     if (not result.is_standardized) and log_failures:
         _utils.warn_result_failure(
@@ -299,7 +364,6 @@ def standardize(
         )
 
     return result
-
 
 
 def standardise(*args, **kwargs) -> MhGene:

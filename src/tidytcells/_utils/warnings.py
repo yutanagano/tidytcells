@@ -1,5 +1,4 @@
 from logging import Logger
-from tidytcells import config
 from typing import Optional, Union
 
 from tidytcells.result import MhGene, ReceptorGene, Junction
@@ -61,12 +60,23 @@ def warn_unsupported_receptor_database(
 
     return error
 
-def warn_unsupported_mhc_database(species: str, options_dict: dict, logger: Logger):
-    options = "; ".join([f"{species} ({', '.join(options_dict[species].keys())})" for species in options_dict])
-
-    logger.warning(
-        f'Unsupported mhc_database: "{config.get_mh_database()}" for species "{species}". '
-        f'Valid options are: {options}). '
-        f'Use tidytcells.set_mh_database() to switch. '
-        f'Skipping MH standardization.'
+def warn_unsupported_mh_database(
+    mh_database: str,
+    species: str,
+    valid_databases,
+    logger: Logger,
+    log_failures: bool = True,
+) -> str:
+    '''
+    Log a warning for an unsupported mh_database setting (if `log_failures`)
+    and return the corresponding error message.
+    '''
+    error = (
+        f'Unsupported mh_database: "{mh_database}" for species "{species}" '
+        f'(valid options are: {sorted(valid_databases)}). '
+        f'Use tidytcells.config.set_mh_database() to switch.'
     )
+    if log_failures:
+        logger.warning(f'{error} Skipping MH standardization.')
+
+    return error
