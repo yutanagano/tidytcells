@@ -6,7 +6,7 @@ from typing import Callable, Dict, Optional
 from tidytcells import config
 from tidytcells import _utils
 from tidytcells._utils import Parameter
-from tidytcells._resources import SUPPORTED_MH_SPECIES_AND_THEIR_GENES
+from tidytcells._resources import MH_SYMBOLS_BY_SP_DB
 from tidytcells.mh._standardize_allele import standardize_allele
 from tidytcells.mh._standardize_haplotype import standardize_haplotype
 
@@ -292,11 +292,11 @@ def standardize(
             )
         return MhGene(symbol, f"Unsupported species: {species}")
 
-    if mh_database not in SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species]:
+    if mh_database not in MH_SYMBOLS_BY_SP_DB[species]:
         error = _utils.warn_unsupported_mh_database(
             mh_database,
             species,
-            SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species].keys(),
+            MH_SYMBOLS_BY_SP_DB[species].keys(),
             logger,
             log_failures=log_failures,
         )

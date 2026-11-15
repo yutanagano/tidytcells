@@ -4,7 +4,7 @@ from typing import Callable, Dict, FrozenSet, Optional, Literal
 from tidytcells import config
 from tidytcells import _utils
 from tidytcells._utils import Parameter
-from tidytcells._resources import SUPPORTED_MH_SPECIES_AND_THEIR_GENES
+from tidytcells._resources import MH_SYMBOLS_BY_SP_DB
 from tidytcells.mh._query_symbols import query_symbols
 
 _GENE_LEVEL_WARNING = (
@@ -131,11 +131,11 @@ def query(
         raise ValueError(f"Unsupported species: {species}. No data available.")
 
     mh_database = config.get_mh_database()
-    if mh_database not in SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species]:
+    if mh_database not in MH_SYMBOLS_BY_SP_DB[species]:
         raise ValueError(
             f"Unsupported mh_database: {mh_database}. No data available. "
             "Please use tidytcells.config.set_mh_database() to switch to: "
-            f"{', '.join(list(SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species].keys()))}"
+            f"{', '.join(list(MH_SYMBOLS_BY_SP_DB[species].keys()))}"
         )
 
     return QUERY_ENGINES[species](precision, contains_pattern, mh_database=mh_database)

@@ -2,7 +2,7 @@ import re
 import warnings
 from typing import Dict, FrozenSet, Optional
 
-from tidytcells._resources import SUPPORTED_MH_SPECIES_AND_THEIR_GENES
+from tidytcells._resources import MH_SYMBOLS_BY_SP_DB
 
 
 def query_symbols(
@@ -62,4 +62,4 @@ def _valid_symbols(species: str, mh_database: str) -> Dict:
     """
     The valid-symbol tree for a species and MH database.
     """
-    return SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database]["valid_symbols"]
+    return MH_SYMBOLS_BY_SP_DB[species][mh_database]["valid_symbols"]

@@ -120,7 +120,13 @@ class TestStandardize:
 
 
 class TestStandardizeHomoSapiens:
-    @pytest.mark.parametrize("symbol", [*HOMOSAPIENS_MH_VALID_IPD, "B2M"])
+    @pytest.mark.parametrize(
+        "symbol",
+        [
+            *MH_SYMBOLS_BY_SP_DB["homosapiens"]["IPD"]["valid_symbols"],
+            "B2M",
+        ],
+    )
     def test_already_correctly_formatted(self, symbol):
         config.set_mh_database("IPD")
 
@@ -224,7 +230,10 @@ class TestStandardizeHomoSapiens:
 
 
 class TestStandardizeHomoSapiensMro:
-    @pytest.mark.parametrize("symbol", HOMOSAPIENS_MH_VALID_PROTEIN_MRO)
+    @pytest.mark.parametrize(
+        "symbol",
+        MH_SYMBOLS_BY_SP_DB["homosapiens"]["MRO"]["valid_symbols"],
+    )
     def test_already_correctly_formatted(self, symbol):
         result = mh.standardize(symbol=symbol, species="homosapiens")
 
@@ -475,7 +484,10 @@ class TestStandardizeHomoSapiensMro:
 
 
 class TestStandardizeMusMusculusMro:
-    @pytest.mark.parametrize("symbol", MUSMUSCULUS_MH_VALID_PROTEIN_MRO)
+    @pytest.mark.parametrize(
+        "symbol",
+        MH_SYMBOLS_BY_SP_DB["musmusculus"]["MRO"]["valid_symbols"],
+    )
     def test_already_correctly_formatted(self, symbol):
         result = mh.standardize(symbol=symbol, species="musmusculus")
 
@@ -586,7 +598,7 @@ class TestStandardizeAnySpeciesMro:
         ("species", "symbol"),
         [
             (species, symbol)
-            for species, databases in SUPPORTED_MH_SPECIES_AND_THEIR_GENES.items()
+            for species, databases in MH_SYMBOLS_BY_SP_DB.items()
             for symbol in databases["MRO"]["valid_symbols"]
         ],
     )
@@ -604,7 +616,7 @@ class TestStandardizeAnySpeciesMro:
         ("species", "symbol"),
         [
             (species, symbol)
-            for species, databases in SUPPORTED_MH_SPECIES_AND_THEIR_GENES.items()
+            for species, databases in MH_SYMBOLS_BY_SP_DB.items()
             for symbol in databases["MRO"]["valid_symbols"]
         ],
     )

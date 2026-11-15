@@ -4,7 +4,7 @@ from functools import partial
 from typing import Callable, Dict, List, Optional, Tuple
 
 from tidytcells import _utils
-from tidytcells._resources import SUPPORTED_MH_SPECIES_AND_THEIR_GENES
+from tidytcells._resources import MH_SYMBOLS_BY_SP_DB
 from tidytcells._standardized_gene_symbol.mutation import interpret_remainder
 from tidytcells.result import MhGene
 
@@ -158,7 +158,7 @@ def _mh_data(species: str, mh_database: str):
     The valid-symbol, synonym, and HGNC gene-synonym data for a species and
     MH database.
     """
-    data = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database]
+    data = MH_SYMBOLS_BY_SP_DB[species][mh_database]
     return (
         data["valid_symbols"],
         data["allele_synonyms"],
