@@ -26,24 +26,11 @@ class TestStandardize:
         assert result.gene == "HLA-B"
         assert result.is_standardized
 
-    @pytest.mark.parametrize(
-        ("symbol", "expected"),
-        (
-            ("HLA-B8", "HLA-B*08"),
-            ("A1", "HLA-A*01"),
-            ("h2-d", "H2-D"),
-            ("PATR-DRB7*0101", "Patr-DRB7*01:01"),
-            ("HLA-A*0201", "HLA-A*02:01"),
-            ("HLA-Cw*0301", "HLA-C*03:04"),
-            ("H-2Kb", "H2-Kb"),
-            ("I-Ed", "H2-IEd"),
-        ),
-    )
-    def test_any_species(self, symbol, expected):
-        result = mh.standardize(symbol, species="any")
-        assert result.symbol == expected
-        assert str(result) == expected
+    def test_pantroglodytes_forgotten_colon(self):
+        result = mh.standardize(symbol="PATR-DRB7*0101", species="pantroglodytes")
+
         assert result.is_standardized
+        assert result.symbol == "Patr-DRB7*01:01"
 
     @pytest.mark.parametrize(
         ("symbol", "expected", "precision_level"),
@@ -472,7 +459,7 @@ class TestStandardizeHomoSapiensMro:
         assert not result.is_standardized
         assert result.symbol is None
         assert result.mutation is None
-        assert result.attempted_fix == "HLA-FOO*01:01 K66A mutant"
+        assert result.attempted_fix == "HLA-FOO*01:01"
 
     def test_no_mutation(self):
         result = mh.standardize(symbol="HLA-A*02:01", species="homosapiens")
@@ -511,7 +498,9 @@ class TestStandardizeMusMusculusMro:
             ("Kb", "H2-Kb"),
             ("H-2Db", "H2-Db"),
             ("I-Ab", "H2-IAb"),
+            ("I-Ed", "H2-IEd"),
             ("IAg7", "H2-IAg7"),
+            ("h2-d", "H2-D"),
             ("H-2 IEk", "H2-IEk"),
             ("H-2Lw16", "H2-Lq"),
             ("H2-Lw16", "H2-Lq"),

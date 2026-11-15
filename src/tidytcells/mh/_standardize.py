@@ -1,26 +1,82 @@
 import logging
+from typing import Callable, Dict, Optional
+
 from tidytcells import config
 from tidytcells import _utils
 from tidytcells._utils import Parameter
 from tidytcells._resources import SUPPORTED_MH_SPECIES_AND_THEIR_GENES
-from tidytcells._standardized_gene_symbol import (
-    MhAlleleSymbolStandardizer,
-    MhHaplotypeSymbolStandardizer,
-)
-from typing import Dict, Optional, Type
+from tidytcells.mh._standardize_allele import standardize_allele
+from tidytcells.mh._standardize_haplotype import standardize_haplotype
 
 from tidytcells.result._mh_gene import MhGene
 
 logger = logging.getLogger(__name__)
 
-SPECIES_TO_STANDARDIZER = {
-    "homosapiens": MhAlleleSymbolStandardizer,
-    "bostaurus": MhAlleleSymbolStandardizer,
-    "macacamulatta": MhAlleleSymbolStandardizer,
-    "pantroglodytes": MhAlleleSymbolStandardizer,
-    "susscrofa": MhAlleleSymbolStandardizer,
-    "musmusculus": MhHaplotypeSymbolStandardizer,
-    "rattusnorvegicus": MhHaplotypeSymbolStandardizer,
+
+def _mh_data(species: str, mh_database: str) -> Dict[str, Dict]:
+    """
+    The valid-symbol and synonym data for a species and MH database.
+    """
+    data = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database]
+    return {
+        "valid_symbols": data["valid_symbols"],
+        "allele_synonyms": data["allele_synonyms"],
+    }
+
+
+SPECIES_TO_STANDARDIZER: Dict[str, Callable] = {
+    "homosapiens": lambda symbol, mh_database: standardize_allele(
+        symbol,
+        species="homosapiens",
+        mh_database=mh_database,
+        allow_zero_padded_three_digit_fields=False,
+        gene_synonyms=SUPPORTED_MH_SPECIES_AND_THEIR_GENES["homosapiens"][mh_database][
+            "hgnc_synonyms"
+        ],
+        **_mh_data("homosapiens", mh_database),
+    ),
+    "bostaurus": lambda symbol, mh_database: standardize_allele(
+        symbol,
+        species="bostaurus",
+        mh_database=mh_database,
+        allow_zero_padded_three_digit_fields=True,
+        **_mh_data("bostaurus", mh_database),
+    ),
+    "macacamulatta": lambda symbol, mh_database: standardize_allele(
+        symbol,
+        species="macacamulatta",
+        mh_database=mh_database,
+        allow_zero_padded_three_digit_fields=True,
+        **_mh_data("macacamulatta", mh_database),
+    ),
+    "pantroglodytes": lambda symbol, mh_database: standardize_allele(
+        symbol,
+        species="pantroglodytes",
+        mh_database=mh_database,
+        allow_zero_padded_three_digit_fields=False,
+        **_mh_data("pantroglodytes", mh_database),
+    ),
+    "susscrofa": lambda symbol, mh_database: standardize_allele(
+        symbol,
+        species="susscrofa",
+        mh_database=mh_database,
+        allow_zero_padded_three_digit_fields=False,
+        **_mh_data("susscrofa", mh_database),
+    ),
+    "musmusculus": lambda symbol, mh_database: standardize_haplotype(
+        symbol,
+        species="musmusculus",
+        mh_database=mh_database,
+        prefix_regex=r"^H-?2-?",
+        **_mh_data("musmusculus", mh_database),
+    ),
+    "rattusnorvegicus": lambda symbol, mh_database: standardize_haplotype(
+        symbol,
+        species="rattusnorvegicus",
+        mh_database=mh_database,
+        prefix_regex=r"^RT-?1-?",
+        **_mh_data("rattusnorvegicus", mh_database),
+    ),
 }
 
 
@@ -71,9 +127,7 @@ def standardize(
         str
     :param species:
         Species to standardize the symbol for (see above for supported
-        species). If set to ``"any"``, each species available for the
-        configured database is tried in the order listed above, and the first
-        successful result is returned. Defaults to ``"homosapiens"``.
+        species). Defaults to ``"homosapiens"``.
     :type species:
         str
     :param log_failures:
@@ -159,14 +213,6 @@ def standardize(
         >>> tt.mh.standardize("rt1aa", species="rattusnorvegicus").symbol
         'RT1-Aa'
 
-        With ``species="any"``, the species is detected from the symbol.
-
-        >>> result = tt.mh.standardize("SLA-1*04:01", species="any")
-        >>> result.symbol
-        'SLA-1*04:01'
-        >>> result.species
-        'susscrofa'
-
         For failed standardizations, the 'error' attribute explains why the
         standardization failed, and the 'attempted_fix' attribute contains the
         best attempted result found during standardization.
@@ -195,10 +241,6 @@ def standardize(
         <https://github.com/yutanagano/tidytcells>`_.
 
         .. code-block:: none
-
-            IF species is "any":
-                try each species available for the configured database, in order
-                RETURN the first successful result, or a failed result listing the species tried
 
             IF the specified species is not supported for standardization:
                 RETURN original symbol and error message
@@ -269,58 +311,10 @@ def standardize(
     species = _utils.clean_and_lowercase(species)
     mh_database = config.get_mh_database()
 
-    if species == "any":
-        tested_species = [
-            species
-            for species in SUPPORTED_MH_SPECIES_AND_THEIR_GENES.keys()
-            if mh_database in SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species].keys()
-        ]
-        error = (
-            f"Failed with any of the following species: {', '.join(tested_species)}."
-        )
-        if mh_database == "IPD":
-            error += " To test more species, please switch to MRO using: tidytcells.config.set_mh_database('MRO')"
-        best_attempt_result = MhGene(symbol, error)
-
-        for species in tested_species:
-            valid_symbols = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database][
-                "valid_symbols"
-            ]
-            allele_synonyms = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][
-                mh_database
-            ]["allele_synonyms"]
-            gene_synonyms = (
-                SUPPORTED_MH_SPECIES_AND_THEIR_GENES["homosapiens"][mh_database][
-                    "hgnc_synonyms"
-                ]
-                if species == "homosapiens"
-                else None
-            )
-
-            result = SPECIES_TO_STANDARDIZER[species](
-                symbol,
-                species=species,
-                valid_symbols=valid_symbols,
-                allele_synonyms=allele_synonyms,
-                gene_synonyms=gene_synonyms,
-                mh_database=mh_database,
-            ).result
-
-            if result.is_standardized:
-                return result
-
-        if log_failures:
-            _utils.warn_result_failure(
-                result=best_attempt_result,
-                logger=logger,
-            )
-
-        return best_attempt_result
-
-    if species not in SUPPORTED_MH_SPECIES_AND_THEIR_GENES:
+    if species not in SPECIES_TO_STANDARDIZER:
         if log_failures:
             _utils.warn_unsupported_species(
-                species, "MH", SUPPORTED_MH_SPECIES_AND_THEIR_GENES.keys(), logger
+                species, "MH", SPECIES_TO_STANDARDIZER.keys(), logger
             )
         return MhGene(symbol, f"Unsupported species: {species}")
 
@@ -334,28 +328,7 @@ def standardize(
         )
         return MhGene(symbol, error)
 
-    valid_symbols = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database][
-        "valid_symbols"
-    ]
-    allele_synonyms = SUPPORTED_MH_SPECIES_AND_THEIR_GENES[species][mh_database][
-        "allele_synonyms"
-    ]
-    gene_synonyms = (
-        SUPPORTED_MH_SPECIES_AND_THEIR_GENES["homosapiens"][mh_database][
-            "hgnc_synonyms"
-        ]
-        if species == "homosapiens"
-        else None
-    )
-
-    result = SPECIES_TO_STANDARDIZER[species](
-        symbol,
-        species=species,
-        valid_symbols=valid_symbols,
-        allele_synonyms=allele_synonyms,
-        gene_synonyms=gene_synonyms,
-        mh_database=mh_database,
-    ).result
+    result = SPECIES_TO_STANDARDIZER[species](symbol, mh_database)
 
     if (not result.is_standardized) and log_failures:
         _utils.warn_result_failure(
