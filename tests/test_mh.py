@@ -54,9 +54,7 @@ class TestStandardize:
         ),
     )
     def test_precision(self, symbol, expected, precision_level):
-        result = mh.standardize(
-            symbol=symbol, species="homosapiens"
-        )
+        result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result.__getattribute__(precision_level) == expected
 
@@ -116,7 +114,6 @@ class TestStandardizeHomoSapiens:
         assert not result.is_standardized
 
         config.reset_mh_database()
-
 
     @pytest.mark.parametrize(
         ("symbol", "expected"),
@@ -250,7 +247,7 @@ class TestStandardizeHomoSapiensMro:
         assert result.error is None
         assert result.symbol == "HLA-A*01:01:01:01"
 
-    def test_allele_synonyms_not_used_for_imgt(self, caplog):
+    def test_allele_synonyms_not_used_for_ipd(self, caplog):
         config.set_mh_database("IPD")
         result = mh.standardize(symbol="HLA-Cw*0301", species="homosapiens")
 
@@ -269,7 +266,7 @@ class TestStandardizeHomoSapiensMro:
             ("HLA-DQA*01:01", "HLA-DQA1*01:01"),
             ("HLA-A*3351", "HLA-A*33:51"),
             ("D6S204", "HLA-C"),
-            ("HLA-C", "HLA-C")
+            ("HLA-C", "HLA-C"),
         ),
     )
     def test_various_typos(self, symbol, expected):
@@ -277,7 +274,9 @@ class TestStandardizeHomoSapiensMro:
 
         assert result.symbol == expected
 
-    @pytest.mark.parametrize("symbol", ("HLA-DMA", "HLA-MICA*001", "HLA-TAP1*01:01", "foobar"))
+    @pytest.mark.parametrize(
+        "symbol", ("HLA-DMA", "HLA-MICA*001", "HLA-TAP1*01:01", "foobar")
+    )
     def test_not_in_mro(self, symbol, caplog):
         result = mh.standardize(symbol=symbol, species="homosapiens")
 
@@ -289,14 +288,34 @@ class TestStandardizeHomoSapiensMro:
         ("symbol", "expected", "expected_mutation", "is_standardized", "error_mssg"),
         (
             ("HLA-A*02:01 K66A MUTANT", "HLA-A*02:01 K66A mutant", "K66A", True, None),
-            ("HLA-B*35:08 Q65A, T69A, Q155A mutant", "HLA-B*35:08 Q65A, T69A, Q155A mutant", "Q65A, T69A, Q155A", True, None),
-            ("HLA-B*08:01 B:I66A mutant", "HLA-B*08:01 B:I66A mutant", "B:I66A", True, None),
-            ("HLA-Cw*0301 W167A mutant", "HLA-C*03:04 W167A mutant", "W167A", True, None),
+            (
+                "HLA-B*35:08 Q65A, T69A, Q155A mutant",
+                "HLA-B*35:08 Q65A, T69A, Q155A mutant",
+                "Q65A, T69A, Q155A",
+                True,
+                None,
+            ),
+            (
+                "HLA-B*08:01 B:I66A mutant",
+                "HLA-B*08:01 B:I66A mutant",
+                "B:I66A",
+                True,
+                None,
+            ),
+            (
+                "HLA-Cw*0301 W167A mutant",
+                "HLA-C*03:04 W167A mutant",
+                "W167A",
+                True,
+                None,
+            ),
             ("HLA-A*02:01 random MUTANT", None, None, False, "Invalid mutation"),
             ("HLA-FOO*01:01 K66A mutant", None, None, False, "Unrecognized gene name"),
         ),
     )
-    def test_mutant_with_synonym(self, symbol, expected, expected_mutation, is_standardized, error_mssg):
+    def test_mutant_with_synonym(
+        self, symbol, expected, expected_mutation, is_standardized, error_mssg
+    ):
         result = mh.standardize(symbol=symbol, species="homosapiens")
 
         assert result.is_standardized == is_standardized
@@ -308,13 +327,13 @@ class TestStandardizeHomoSapiensMro:
 
     @pytest.mark.parametrize(
         ("symbol", "expected"),
-            (
-                ("HLA-A*3351", "HLA-A*33:51"),
-                ("HLA-A3058", "HLA-A*30:58"),
-                ("HLA-B*8101", "HLA-B*81:01"),
-                ("HLA-A*02101", "HLA-A*02:101"),
-                ("HLA-B*390101", "HLA-B*39:01:01"),
-                ("HLA-A*03010101", "HLA-A*03:01:01:01"),
+        (
+            ("HLA-A*3351", "HLA-A*33:51"),
+            ("HLA-A3058", "HLA-A*30:58"),
+            ("HLA-B*8101", "HLA-B*81:01"),
+            ("HLA-A*02101", "HLA-A*02:101"),
+            ("HLA-B*390101", "HLA-B*39:01:01"),
+            ("HLA-A*03010101", "HLA-A*03:01:01:01"),
         ),
     )
     def test_missing_colons_ambiguous_split(self, symbol, expected):
@@ -346,13 +365,35 @@ class TestStandardizeHomoSapiensMro:
     @pytest.mark.parametrize(
         ("symbol", "expected", "expected_allele", "expected_mutation"),
         (
-                ("HLA-A*02:01 K66A mutant", "HLA-A*02:01 K66A mutant", "HLA-A*02:01", "K66A"),
-                ("HLA-A0201 K66A, E63Q mutant", "HLA-A*02:01 K66A, E63Q mutant", "HLA-A*02:01", "K66A, E63Q"),
-                ("HLA-B*08:01 B:I66A Mutant", "HLA-B*08:01 B:I66A mutant", "HLA-B*08:01", "B:I66A"),
-                ("HLA-DRB1*01:01 G86Y mutant", "HLA-DRB1*01:01 G86Y mutant", "HLA-DRB1*01:01", "G86Y"),
+            (
+                "HLA-A*02:01 K66A mutant",
+                "HLA-A*02:01 K66A mutant",
+                "HLA-A*02:01",
+                "K66A",
+            ),
+            (
+                "HLA-A0201 K66A, E63Q mutant",
+                "HLA-A*02:01 K66A, E63Q mutant",
+                "HLA-A*02:01",
+                "K66A, E63Q",
+            ),
+            (
+                "HLA-B*08:01 B:I66A Mutant",
+                "HLA-B*08:01 B:I66A mutant",
+                "HLA-B*08:01",
+                "B:I66A",
+            ),
+            (
+                "HLA-DRB1*01:01 G86Y mutant",
+                "HLA-DRB1*01:01 G86Y mutant",
+                "HLA-DRB1*01:01",
+                "G86Y",
+            ),
         ),
     )
-    def test_mutant(self, symbol, expected, expected_allele, expected_mutation, database):
+    def test_mutant(
+        self, symbol, expected, expected_allele, expected_mutation, database
+    ):
         config.set_mh_database(database)
 
         result = mh.standardize(symbol=symbol, species="homosapiens")
@@ -369,7 +410,9 @@ class TestStandardizeHomoSapiensMro:
         config.reset_mh_database()
 
     def test_mutant_invalid_allele(self):
-        result = mh.standardize(symbol="HLA-FOO*01:01 K66A mutant", species="homosapiens")
+        result = mh.standardize(
+            symbol="HLA-FOO*01:01 K66A mutant", species="homosapiens"
+        )
 
         assert not result.is_standardized
         assert result.symbol is None
@@ -417,7 +460,9 @@ class TestStandardizeMusMusculusMro:
         assert result.is_standardized
         assert result.symbol == expected
 
-    @pytest.mark.parametrize("symbol", ("foobar", "DR", "KB", "H2-Kz", "MH1-M5", "======="))
+    @pytest.mark.parametrize(
+        "symbol", ("foobar", "DR", "KB", "H2-Kz", "MH1-M5", "=======")
+    )
     def test_invalid_mh(self, symbol, caplog):
         result = mh.standardize(symbol=symbol, species="musmusculus")
 
@@ -426,7 +471,7 @@ class TestStandardizeMusMusculusMro:
         assert not result.is_standardized
         assert result.error is not None
 
-    def test_imgt_names_not_used_for_mro(self, caplog):
+    def test_mro_names_not_used_for_ipd(self, caplog):
         config.set_mh_database("IPD")
 
         result = mh.standardize(symbol="H2-Kb", species="musmusculus")
@@ -439,14 +484,28 @@ class TestStandardizeMusMusculusMro:
         ("symbol", "expected", "expected_mutation", "is_standardized", "error_mssg"),
         (
             ("H2-Kb Y84A mutant", "H2-Kb Y84A mutant", "Y84A", True, None),
-            ("H2-Kb Y22F, M23I, E24S, D30N mutant", "H2-Kb Y22F, M23I, E24S, D30N mutant", "Y22F, M23I, E24S, D30N", True, None),
+            (
+                "H2-Kb Y22F, M23I, E24S, D30N mutant",
+                "H2-Kb Y22F, M23I, E24S, D30N mutant",
+                "Y22F, M23I, E24S, D30N",
+                True,
+                None,
+            ),
             ("H-2Db H155A MUTANT", "H2-Db H155A mutant", "H155A", True, None),
-            ("I-Ab I67F, R70Q, T71K mutant", "H2-IAb I67F, R70Q, T71K mutant", "I67F, R70Q, T71K", True, None),
+            (
+                "I-Ab I67F, R70Q, T71K mutant",
+                "H2-IAb I67F, R70Q, T71K mutant",
+                "I67F, R70Q, T71K",
+                True,
+                None,
+            ),
             ("H2-Kb random mutant", None, None, False, "Invalid mutation"),
             ("H2-Kz Y84A mutant", None, None, False, "Unrecognized gene name"),
         ),
     )
-    def test_mutant(self, symbol, expected, expected_mutation, is_standardized, error_mssg):
+    def test_mutant(
+        self, symbol, expected, expected_mutation, is_standardized, error_mssg
+    ):
         result = mh.standardize(symbol=symbol, species="musmusculus")
 
         assert result.is_standardized == is_standardized
@@ -455,8 +514,6 @@ class TestStandardizeMusMusculusMro:
 
         if error_mssg is not None:
             assert error_mssg in result.error
-
-
 
 
 class TestStandardizeAnySpeciesMro:
@@ -555,5 +612,3 @@ class TestQuery:
         assert len(result) == 10
         assert "HLA-DRA" in result
         config.reset_mh_database()
-
-

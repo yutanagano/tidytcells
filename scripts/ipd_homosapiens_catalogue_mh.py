@@ -8,7 +8,7 @@ import script_utility
 
 
 def main() -> None:
-    print("Fetching HLA allele data from IMGT...")
+    print("Fetching HLA allele data from IPD...")
     valid_allele_tree = get_hla_alleles_tree()
     script_utility.save_as_json(
         valid_allele_tree, "ipd_homosapiens_mh_valid_allele.json"

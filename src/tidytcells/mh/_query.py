@@ -4,7 +4,7 @@ from tidytcells import _utils
 from tidytcells._utils import Parameter
 from tidytcells._query_engine import (
     QueryEngine,
-    ImgtHlaQueryEngine,
+    IpdHlaQueryEngine,
     MroHlaQueryEngine,
     MroH2MhQueryEngine,
 )
@@ -12,7 +12,7 @@ from typing import Dict, FrozenSet, Optional, Type, Literal
 
 
 QUERY_ENGINES: Dict[str, Dict[str, Type[QueryEngine]]] = {
-    "homosapiens": {"MRO": MroHlaQueryEngine, "IPD": ImgtHlaQueryEngine},
+    "homosapiens": {"MRO": MroHlaQueryEngine, "IPD": IpdHlaQueryEngine},
     "musmusculus": {"MRO": MroH2MhQueryEngine},
 }
 

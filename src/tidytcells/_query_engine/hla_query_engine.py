@@ -1,7 +1,10 @@
 from abc import abstractmethod
 from typing import Dict, FrozenSet
 from tidytcells._query_engine import QueryEngine
-from tidytcells._resources import HOMOSAPIENS_MH_VALID_IPD, HOMOSAPIENS_MH_VALID_PROTEIN_MRO
+from tidytcells._resources import (
+    HOMOSAPIENS_MH_VALID_IPD,
+    HOMOSAPIENS_MH_VALID_PROTEIN_MRO,
+)
 import warnings
 
 
@@ -49,7 +52,7 @@ class HlaQueryEngine(QueryEngine):
         return not second_allele_designation.isdigit()
 
 
-class ImgtHlaQueryEngine(HlaQueryEngine):
+class IpdHlaQueryEngine(HlaQueryEngine):
     _valid_symbols = HOMOSAPIENS_MH_VALID_IPD
 
 
