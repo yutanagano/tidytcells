@@ -1,12 +1,9 @@
 import json
-from pathlib import Path
-
-RESOURCES_DIR = Path(__file__).parent
+from importlib.resources import files
 
 
 def get_json_resource(filename: str) -> dict:
-    with open(RESOURCES_DIR / filename, "r") as f:
-        return json.load(f)
+    return json.loads(files(__name__).joinpath(filename).read_text())
 
 
 VALID_HOMOSAPIENS_TR_IMGT = get_json_resource("valid_homosapiens_tr.json")
