@@ -467,9 +467,7 @@ class TestStandardizeHomoSapiensMro:
         assert result.mutation is None
 
     def test_mutation_case_normalized(self):
-        result = mh.standardize(
-            symbol="hla-a*02:01 k66a mutant", species="homosapiens"
-        )
+        result = mh.standardize(symbol="hla-a*02:01 k66a mutant", species="homosapiens")
 
         assert result.is_standardized
         assert result.symbol == "HLA-A*02:01 K66A mutant"
@@ -626,10 +624,20 @@ class TestQuery:
     @pytest.mark.parametrize(
         ("species", "precision", "expected_len", "expected_in", "expected_not_in"),
         (
-            ("homosapiens", "allele", 17127, "HLA-DRB3*03:04", "HLA-DRB3*03:04P"),
+            ("homosapiens", "allele", 17130, "HLA-DRB3*03:04", "HLA-DRB3*03:04P"),
             ("homosapiens", "gene", 18, "HLA-B", "HLA-FOO"),
+            ("bostaurus", "allele", 681, "BoLA-1*007:01", "BoLA-FOO"),
+            ("bostaurus", "gene", 16, "BoLA-1", "HLA-A"),
+            ("macacamulatta", "allele", 1388, "Mamu-A1*001:01", "Mamu-FOO"),
+            ("macacamulatta", "gene", 30, "Mamu-A", "HLA-A"),
+            ("pantroglodytes", "allele", 299, "Patr-A*01:01", "Patr-FOO"),
+            ("pantroglodytes", "gene", 20, "Patr-A", "HLA-A"),
+            ("susscrofa", "allele", 453, "SLA-1*01:01", "SLA-FOO"),
+            ("susscrofa", "gene", 21, "SLA-1", "HLA-A"),
             ("musmusculus", "allele", 44, "H2-D", "HLA-A"),
             ("musmusculus", "gene", 44, "H2-Kwm7", "MH1-Q8"),
+            ("rattusnorvegicus", "allele", 16, "RT1-Aa", "RT1-FOO"),
+            ("rattusnorvegicus", "gene", 16, "RT1-A", "HLA-A"),
         ),
     )
     def test_query_all(
@@ -642,6 +650,7 @@ class TestQuery:
         assert expected_in in result
         assert not expected_not_in in result
 
+    @pytest.mark.filterwarnings("ignore:tidytcells is not.+aware")
     @pytest.mark.parametrize(
         (
             "species",
@@ -653,7 +662,10 @@ class TestQuery:
         ),
         (
             ("homosapiens", "gene", "DR", 6, "HLA-DRA", "HLA-A"),
+            ("homosapiens", "allele", "DRB3", 258, "HLA-DRB3*01:01", "HLA-DRB4*01:01"),
+            ("bostaurus", "allele", "BoLA-1", 18, "BoLA-1*007:01", "BoLA-3*033:01"),
             ("musmusculus", "gene", "H2", 44, "H2-IAk", "IAg7"),
+            ("musmusculus", "gene", "^H2-D$", 1, "H2-D", "H2-Db"),
         ),
     )
     def test_query_contains(
