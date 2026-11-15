@@ -11,7 +11,7 @@ from tidytcells._query_engine import (
 from typing import Dict, FrozenSet, Optional, Type, Literal
 
 
-QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
+QUERY_ENGINES: Dict[str, Dict[str, Type[QueryEngine]]] = {
     "homosapiens": {"MRO": MroHlaQueryEngine, "IPD": ImgtHlaQueryEngine},
     "musmusculus": {"MRO": MroH2MhQueryEngine},
 }
