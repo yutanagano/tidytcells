@@ -1,6 +1,3 @@
 from .standardized_gene_symbol import ReceptorGeneSymbolStandardizer
 from .standardized_ig_symbol import IgSymbolStandardizer
 from .standardized_tr_symbol import TrSymbolStandardizer
-
-from .standardized_hla_symbol import HlaSymbolStandardizer
-from .standardized_mus_musculus_mh_symbol import MusMusculusMhSymbolStandardizer

@@ -32,14 +32,18 @@ def get_mh_database() -> str:
 def set_receptor_database(name: str) -> None:
     global _receptor_database
     if name not in VALID_RECEPTOR_DATABASES:
-        raise ValueError(f'"receptor_database" must be one of {sorted(VALID_RECEPTOR_DATABASES)}, got {name}.')
+        raise ValueError(
+            f'"receptor_database" must be one of {sorted(VALID_RECEPTOR_DATABASES)}, got {name}.'
+        )
     _receptor_database = name
 
 
 def set_mh_database(name: str) -> None:
     global _mh_database
     if name not in VALID_MH_DATABASES:
-        raise ValueError(f'"mh_database" must be one of {sorted(VALID_MH_DATABASES)}, got {name}.')
+        raise ValueError(
+            f'"mh_database" must be one of {sorted(VALID_MH_DATABASES)}, got {name}.'
+        )
     _mh_database = name
 
 

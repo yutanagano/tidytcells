@@ -7,9 +7,10 @@ import pandas as pd
 from pandas import DataFrame
 from pathlib import Path
 import requests
-from typing import Tuple
+from typing import Tuple, Iterable
 import re
 import time
+
 
 def get_tr_alleles_list(species: str) -> dict:
     gene_groups = (
@@ -65,7 +66,7 @@ def get_alleles_list(species: str, gene_groups: Tuple[str]) -> dict:
 def get_alleles_for_gene_group_for_species(gene_group: str, species: str) -> dict:
     alleles = collections.defaultdict(dict)
 
-    time.sleep(5) # to prevent getting blocked
+    time.sleep(5)  # to prevent getting blocked
     response = requests.get(
         f"https://www.imgt.org/genedb/GENElect?query=7.2+{gene_group}&species={species}"
     )
@@ -128,6 +129,7 @@ def get_v_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
     labels = ("FR1-IMGT", "CDR1-IMGT", "FR2-IMGT", "CDR2-IMGT", "FR3-IMGT", "V-REGION")
     return omit_incomplete_regions(get_gene_sequence_data(labels, gene_groups, species))
 
+
 def get_d_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
     labels = ("D-REGION",)
     return get_gene_sequence_data(labels, gene_groups, species)
@@ -153,15 +155,27 @@ def get_j_gene_sequence_data(species: str, gene_groups: Tuple[str]) -> dict:
 
     return add_j_motifs(data)
 
+
 def omit_incomplete_regions(v_aa_dict):
     for allele, seq_data in v_aa_dict.items():
         # Remove any empty sequences
-        for region in ("CDR1-IMGT", "CDR2-IMGT", "FR1-IMGT", "FR2-IMGT", "FR3-IMGT", "V-REGION"):
+        for region in (
+            "CDR1-IMGT",
+            "CDR2-IMGT",
+            "FR1-IMGT",
+            "FR2-IMGT",
+            "FR3-IMGT",
+            "V-REGION",
+        ):
             if region in seq_data and seq_data[region] == "":
                 seq_data.pop(region)
 
         # Remove CDR1 if FR1 is missing and V starts with CDR1 (CDR1 is likely incomplete)
-        if ("V-REGION" in seq_data) and ("FR1-IMGT" not in seq_data) and ("CDR1-IMGT" in seq_data):
+        if (
+            ("V-REGION" in seq_data)
+            and ("FR1-IMGT" not in seq_data)
+            and ("CDR1-IMGT" in seq_data)
+        ):
             if seq_data["V-REGION"].startswith(seq_data["CDR1-IMGT"]):
                 seq_data.pop("CDR1-IMGT")
 
@@ -246,11 +260,13 @@ def get_motif(j_region, conserved_aa):
 
         if j_region.count(conserved_aa) == 1:
             idx = j_region.index(conserved_aa)
-            return j_region[idx:idx+4]
+            return j_region[idx : idx + 4]
 
-        if j_region.count(conserved_aa + "G") == 1:  # G is a very common second amino acid in the motif
+        if (
+            j_region.count(conserved_aa + "G") == 1
+        ):  # G is a very common second amino acid in the motif
             idx = j_region.index(conserved_aa + "G")
-            return j_region[idx:idx + 4]
+            return j_region[idx : idx + 4]
 
     cons_aas_regex = "[FW]" if conserved_aa is None else conserved_aa
     motif_regex = ".+(" + cons_aas_regex + "[AGS][A-Z]G)"
@@ -265,7 +281,9 @@ def add_j_motifs(j_aa_dict):
         if "J-REGION" not in seq_data or len(seq_data["J-REGION"]) < 4:
             continue
 
-        conserved_aa = seq_data.pop("J-PHE", seq_data.pop("J-TRP", seq_data.pop("J-conserved", None)))
+        conserved_aa = seq_data.pop(
+            "J-PHE", seq_data.pop("J-TRP", seq_data.pop("J-conserved", None))
+        )
 
         if not ("J-MOTIF" in seq_data and len(seq_data["J-MOTIF"]) == 4):
             motif_from_seq = get_motif(seq_data["J-REGION"], conserved_aa)
@@ -289,3 +307,60 @@ def fetch_hgnc_data() -> DataFrame:
     )
     buffer = StringIO(response.text)
     return pd.read_csv(buffer, sep="\t", on_bad_lines="warn")
+
+
+def get_hgnc_synonyms_data(valid_genes: Iterable[str]) -> dict:
+    """
+    Get HGNC synonyms for the given valid genes.
+
+    Membership is tested with gene names only: when a dict (e.g. a valid-symbol
+    tree) is passed, its top-level keys are the gene names tested against.
+    """
+    hgnc = fetch_hgnc_data()
+
+    mh_genes = hgnc[hgnc["Gene group name"].notna()]
+    mh_genes = mh_genes[
+        mh_genes["Gene group name"].str.contains("Histocompatibility complex")
+    ]
+
+    # Only keep genes whose 'approved symbols' are in the provided list of valid genes
+    mh_genes = mh_genes[mh_genes["Approved symbol"].map(lambda x: x in valid_genes)]
+
+    # Get MH genes with "alias symbols"
+    mh_genes_with_aliases = mh_genes[mh_genes["Alias symbols"].notna()][
+        ["Approved symbol", "Alias symbols"]
+    ]
+    mh_genes_with_aliases["Alias symbols"] = mh_genes_with_aliases["Alias symbols"].map(
+        lambda x: [element.strip() for element in x.split(",")]
+    )
+    mh_genes_with_aliases.columns = ["Approved symbol", "Synonym"]
+    mh_genes_with_aliases = mh_genes_with_aliases.explode("Synonym")
+
+    # Get MH genes with "previous symbols" (deprecated symbols)
+    mh_genes_with_depnames = mh_genes[mh_genes["Previous symbols"].notna()][
+        ["Approved symbol", "Previous symbols"]
+    ]
+    mh_genes_with_depnames["Previous symbols"] = mh_genes_with_depnames[
+        "Previous symbols"
+    ].map(lambda x: [element.strip() for element in x.split(",")])
+    mh_genes_with_depnames.columns = ["Approved symbol", "Synonym"]
+    mh_genes_with_depnames = mh_genes_with_depnames.explode("Synonym")
+
+    # Combine and uppercase
+    mh_synonyms = pd.concat([mh_genes_with_aliases, mh_genes_with_depnames])
+    mh_synonyms["Synonym"] = mh_synonyms["Synonym"].str.upper()
+
+    # Remove ambiguous synonyms
+    mh_synonyms = mh_synonyms.groupby("Synonym").aggregate(lambda x: x.tolist())
+    mh_synonyms = mh_synonyms[mh_synonyms["Approved symbol"].map(len) == 1].copy()
+    mh_synonyms["Approved symbol"] = mh_synonyms["Approved symbol"].map(
+        lambda x: x.pop()
+    )
+
+    # Remove redundant items
+    mh_synonyms = mh_synonyms[mh_synonyms.index != mh_synonyms["Approved symbol"]]
+
+    # Remove any synonyms that are also names of other valid genes
+    mh_synonyms = mh_synonyms[mh_synonyms.index.map(lambda x: x not in valid_genes)]
+
+    return mh_synonyms["Approved symbol"].to_dict()

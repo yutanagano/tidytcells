@@ -1,61 +1,70 @@
-from logging import Logger
 from typing import Optional, Union
 
 from tidytcells.result import MhGene, ReceptorGene, Junction
 
 
-def warn_failure(
-    reason_for_failure: str,
-    original_input: str,
-    attempted_fix: str,
-    species: str,
-    logger: Logger,
-):
-    warning_message = f'Failed to standardize "{original_input}" for species {species}: {reason_for_failure}.'
-
-    if original_input != attempted_fix:
-        warning_message += f' (best attempted fix: "{attempted_fix}").'
-
-    logger.warning(warning_message)
-
-
-def warn_result_failure(
-    result: Union[MhGene, ReceptorGene, Junction],
-    logger: Logger,
-):
-    warn_failure(reason_for_failure=result.error,
-                 original_input=result.original_input,
-                 attempted_fix=result.attempted_fix,
-                 species=result.species,
-                 logger=logger)
-
-def warn_unsupported_species(species: str, module: str, valid_species, logger: Logger):
-    logger.warning(
-        f'Unsupported species: "{species}" (valid options are: {sorted(valid_species)}). '
-        f"Skipping {module} standardization."
+def unsupported_species_message(species: str, valid_species) -> str:
+    """
+    Format an error message for an unsupported species.
+    """
+    return (
+        f'Unsupported species: "{species}" '
+        f"(valid options are: {sorted(valid_species)})."
     )
 
 
-def warn_unsupported_receptor_database(
+def unsupported_receptor_database_message(
     receptor_database: str,
     species: str,
-    module: str,
     valid_databases,
-    logger: Logger,
-    log_failures: bool = True,
     locus: Optional[str] = None,
 ) -> str:
-    '''
-    Log a warning for an unsupported receptor_database setting (if `log_failures`)
-    and return the corresponding error message.
-    '''
+    """
+    Format an error message for an unsupported receptor_database setting.
+    """
     locus_part = f' and locus "{locus}"' if locus is not None else ""
-    error = (
+    return (
         f'Unsupported receptor_database: "{receptor_database}" for species "{species}"{locus_part} '
-        f'(valid options are: {sorted(valid_databases)}). '
-        f'Use tidytcells.config.set_receptor_database() to switch.'
+        f"(valid options are: {sorted(valid_databases)}). "
+        "Use tidytcells.config.set_receptor_database() to switch."
     )
-    if log_failures:
-        logger.warning(f'{error} Skipping {module} standardization.')
 
-    return error
+
+def unsupported_mh_database_message(
+    mh_database: str,
+    species: str,
+    valid_databases,
+) -> str:
+    """
+    Format an error message for an unsupported mh_database setting.
+    """
+    return (
+        f'Unsupported mh_database: "{mh_database}" for species "{species}" '
+        f"(valid options are: {sorted(valid_databases)}). "
+        "Use tidytcells.config.set_mh_database() to switch."
+    )
+
+
+def unsupported_locus_message(locus: str, species: str, valid_loci) -> str:
+    """
+    Format an error message for an unsupported locus.
+    """
+    return (
+        f'Unsupported locus: "{locus}" for species "{species}" '
+        f"(valid options are: {sorted(valid_loci)})."
+    )
+
+
+def standardization_failure_message(
+    result: Union[MhGene, ReceptorGene, Junction],
+) -> str:
+    """
+    Format a warning message for a failed standardization result.
+    """
+    message = (
+        f'Failed to standardize "{result.original_input}" '
+        f"for species {result.species}: {result.error}."
+    )
+    if result.original_input != result.attempted_fix:
+        message += f' (best attempted fix: "{result.attempted_fix}").'
+    return message
