@@ -19,8 +19,7 @@ class MhAlleleSymbolParser:
     allele_designation: List[str]
     mutation: Optional[str]
 
-    def __init__(self, symbol: str, species: str) -> None:
-        self.species = species
+    def __init__(self, symbol: str) -> None:
         symbol = self._parse_mutation(symbol)
         self.cleaned_symbol = _utils.clean_and_uppercase(symbol)
         self._parse_gene_and_allele(
@@ -88,8 +87,9 @@ class HlaSymbolParser(MhAlleleSymbolParser):
 
 class MhAlleleSymbolStandardizer:
     """
-    Standardizer class for MH symbols with numbered alleles (e.g. HLA-A*02:01, Mamu-A1*001:01).
-    Input is matched case-insensitively; results are returned in the case used by the database.
+    Standardizer class for MH symbols with numbered alleles (e.g. HLA-A*02:01,
+    Mamu-A1*001:01). Input is matched case-insensitively; results are returned
+    in the case used by the database.
     """
 
     def __init__(
@@ -132,7 +132,7 @@ class MhAlleleSymbolStandardizer:
         self._compile_result()
 
     def _parse_symbol(self, symbol: str) -> None:
-        parsed_symbol = self._parser_cls(symbol, self.species)
+        parsed_symbol = self._parser_cls(symbol)
         self._mutation = parsed_symbol.mutation
         self._cleaned_symbol = parsed_symbol.cleaned_symbol
         self._gene_name = parsed_symbol.gene_name
@@ -144,7 +144,7 @@ class MhAlleleSymbolStandardizer:
 
         if self._cleaned_symbol in self._allele_synonyms:
             parsed_synonym = self._parser_cls(
-                self._allele_synonyms[self._cleaned_symbol], self.species
+                self._allele_synonyms[self._cleaned_symbol]
             )
             self._gene_name = parsed_synonym.gene_name
             self._allele_designation = parsed_synonym.allele_designation
