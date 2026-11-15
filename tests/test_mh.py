@@ -76,6 +76,61 @@ class TestStandardize:
 
         config.reset_mh_database()
 
+    @pytest.mark.parametrize(
+        ("symbol", "species"),
+        (
+            ("HLA-A*02:01 foo", "homosapiens"),
+            ("Mamu-A1*001:01 foo", "macacamulatta"),
+            ("H2-Kb foo", "musmusculus"),
+        ),
+    )
+    def test_unexpected_trailing_text(self, symbol, species):
+        result = mh.standardize(symbol=symbol, species=species)
+
+        assert not result.is_standardized
+        assert result.error == "Unexpected trailing text: FOO"
+
+    @pytest.mark.parametrize(
+        ("symbol", "species", "expected", "expected_mutation"),
+        (
+            ("HLA-A*02:01 K66A", "homosapiens", "HLA-A*02:01 K66A mutant", "K66A"),
+            ("HLA-A*02:01K66A", "homosapiens", "HLA-A*02:01 K66A mutant", "K66A"),
+            (
+                "hla-a*02:01 k66a mutation",
+                "homosapiens",
+                "HLA-A*02:01 K66A mutant",
+                "K66A",
+            ),
+            (
+                "HLA-B*35:08 Q65A, T69A",
+                "homosapiens",
+                "HLA-B*35:08 Q65A, T69A mutant",
+                "Q65A, T69A",
+            ),
+            (
+                "Mamu-A1*001:01 K66A",
+                "macacamulatta",
+                "Mamu-A1*001:01 K66A mutant",
+                "K66A",
+            ),
+            ("H2-Kb k66a", "musmusculus", "H2-Kb K66A mutant", "K66A"),
+        ),
+    )
+    def test_trailing_mutation_spec_without_keyword(
+        self, symbol, species, expected, expected_mutation
+    ):
+        result = mh.standardize(symbol=symbol, species=species)
+
+        assert result.is_standardized
+        assert result.symbol == expected
+        assert result.mutation == expected_mutation
+
+    def test_symbol_error_takes_precedence_over_trailing_text(self):
+        result = mh.standardize(symbol="HLA-FOO*01:01 random", species="homosapiens")
+
+        assert not result.is_standardized
+        assert result.error == "Unrecognized gene name"
+
 
 class TestStandardizeHomoSapiens:
     @pytest.mark.parametrize("symbol", [*HOMOSAPIENS_MH_VALID_IPD, "B2M"])
@@ -424,6 +479,15 @@ class TestStandardizeHomoSapiensMro:
 
         assert result.mutation is None
 
+    def test_mutation_case_normalized(self):
+        result = mh.standardize(
+            symbol="hla-a*02:01 k66a mutant", species="homosapiens"
+        )
+
+        assert result.is_standardized
+        assert result.symbol == "HLA-A*02:01 K66A mutant"
+        assert result.mutation == "K66A"
+
 
 class TestStandardizeMusMusculusMro:
     @pytest.mark.parametrize("symbol", MUSMUSCULUS_MH_VALID_PROTEIN_MRO)
@@ -493,6 +557,13 @@ class TestStandardizeMusMusculusMro:
             ),
             ("H-2Db H155A MUTANT", "H2-Db H155A mutant", "H155A", True, None),
             (
+                "H2-Kb Y84A            ,                             E24S mutant",
+                "H2-Kb Y84A, E24S mutant",
+                "Y84A, E24S",
+                True,
+                None,
+            ),
+            (
                 "I-Ab I67F, R70Q, T71K mutant",
                 "H2-IAb I67F, R70Q, T71K mutant",
                 "I67F, R70Q, T71K",
@@ -514,6 +585,13 @@ class TestStandardizeMusMusculusMro:
 
         if error_mssg is not None:
             assert error_mssg in result.error
+
+    def test_mutation_case_normalized(self):
+        result = mh.standardize(symbol="h2-kb k66a mutant", species="musmusculus")
+
+        assert result.is_standardized
+        assert result.symbol == "H2-Kb K66A mutant"
+        assert result.mutation == "K66A"
 
 
 class TestStandardizeAnySpeciesMro:

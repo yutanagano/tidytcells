@@ -3,44 +3,42 @@ import re
 from typing import Dict, List, Optional
 
 from tidytcells import _utils
+from tidytcells._standardized_gene_symbol.mutation import interpret_remainder
 from tidytcells.result import MhGene
 
 
 class MhAlleleSymbolParser:
-    MUTANT_REGEX = re.compile(r"^\s*(\S+)\s+(.+?)\s+mutant\s*$", re.IGNORECASE)
     SYMBOL_REGEX = re.compile(r"^([A-Z0-9\-\.\:\/]+)(\*([A-Z\d:]+))?")
 
     cleaned_symbol: str
+    symbol_part: str
     gene_name: str
     allele_designation: List[str]
-    mutation: Optional[str]
+    remainder: str
 
     def __init__(self, symbol: str) -> None:
-        symbol = self._parse_mutation(symbol)
-        self.cleaned_symbol = _utils.clean_and_uppercase(symbol)
+        # internal whitespace is kept so that the symbol regex's match end,
+        # not the first space, defines where the symbol ends
+        symbol = _utils.clean_preserving_whitespace(symbol).upper()
         self._parse_gene_and_allele(
-            self._replace_periods_between_digits_with_colon(self.cleaned_symbol)
+            self._replace_periods_between_digits_with_colon(symbol)
         )
-
-    def _parse_mutation(self, symbol: str) -> str:
-        self.mutation = None
-
-        mutant_match = self.MUTANT_REGEX.match(symbol)
-        if mutant_match:
-            symbol, self.mutation = mutant_match.groups()
-
-        return symbol
+        self.cleaned_symbol = _utils.clean_and_uppercase(self.symbol_part)
 
     def _parse_gene_and_allele(self, symbol: str) -> None:
         parse_attempt = self.SYMBOL_REGEX.match(symbol)
 
         if parse_attempt:
+            self.symbol_part = symbol[: parse_attempt.end()]
+            self.remainder = symbol[parse_attempt.end() :].strip()
             self.gene_name = parse_attempt.group(1)
             self.allele_designation = self._listify_allele_designation(
                 parse_attempt.group(3)
             )
             return
 
+        self.symbol_part = symbol
+        self.remainder = ""
         self.gene_name = symbol
         self.allele_designation = []
 
@@ -66,12 +64,16 @@ class HlaSymbolParser(MhAlleleSymbolParser):
 
     def _parse_gene_and_allele(self, symbol: str) -> None:
         if symbol == "B2M":
+            self.symbol_part = symbol
+            self.remainder = ""
             self.gene_name = "B2M"
             self.allele_designation = []
             return
 
         parse_attempt = self.HLA_CLASS_II_REGEX.match(symbol)
         if parse_attempt:
+            self.symbol_part = symbol[: parse_attempt.end()]
+            self.remainder = symbol[parse_attempt.end() :].strip()
             self.gene_name = parse_attempt.group(1)
             self.allele_designation = self._listify_allele_designation(
                 parse_attempt.group(5)
@@ -128,12 +130,25 @@ class MhAlleleSymbolStandardizer:
 
     def _parse_symbol(self, symbol: str) -> None:
         parsed_symbol = self._parser_cls(symbol)
-        self._mutation = parsed_symbol.mutation
         self._cleaned_symbol = parsed_symbol.cleaned_symbol
         self._gene_name = parsed_symbol.gene_name
         self._allele_designation = parsed_symbol.allele_designation
 
+        self._mutation, self._mutation_error = interpret_remainder(
+            parsed_symbol.remainder
+        )
+        self._trailing_text = (
+            parsed_symbol.remainder
+            if parsed_symbol.remainder
+            and self._mutation is None
+            and self._mutation_error is None
+            else None
+        )
+
     def _resolve_errors(self) -> None:
+        if self._trailing_text is not None:
+            return
+
         if self.get_reason_why_invalid() is None:
             return
 
@@ -314,15 +329,13 @@ class MhAlleleSymbolStandardizer:
                 if len(field) < 2:
                     return "Non-2-digit allele designators"
 
-        # validate mutation formatting
-        if self._mutation is not None:
-            substitution = r"(?:[A-Z]:)?[ACDEFGHIKLMNPQRSTVWY]\d+[ACDEFGHIKLMNPQRSTVWY]"
-            if not re.fullmatch(
-                rf"{substitution}(?:(?:\s*,\s*|\s+){substitution})*",
-                self._mutation,
-                re.IGNORECASE,
-            ):
-                return f"Invalid mutation: {self._mutation}"
+        # the remainder after the symbol, if any, must be a valid mutation
+        # specification
+        if self._mutation_error is not None:
+            return self._mutation_error
+
+        if self._trailing_text is not None:
+            return f"Unexpected trailing text: {self._trailing_text}"
 
         return None
 
