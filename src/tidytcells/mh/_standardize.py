@@ -286,29 +286,27 @@ def standardize(
     mh_database = config.get_mh_database()
 
     if species not in SPECIES_TO_STANDARDIZER:
+        msg = _utils.unsupported_species_message(
+            species, SPECIES_TO_STANDARDIZER.keys()
+        )
         if log_failures:
-            _utils.warn_unsupported_species(
-                species, "MH", SPECIES_TO_STANDARDIZER.keys(), logger
-            )
-        return MhGene(symbol, f"Unsupported species: {species}")
+            logger.warning(f"{msg} Skipping MH standardization.")
+        return MhGene(symbol, msg)
 
     if mh_database not in MH_SYMBOLS_BY_SP_DB[species]:
-        error = _utils.warn_unsupported_mh_database(
+        msg = _utils.unsupported_mh_database_message(
             mh_database,
             species,
             MH_SYMBOLS_BY_SP_DB[species].keys(),
-            logger,
-            log_failures=log_failures,
         )
-        return MhGene(symbol, error)
+        if log_failures:
+            logger.warning(f"{msg} Skipping MH standardization.")
+        return MhGene(symbol, msg)
 
     result = SPECIES_TO_STANDARDIZER[species](symbol, mh_database=mh_database)
 
     if (not result.is_standardized) and log_failures:
-        _utils.warn_result_failure(
-            result=result,
-            logger=logger,
-        )
+        logger.warning(_utils.standardization_failure_message(result))
 
     return result
 

@@ -5,9 +5,9 @@ from .string_cleaning import (
     clean_preserving_whitespace,
 )
 from .warnings import (
-    warn_failure,
-    warn_result_failure,
-    warn_unsupported_species,
-    warn_unsupported_mh_database,
-    warn_unsupported_receptor_database,
+    standardization_failure_message,
+    unsupported_locus_message,
+    unsupported_mh_database_message,
+    unsupported_receptor_database_message,
+    unsupported_species_message,
 )

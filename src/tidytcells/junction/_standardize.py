@@ -405,33 +405,35 @@ def standardize(
 
 
     if species not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES:
+        msg = _utils.unsupported_species_message(
+            species, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES.keys()
+        )
         if log_failures:
-            _utils.warn_unsupported_species(species, "junction", SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES.keys(), logger)
+            logger.warning(f"{msg} Skipping junction standardization.")
 
-        return Junction(original_input, f'Unsupported species: {species}')
-
+        return Junction(original_input, msg)
 
     if locus[0:2] not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species]:
+        msg = _utils.unsupported_locus_message(
+            locus, species, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species]
+        )
         if log_failures:
-            logger.warning(
-                f'Unsupported locus: "{locus}" for species "{species}" (valid options are: {sorted(SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species])}). ' f"Skipping junction standardization."
-            )
+            logger.warning(f"{msg} Skipping junction standardization.")
 
-        return Junction(original_input, f'Unsupported locus: "{locus}" for species "{species}"')
+        return Junction(original_input, msg)
 
     receptor_database = config.get_receptor_database()
     if receptor_database not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]]:
-        error = _utils.warn_unsupported_receptor_database(
+        msg = _utils.unsupported_receptor_database_message(
             receptor_database,
             species,
-            "junction",
             SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]].keys(),
-            logger,
-            log_failures=log_failures,
             locus=locus,
         )
+        if log_failures:
+            logger.warning(f"{msg} Skipping junction standardization.")
 
-        return Junction(original_input, error)
+        return Junction(original_input, msg)
 
     sequence_dictionary = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]][receptor_database]
 
@@ -447,10 +449,7 @@ def standardize(
                                   sequence_dictionary=sequence_dictionary).result
 
     if (not result.is_standardized) and log_failures:
-        _utils.warn_result_failure(
-            result=result,
-            logger=logger,
-        )
+        logger.warning(_utils.standardization_failure_message(result))
 
     return result
 

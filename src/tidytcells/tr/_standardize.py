@@ -258,22 +258,23 @@ def standardize(
     species = _utils.clean_and_lowercase(species)
 
     if species not in SUPPORTED_TR_SPECIES_AND_THEIR_GENES:
+        msg = _utils.unsupported_species_message(
+            species, SUPPORTED_TR_SPECIES_AND_THEIR_GENES.keys()
+        )
         if log_failures:
-            _utils.warn_unsupported_species(species, "TR", SUPPORTED_TR_SPECIES_AND_THEIR_GENES.keys(), logger)
-        return ReceptorGene(symbol, f'Unsupported species: {species}')
+            logger.warning(f"{msg} Skipping TR standardization.")
+        return ReceptorGene(symbol, msg)
 
     receptor_database = config.get_receptor_database()
     if receptor_database not in SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species]:
-        error = _utils.warn_unsupported_receptor_database(
+        msg = _utils.unsupported_receptor_database_message(
             receptor_database,
             species,
-            "TR",
             SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species].keys(),
-            logger,
-            log_failures=log_failures,
         )
-
-        return ReceptorGene(symbol, error)
+        if log_failures:
+            logger.warning(f"{msg} Skipping TR standardization.")
+        return ReceptorGene(symbol, msg)
 
     valid_gene_dictionary = SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species][receptor_database]["genes"]
     synonym_dictionary = SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species][receptor_database]["synonyms"]
@@ -287,10 +288,7 @@ def standardize(
                                            synonym_dictionary=synonym_dictionary)
 
     if (not tr_standardizer.result.is_standardized) and log_failures:
-        _utils.warn_result_failure(
-            result=tr_standardizer.result,
-            logger=logger,
-        )
+        logger.warning(_utils.standardization_failure_message(tr_standardizer.result))
 
     return tr_standardizer.result
 
