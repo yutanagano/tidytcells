@@ -21,12 +21,17 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
+    "sphinx.ext.intersphinx",
 ]
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 autosummary_imported_members = True
 autodoc_typehints = "description"
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+}
 
 
 # -- Options for HTML output -------------------------------------------------

@@ -52,7 +52,7 @@ def query(
 
     Returns
     -------
-    ~typing.FrozenSet[str]
+    frozenset[str]
         The set of all genes / alleles that satisfy the given constraints.
 
     Examples
