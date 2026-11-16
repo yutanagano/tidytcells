@@ -131,9 +131,10 @@ class MhGene:
     @property
     def mutation(self) -> Optional[str]:
         """
-        The mutation description (e.g. ``'K66A'`` for ``'HLA-A*02:01 K66A
-        mutant'``) if standardization was successful and the input was a
-        mutant, otherwise ``None``.
+        The mutation description, if standardization was successful and the
+        input was a mutant, otherwise ``None``.
+
+        For example, ``'K66A'`` for ``'HLA-A*02:01 K66A mutant'``.
         """
         if self.is_standardized:
             return self._mutation
