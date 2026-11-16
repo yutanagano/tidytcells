@@ -7,15 +7,10 @@ F_MISMATCH_AAS = {"I", "L", "V", "Y", "S", "C"}
 W_MISMATCH_AAS = {"C", "G", "L", "R", "S"}
 FW_MISMATCH_AAS = F_MISMATCH_AAS.union(W_MISMATCH_AAS)
 
-MIN_ALIGNMENT_SCORES = {
-    "TR": 2,
-    "IG": 1
-}
+MIN_ALIGNMENT_SCORES = {"TR": 2, "IG": 1}
 
-MISMATCH_PENALTY = {
-    "TR": -1.5,
-    "IG": -0.75
-}
+MISMATCH_PENALTY = {"TR": -1.5, "IG": -0.75}
+
 
 class JunctionStandardizer:
 
@@ -160,7 +155,7 @@ class JunctionStandardizer:
             self.j_aa_dict,
             min_j_score + 1,
             mismatch_penalty,
-            allow_mismatches=False
+            allow_mismatches=False,
         )
         keep_alignments = []
 
@@ -201,7 +196,7 @@ class JunctionStandardizer:
             self.v_aa_dict,
             min_v_score + 1,
             mismatch_penalty,
-            allow_mismatches=False
+            allow_mismatches=False,
         )
         keep_alignments = []
 
@@ -232,7 +227,7 @@ class JunctionStandardizer:
             self.j_aa_dict,
             min_j_score,
             mismatch_penalty=mismatch_penalty,
-            allow_mismatches=True
+            allow_mismatches=True,
         )
 
         if self.allow_fw_correction and self.orig_seq[-1] in F_MISMATCH_AAS:
@@ -271,7 +266,7 @@ class JunctionStandardizer:
             self.v_aa_dict,
             min_v_score,
             mismatch_penalty,
-            allow_mismatches=True
+            allow_mismatches=True,
         )
 
         if self.allow_c_correction and self.orig_seq[0] in C_MISMATCH_AAS:
