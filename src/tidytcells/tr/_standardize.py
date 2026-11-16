@@ -30,30 +30,30 @@ def standardize(
 
     Parameters
     ----------
-    symbol : str
+    symbol
         Potentially non-standardized TR gene / allele symbol.
-    species : str
+    species
         Can be specified to standardize to a TR symbol that is known to be valid for that species (see above for supported species).
         Defaults to ``"homosapiens"``.
-    enforce_functional : bool
+    enforce_functional
         If ``True``, disallows TR genes / alleles that are recognised by IMGT but are marked as non-functional (ORF or pseudogene).
         Defaults to ``False``.
-    allow_subgroup : bool
+    allow_subgroup
         If ``True``, allows valid subgroups (as well as more specific gene/allele symbos) to pass standardization.
         If ``False``, the supplied symbol must point to at least a specific gene.
         Defaults to ``False``.
-    log_failures : bool
+    log_failures
         Report standardization failures through logging (at level ``WARNING``).
         Defaults to ``True``.
-    gene : str
+    gene
         Alias for the parameter `symbol`.
-    suppress_warnings : bool
+    suppress_warnings
         Disable warnings that are usually logged when standardization fails.
         Deprecated in favour of `log_failures`.
 
     Returns
     -------
-    :py:class:`~tidytcells.result.ReceptorGene`
+    ~tidytcells.result.ReceptorGene
         A standardized receptor gene.
         For details on how to use this output, please refer to the class documentation.
 

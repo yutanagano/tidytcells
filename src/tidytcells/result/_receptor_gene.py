@@ -138,7 +138,7 @@ class ReceptorGene:
 
         Parameters
         ----------
-        enforce_functional : bool
+        enforce_functional
             If ``True``, only functional alleles are returned.
 
         Returns
@@ -161,13 +161,13 @@ class ReceptorGene:
 
         Parameters
         ----------
-        sequence_type : str
+        sequence_type
             Which sequence to return. This can be:
             - For V genes: 'FR1', 'FR2', 'FR3', 'CDR1', 'CDR2', 'V-REGION'
             - For D genes: 'D-REGION'
             - For J genes: 'J-REGION', 'J-MOTIF'
             - Or 'ALL' to return all available sequences
-        enforce_functional : bool
+        enforce_functional
             If ``True``, only information for functional alleles is returned.
 
         Returns

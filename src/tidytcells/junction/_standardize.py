@@ -41,13 +41,13 @@ def standardize(
 
     Parameters
     ----------
-    seq : str
+    seq
         The junction sequence.
-    locus : str
+    locus
         String value representing the locus (TRA, TRB, IGH, IGL, etc;
         TR or IG may be used if a more precise locus is unknown).
         This is used to select an applicable subset of V and J genes for junction correction.
-    j_symbol : str
+    j_symbol
         The TR/IG J symbol used to correct the end of the junction sequence.
         If a specific J allele is supplied (e.g., human TRAJ1*01),
         the junction is corrected according to the known sequence
@@ -56,7 +56,7 @@ def standardize(
         all associated allele sequences will be tested for the best alignment.
         Multiple j_symbols may be given, separated by comma ',' (e.g., TRAJ13*01,TRAJ13*02).
         If no J symbol is given, all J genes for the given species + locus will be tested.
-    v_symbol : str
+    v_symbol
         The TR/IG V symbol used to correct the start of the junction sequence.
         If a specific V allele is supplied (e.g., human TRAV1-1*01),
         the junction is corrected according to the known sequence
@@ -65,49 +65,49 @@ def standardize(
         all associated allele sequences will be tested for the best alignment.
         Multiple v_symbols may be given, separated by comma ',' (e.g., TRAV1-1*01,TRAV1-1*02).
         If no V symbol is given, all V genes for the given species + locus will be tested.
-    species : str
+    species
         The species that produced the underlying receptor. Defaults to ``homosapiens``.
-    allow_c_correction : bool
+    allow_c_correction
         Whether to allow the first amino acid in the input sequence to be corrected to 'C'
         if it is a potential sequencing error (only "W", "S", "R", "G", "Y", "F")
         and correction improves the V gene alignment. Defaults to ``False``.
-    allow_fw_correction : bool
+    allow_fw_correction
         Whether to allow the last amino acid in the input sequence to be corrected to 'F' or 'W'
         if it is a potential sequencing error (only "I", "L", "V", "Y", "S", "C", "G",  "R")
         and correction improves the J gene alignment. Defaults to ``False``.
-    enforce_functional_v : bool
+    enforce_functional_v
         Only consider V genes which are annotated to be 'functional' (excluding ORFs and pseudogenes).
         Defaults to ``True``.
-    enforce_functional_j : bool
+    enforce_functional_j
         Only consider V genes which are annotated to be 'functional' (excluding ORFs and pseudogenes).
         Due to its shorter size it can be difficult to determine whether a J gene is truly functional,
         and including ORFs/pseudogenes is therefore recommended for J genes but not for V genes.
         Defaults to ``False``.
-    max_v_reconstruction : int
+    max_v_reconstruction
         The maximum number of amino acids to reconstruct based on V gene information.
         Defaults to 1 (only construct the conserved C). It is recommended to only set this number
         to a value greater than 1 if V symbol information is supplied, and generally not recommended to set
         the value larger than 3.
-    max_j_reconstruction : int
+    max_j_reconstruction
         The maximum number of amino acids to reconstruct based on J gene information.
         Defaults to 1 (only construct the conserved F / W / C). It is recommended to only set this number
         to a value greater than 1 if J symbol information is supplied, and generally not recommended to set
         the value larger than 3.
-    allow_special_chars : bool
+    allow_special_chars
         Whether to allow special characters 'X', '#' and '*' in the input sequence. This will only affect input
         validation, but not the result Junction (special characters will not be added).
         If ``False``, standardization automatically fails if special characters occur in the input sequence.
         Defaults to ``False``.
-    log_failures : bool
+    log_failures
         Report standardization failures through logging (at level ``WARNING``).
         Defaults to ``True``.
-    suppress_warnings : bool
+    suppress_warnings
         Disable warnings that are usually logged when standardization fails.
         Deprecated in favour of `log_failures`.
 
     Returns
     -------
-    :py:class:`~tidytcells.result.Junction`
+    ~tidytcells.result.Junction
         A standardized CDR3 junction.
         For details on how to use this output, please refer to the class documentation.
 

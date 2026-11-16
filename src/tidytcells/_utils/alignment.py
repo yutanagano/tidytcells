@@ -246,15 +246,15 @@ def get_best_j_alignment_for_region(
 
     Parameters
     ----------
-    seq : str
+    seq
         CDR3 sequence to be aligned.
-    j_region : str
+    j_region
         J region sequence.
-    j_conserved_idx : int
+    j_conserved_idx
         Index of the conserved F/W in the J region.
-    max_mismatches : int
+    max_mismatches
         Maximum number of mismatches allowed.
-    mismatch_penalty : float
+    mismatch_penalty
         Penalty subtracted for single mismatch.
 
     Returns
@@ -290,16 +290,16 @@ def get_best_v_alignment_for_region(
 
     Parameters
     ----------
-    seq : str
+    seq
         CDR3 sequence to be aligned.
-    v_region : str
+    v_region
         V region sequence.
-    v_conserved_idx_neg : int
+    v_conserved_idx_neg
         Index of the conserved C in the V region expressed as negative number
         (number of aa's from the right).
-    max_mismatches : int
+    max_mismatches
         Maximum number of mismatches allowed.
-    mismatch_penalty : float
+    mismatch_penalty
         Penalty subtracted for single mismatch.
 
     Returns
@@ -333,15 +333,15 @@ def align_j_regions(seq, j_aa_dict, min_j_score, mismatch_penalty, max_mismatche
 
     Parameters
     ----------
-    seq : str
+    seq
         CDR3 sequence to be aligned.
-    j_aa_dict : dict
+    j_aa_dict
         Dictionary of J gene sequence details (J-MOTIF + J-REGION) per allele/gene.
-    min_j_score : float
+    min_j_score
         Minimum overlap score required.
-    mismatch_penalty : float
+    mismatch_penalty
         Penalty subtracted for single mismatch.
-    max_mismatches : int
+    max_mismatches
         Maximum number of mismatches allowed.
 
     Returns
@@ -407,15 +407,15 @@ def align_v_regions(seq, v_aa_dict, min_v_score, mismatch_penalty, max_mismatche
 
     Parameters
     ----------
-    seq : str
+    seq
         CDR3 sequence to be aligned.
-    v_aa_dict : dict
+    v_aa_dict
         Dictionary of V gene sequence details (V-REGION) per allele/gene.
-    min_v_score : float
+    min_v_score
         Minimum overlap score required.
-    mismatch_penalty : float
+    mismatch_penalty
         Penalty subtracted for single mismatch.
-    max_mismatches : int
+    max_mismatches
         Maximum number of mismatches allowed.
 
     Returns

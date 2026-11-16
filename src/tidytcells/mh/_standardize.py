@@ -97,23 +97,23 @@ def standardize(
 
     Parameters
     ----------
-    symbol : str
+    symbol
         Potentially non-standardized MH gene / allele symbol.
-    species : str
+    species
         Species to standardize the symbol for (see above for supported
         species). Defaults to ``"homosapiens"``.
-    log_failures : bool
+    log_failures
         Report standardization failures through logging (at level ``WARNING``).
         Defaults to ``True``.
-    gene : str
+    gene
         Alias for `symbol`.
-    suppress_warnings : bool
+    suppress_warnings
         Disable warnings that are usually logged when standardization fails.
         Deprecated in favour of `log_failures`.
 
     Returns
     -------
-    :py:class:`~tidytcells.result.MhGene`
+    ~tidytcells.result.MhGene
         A standardized MH gene. For details on how to use this output, please
         refer to the class documentation.
 

@@ -31,15 +31,15 @@ def query(
 
     Parameters
     ----------
-    species : str
+    species
         Species to query (see above for supported species).
         Defaults to ``"homosapiens"``.
-    precision : str
+    precision
         The level of precision to query.
         ``allele`` will query from the set of all possible alleles.
         ``gene`` will query from the set of all possible genes.
         Defaults to ``allele``.
-    functionality : str
+    functionality
         Gene/allele functionality to subset by.
         ``"any"`` queries from all possible genes/alleles.
         ``"F"`` queries from functional genes/alleles.
@@ -49,14 +49,14 @@ def query(
         An allele is considered queriable if its functionality label matches the description.
         A gene is considered queriable if at least one of its alleles' functionality label matches the description.
         Defaults to ``"any"``.
-    contains_pattern : str
+    contains_pattern
         An optional regular expression string which will be used to filter the query result.
         If supplied, only genes/alleles which contain the regular expression will be returned.
         Defaults to ``None``.
 
     Returns
     -------
-    FrozenSet[str]
+    ~typing.FrozenSet[str]
         The set of all genes / alleles that satisfy the given constraints.
 
     Examples
