@@ -39,17 +39,15 @@ def standardize(
     correction of sequencing errors in the conserved start and end positions,
     or trimming of unnecessary amino acids at the beginning and end of the sequence.
 
-    :param seq:
+    Parameters
+    ----------
+    seq : str
         The junction sequence.
-    :type seq:
-        str
-    :param locus:
+    locus : str
         String value representing the locus (TRA, TRB, IGH, IGL, etc;
         TR or IG may be used if a more precise locus is unknown).
         This is used to select an applicable subset of V and J genes for junction correction.
-    :type locus:
-        str
-    :param j_symbol:
+    j_symbol : str
         The TR/IG J symbol used to correct the end of the junction sequence.
         If a specific J allele is supplied (e.g., human TRAJ1*01),
         the junction is corrected according to the known sequence
@@ -58,9 +56,7 @@ def standardize(
         all associated allele sequences will be tested for the best alignment.
         Multiple j_symbols may be given, separated by comma ',' (e.g., TRAJ13*01,TRAJ13*02).
         If no J symbol is given, all J genes for the given species + locus will be tested.
-    :type j_symbol:
-        str
-    :param v_symbol:
+    v_symbol : str
         The TR/IG V symbol used to correct the start of the junction sequence.
         If a specific V allele is supplied (e.g., human TRAV1-1*01),
         the junction is corrected according to the known sequence
@@ -69,75 +65,54 @@ def standardize(
         all associated allele sequences will be tested for the best alignment.
         Multiple v_symbols may be given, separated by comma ',' (e.g., TRAV1-1*01,TRAV1-1*02).
         If no V symbol is given, all V genes for the given species + locus will be tested.
-    :type v_symbol:
-        str
-    :param species:
+    species : str
         The species that produced the underlying receptor. Defaults to ``homosapiens``.
-    :type species:
-        str
-    :param allow_c_correction:
+    allow_c_correction : bool
         Whether to allow the first amino acid in the input sequence to be corrected to 'C'
         if it is a potential sequencing error (only "W", "S", "R", "G", "Y", "F")
         and correction improves the V gene alignment. Defaults to ``False``.
-    :type allow_c_correction:
-        bool
-    :param allow_fw_correction:
+    allow_fw_correction : bool
         Whether to allow the last amino acid in the input sequence to be corrected to 'F' or 'W'
         if it is a potential sequencing error (only "I", "L", "V", "Y", "S", "C", "G",  "R")
         and correction improves the J gene alignment. Defaults to ``False``.
-    :type allow_fw_correction:
-        bool
-    :param enforce_functional_v:
+    enforce_functional_v : bool
         Only consider V genes which are annotated to be 'functional' (excluding ORFs and pseudogenes).
         Defaults to ``True``.
-    :type enforce_functional_v:
-        bool
-    :param enforce_functional_j:
+    enforce_functional_j : bool
         Only consider V genes which are annotated to be 'functional' (excluding ORFs and pseudogenes).
         Due to its shorter size it can be difficult to determine whether a J gene is truly functional,
         and including ORFs/pseudogenes is therefore recommended for J genes but not for V genes.
         Defaults to ``False``.
-    :type enforce_functional_j:
-        bool
-    :param max_v_reconstruction:
+    max_v_reconstruction : int
         The maximum number of amino acids to reconstruct based on V gene information.
         Defaults to 1 (only construct the conserved C). It is recommended to only set this number
         to a value greater than 1 if V symbol information is supplied, and generally not recommended to set
         the value larger than 3.
-    :type max_v_reconstruction:
-        bool
-    :param max_j_reconstruction:
+    max_j_reconstruction : int
         The maximum number of amino acids to reconstruct based on J gene information.
         Defaults to 1 (only construct the conserved F / W / C). It is recommended to only set this number
         to a value greater than 1 if J symbol information is supplied, and generally not recommended to set
         the value larger than 3.
-    :type max_j_reconstruction:
-        bool
-    :param allow_special_chars:
+    allow_special_chars : bool
         Whether to allow special characters 'X', '#' and '*' in the input sequence. This will only affect input
         validation, but not the result Junction (special characters will not be added).
         If ``False``, standardization automatically fails if special characters occur in the input sequence.
         Defaults to ``False``.
-    :type allow_special_chars:
-        bool
-    :param log_failures:
+    log_failures : bool
         Report standardization failures through logging (at level ``WARNING``).
         Defaults to ``True``.
-    :type log_failures:
-        bool
-    :param suppress_warnings:
+    suppress_warnings : bool
         Disable warnings that are usually logged when standardization fails.
         Deprecated in favour of `log_failures`.
-    :type suppress_warnings:
-        bool
 
-    :return:
-        A standardized CDR3 junction wrapped in a :py:class:`~tidytcells.result.Junction` object.
+    Returns
+    -------
+    :py:class:`~tidytcells.result.Junction`
+        A standardized CDR3 junction.
         For details on how to use this output, please refer to the class documentation.
-    :rtype:
-        :py:class:`~tidytcells.result.Junction`
 
-    .. topic:: Example usage
+    Examples
+    --------
 
         Strings that look like junction sequences will be accepted and corrected to capitalised form.
         Use attributes 'junction' and 'cdr3' to retrieve the corrected sequences.
@@ -477,10 +452,5 @@ def standardize(
 
 
 def standardise(*args, **kwargs) -> Junction:
-    """
-    Alias for :py:func:`tidytcells.junction.standardize`.
-
-    :rtype:
-        :py:class:`~tidytcells.result.Junction`
-    """
+    """Alias for :py:func:`tidytcells.junction.standardize`."""
     return standardize(*args, **kwargs)

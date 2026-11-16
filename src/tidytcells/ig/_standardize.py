@@ -29,48 +29,37 @@ def standardize(
         - ``"homosapiens"``
         - ``"musmusculus"``
 
-    :param symbol:
+    Parameters
+    ----------
+    symbol : str
         Potentially non-standardized IG gene / allele symbol.
-    :type symbol:
-        str
-    :param species:
+    species : str
         Can be specified to standardize to an IG symbol that is known to be valid for that species (see above for supported species).
         Defaults to ``"homosapiens"``.
-    :type species:
-        str
-    :param enforce_functional:
+    enforce_functional : bool
         If ``True``, disallows IG genes / alleles that are recognised by IMGT but are marked as non-functional (ORF or pseudogene).
         Defaults to ``False``.
-    :type enforce_functional:
-        bool
-    :param allow_subgroup:
+    allow_subgroup : bool
         If ``True``, allows valid subgroups (as well as more specific gene/allele symbos) to pass standardization.
         If ``False``, the supplied symbol must point to at least a specific gene.
         Defaults to ``False``.
-    :type allow_subgroup:
-        bool
-    :param log_failures:
+    log_failures : bool
         Report standardization failures through logging (at level ``WARNING``).
         Defaults to ``True``.
-    :type log_failures:
-        bool
-    :param gene:
+    gene : str
         Alias for the parameter `symbol`.
-    :type gene:
-        str
-    :param suppress_warnings:
+    suppress_warnings : bool
         Disable warnings that are usually logged when standardization fails.
         Deprecated in favour of `log_failures`.
-    :type suppress_warnings:
-        bool
 
-    :return:
-        A standardized receptor gene wrapped in a :py:class:`~tidytcells.result.ReceptorGene` object.
+    Returns
+    -------
+    :py:class:`~tidytcells.result.ReceptorGene`
+        A standardized receptor gene.
         For details on how to use this output, please refer to the class documentation.
-    :rtype:
-        `~tidytcells.result.ReceptorGene`
 
-    .. topic:: Example usage
+    Examples
+    --------
 
         IG standardized results will be returned as a :py:class:`~tidytcells.result.ReceptorGene`.
         When standardization is a success, attributes 'allele', 'gene' and 'subgroup' can be used to retrieve the corrected information.
@@ -293,10 +282,5 @@ def standardize(
 
 
 def standardise(*args, **kwargs) -> ReceptorGene:
-    """
-    Alias for :py:func:`tidytcells.ig.standardize`.
-
-    :rtype:
-        :py:class:`~tidytcells.result.ReceptorGene`
-    """
+    """Alias for :py:func:`tidytcells.ig.standardize`."""
     return standardize(*args, **kwargs)

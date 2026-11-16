@@ -95,38 +95,30 @@ def standardize(
         musculus* and *Rattus norvegicus*, symbols are verified as a whole
         (e.g. ``H2-Kb``).
 
-    :param symbol:
+    Parameters
+    ----------
+    symbol : str
         Potentially non-standardized MH gene / allele symbol.
-    :type symbol:
-        str
-    :param species:
+    species : str
         Species to standardize the symbol for (see above for supported
         species). Defaults to ``"homosapiens"``.
-    :type species:
-        str
-    :param log_failures:
+    log_failures : bool
         Report standardization failures through logging (at level ``WARNING``).
         Defaults to ``True``.
-    :type log_failures:
-        bool
-    :param gene:
+    gene : str
         Alias for `symbol`.
-    :type gene:
-        str
-    :param suppress_warnings:
+    suppress_warnings : bool
         Disable warnings that are usually logged when standardization fails.
         Deprecated in favour of `log_failures`.
-    :type suppress_warnings:
-        bool
 
-    :return:
-        A standardized MH gene wrapped in a
-        :py:class:`~tidytcells.result.MhGene` object. For details on how to use
-        this output, please refer to the class documentation.
-    :rtype:
-        :py:class:`~tidytcells.result.MhGene`
+    Returns
+    -------
+    :py:class:`~tidytcells.result.MhGene`
+        A standardized MH gene. For details on how to use this output, please
+        refer to the class documentation.
 
-    .. topic:: Example usage
+    Examples
+    --------
 
         When standardization is a success, attributes 'allele', 'protein' and
         'gene' can be used to retrieve the corrected information.
@@ -312,10 +304,5 @@ def standardize(
 
 
 def standardise(*args, **kwargs) -> MhGene:
-    """
-    Alias for :py:func:`tidytcells.mh.standardize`.
-
-    :rtype:
-        :py:class:`~tidytcells.result.MhGene`
-    """
+    """Alias for :py:func:`tidytcells.mh.standardize`."""
     return standardize(*args, **kwargs)

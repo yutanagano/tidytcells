@@ -242,14 +242,25 @@ def get_best_j_alignment_for_region(
     seq, j_region, j_conserved_idx, max_mismatches=1, mismatch_penalty=-1.5
 ):
     """
-    Get the best alignment index for one given J region
+    Get the best alignment index for one given J region.
 
-    :param seq: CDR3 sequence to be aligned
-    :param v_region: J region sequence
-    :param v_conserved_idx_neg: index of the conserved F/W in the J region
-    :param max_mismatches: maximum number of mismatches allowed
-    :param mismatch_penalty: penalty subtracted for single mismatch
-    :return: alignment offset of the best-scoring alignment, plus the score
+    Parameters
+    ----------
+    seq : str
+        CDR3 sequence to be aligned.
+    j_region : str
+        J region sequence.
+    j_conserved_idx : int
+        Index of the conserved F/W in the J region.
+    max_mismatches : int
+        Maximum number of mismatches allowed.
+    mismatch_penalty : float
+        Penalty subtracted for single mismatch.
+
+    Returns
+    -------
+    tuple
+        Alignment offset of the best-scoring alignment, plus the score.
     """
     best_offset = None
     best_score = -1
@@ -275,15 +286,26 @@ def get_best_v_alignment_for_region(
     seq, v_region, v_conserved_idx_neg, max_mismatches=1, mismatch_penalty=-1.5
 ):
     """
-    Get the best alignment index for one given V region
+    Get the best alignment index for one given V region.
 
-    :param seq: CDR3 sequence to be aligned
-    :param v_region: V region sequence
-    :param v_conserved_idx_neg: index of the conserved C in the V region expressed as negative number
-                                (number of aa's from the right)
-    :param max_mismatches: maximum number of mismatches allowed
-    :param mismatch_penalty: penalty subtracted for single mismatch
-    :return: alignment offset of the best-scoring alignment, plus the score
+    Parameters
+    ----------
+    seq : str
+        CDR3 sequence to be aligned.
+    v_region : str
+        V region sequence.
+    v_conserved_idx_neg : int
+        Index of the conserved C in the V region expressed as negative number
+        (number of aa's from the right).
+    max_mismatches : int
+        Maximum number of mismatches allowed.
+    mismatch_penalty : float
+        Penalty subtracted for single mismatch.
+
+    Returns
+    -------
+    tuple
+        Alignment offset of the best-scoring alignment, plus the score.
     """
     best_offset = None
     best_score = -1
@@ -307,16 +329,27 @@ def get_best_v_alignment_for_region(
 
 def align_j_regions(seq, j_aa_dict, min_j_score, mismatch_penalty, max_mismatches):
     """
-    Get all best alignments across all J genes
+    Get all best alignments across all J genes.
 
-    :param seq: CDR3 sequence to be aligned
-    :param j_aa_dict: dictionary of J gene sequence details (J-MOTIF + J-REGION) per allele/gene
-    :param min_j_score: minimum overlap score required
-    :param mismatch_penalty: penalty subtracted for single mismatch
-    :param max_mismatches: maximum number of mismatches allowed
-    :return: alignment details for all J genes with the best alignment scores
-             this includes 'offset' indices (difference between conserved aa idx and end of aligned sequence idx)
-             needed to calculate the corrected sequence
+    Parameters
+    ----------
+    seq : str
+        CDR3 sequence to be aligned.
+    j_aa_dict : dict
+        Dictionary of J gene sequence details (J-MOTIF + J-REGION) per allele/gene.
+    min_j_score : float
+        Minimum overlap score required.
+    mismatch_penalty : float
+        Penalty subtracted for single mismatch.
+    max_mismatches : int
+        Maximum number of mismatches allowed.
+
+    Returns
+    -------
+    list
+        Alignment details for all J genes with the best alignment scores.
+        This includes 'offset' indices (difference between conserved aa idx and end of aligned sequence idx)
+        needed to calculate the corrected sequence.
     """
     best_score = min_j_score
     best_alignments = []
@@ -370,16 +403,27 @@ def get_conserved_c_idx(gene, v_gene_seqs_dict):
 
 def align_v_regions(seq, v_aa_dict, min_v_score, mismatch_penalty, max_mismatches):
     """
-    Get all best alignments across all V genes
+    Get all best alignments across all V genes.
 
-    :param seq: CDR3 sequence to be aligned
-    :param v_aa_dict: dictionary of V gene sequence details (V-REGION) per allele/gene
-    :param min_v_score: minimum overlap score required
-    :param mismatch_penalty: penalty subtracted for single mismatch
-    :param max_mismatches: maximum number of mismatches allowed
-    :return: alignment details for all V genes with the best alignment scores
-             this includes 'offset' indices (difference between V region end and CDR3 start)
-             needed to calculate the corrected sequence
+    Parameters
+    ----------
+    seq : str
+        CDR3 sequence to be aligned.
+    v_aa_dict : dict
+        Dictionary of V gene sequence details (V-REGION) per allele/gene.
+    min_v_score : float
+        Minimum overlap score required.
+    mismatch_penalty : float
+        Penalty subtracted for single mismatch.
+    max_mismatches : int
+        Maximum number of mismatches allowed.
+
+    Returns
+    -------
+    list
+        Alignment details for all V genes with the best alignment scores.
+        This includes 'offset' indices (difference between V region end and CDR3 start)
+        needed to calculate the corrected sequence.
     """
     best_score = min_v_score
     best_alignments = []

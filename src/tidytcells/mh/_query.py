@@ -69,30 +69,27 @@ def query(
         *Rattus norvegicus*, there is currently only support for gene-level
         querying.
 
-    :param species:
+    Parameters
+    ----------
+    species : str
         Species to query (see above for supported species). Defaults to
         ``"homosapiens"``.
-    :type species:
-        str
-    :param precision:
+    precision : str
         The level of precision to query. ``allele`` will query from the set of
         all possible alleles. ``gene`` will query from the set of all possible
         genes. Defaults to ``allele``.
-    :type precision:
-        str
-    :param contains_pattern:
+    contains_pattern : str
         An optional **regular expression** string which will be used to filter
         the query result. If supplied, only genes / alleles which contain the
         regular expression will be returned. Defaults to ``None``.
-    :type contains_pattern:
-        str
 
-    :return:
+    Returns
+    -------
+    FrozenSet[str]
         The set of all genes / alleles that satisfy the given constraints.
-    :rtype:
-        FrozenSet[str]
 
-    .. topic:: Example usage
+    Examples
+    --------
 
         List all known HLA-TAP1 variants (TAP is only present in the IPD
         database, which is not the default).

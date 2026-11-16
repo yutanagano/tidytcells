@@ -134,16 +134,17 @@ class ReceptorGene:
 
     def get_all_alleles(self, enforce_functional=True):
         """
-        Get all alleles related to the standardized symbol
+        Get all alleles related to the standardized symbol.
 
-        :param enforce_functional:
-            If ``True``, only functional alleles are returned
-        :type enforce_functional:
-            bool
-        :return:
-            A list of allele names
-        :rtype:
-            list
+        Parameters
+        ----------
+        enforce_functional : bool
+            If ``True``, only functional alleles are returned.
+
+        Returns
+        -------
+        list
+            A list of allele names.
         """
         if self.is_standardized:
             aa_dict = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[self.species][
@@ -156,26 +157,25 @@ class ReceptorGene:
 
     def get_aa_sequences(self, sequence_type="ALL", enforce_functional=True):
         """
-        Get amino acid sequence information related to the alleles of the standardized symbol
+        Get amino acid sequence information related to the alleles of the standardized symbol.
 
-        :param sequence_type:
+        Parameters
+        ----------
+        sequence_type : str
             Which sequence to return. This can be:
             - For V genes: 'FR1', 'FR2', 'FR3', 'CDR1', 'CDR2', 'V-REGION'
             - For D genes: 'D-REGION'
             - For J genes: 'J-REGION', 'J-MOTIF'
             - Or 'ALL' to return all available sequences
-        :type sequence_type:
-            str
-        :param enforce_functional:
-            If ``True``, only information for functional alleles is returned
-        :type enforce_functional:
-            bool
-        :return:
-            A dictionary with allele names as keys and sequences as values
+        enforce_functional : bool
+            If ``True``, only information for functional alleles is returned.
+
+        Returns
+        -------
+        dict
+            A dictionary with allele names as keys and sequences as values.
             When sequence_type is 'ALL', the result is a nested dictionary with allele names
             as outer keys, sequence types as inner keys, and sequences as inner values.
-        :rtype:
-            dict
         """
         sequence_type = sequence_type.upper()
         sequence_type = (
