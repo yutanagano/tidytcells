@@ -15,8 +15,9 @@ def get_is_valid_locus_gene_fn(locus: str, gene: str) -> Callable[[str], bool]:
             return lambda symbol: symbol.startswith("TRAV") or symbol.startswith("TRDV")
 
         if locus == "TRD":
-            return lambda symbol: symbol.startswith("TRDV") or (
-                symbol.startswith("TRAV") and "/DV" in symbol
+            return lambda symbol: (
+                symbol.startswith("TRDV")
+                or (symbol.startswith("TRAV") and "/DV" in symbol)
             )
 
     if len(locus) == 3:
@@ -123,12 +124,7 @@ def collapse_aa_dict_per_gene(
     return genes_to_aa
 
 
-def _get_max_score_from_matches(
-    matching_aas: list[bool],
-    max_mismatches: int,
-    mismatch_penalty: float,
-    gene: str,
-) -> float:
+def _get_max_score_from_matches(matching_aas, allow_mismatches, mismatch_penalty, gene):
     """
     Utility function for computing the alignment score based on a boolean list of matching/non-matching amino acids.
 
@@ -137,35 +133,34 @@ def _get_max_score_from_matches(
       iteratively trim the boolean list until the remaining number of mismatches is under the max_mismatches cutoff
     - Subtract a penalty for remaining mismatches
     """
-    matching_aas = matching_aas[::-1] if gene == "V" else matching_aas
+    if not any(matching_aas):
+        return -1
 
-    if any(matching_aas):
-        # any mismatches at the beginning of the J or end of the V are considered random deletion, no penalty
-        matching_aas = matching_aas[matching_aas.index(True) :]
+    # orient the list from the side lost in recombination towards the anchor side
+    if gene == "V":
+        matching_aas = matching_aas[::-1]
 
-        while matching_aas.count(False) > max_mismatches:
-            matching_aas = matching_aas[matching_aas.index(False) + 1 :]
+    best_score = -1
+    score = 0
 
-            if len(matching_aas) > 0 and any(matching_aas):
-                matching_aas = matching_aas[matching_aas.index(True) :]
-            else:
-                return -1
+    # extend the alignment one residue at a time from the anchor side,
+    # keeping the best score seen
+    for match in reversed(matching_aas):
+        if match:
+            score += 1
+        elif allow_mismatches:
+            score += mismatch_penalty
+        else:
+            break
 
-        score = sum([1 if match else mismatch_penalty for match in matching_aas])
+        best_score = max(best_score, score)
 
-        if score > 0:
-            return score
-
-    return -1
+    return best_score if best_score >= 1 else -1
 
 
 def get_j_alignment_score(
-    seq: str,
-    j_region: str,
-    j_offset: int,
-    max_mismatches: int = 1,
-    mismatch_penalty: float = -1.5,
-) -> float:
+    seq, j_region, j_offset, allow_mismatches=True, mismatch_penalty=-1.5
+):
     """
     Determines the alignment score given a J region, CDR3 sequence and alignment offset.
     - Slice out the overlapping part of the alignment between the CDR3 and J region
@@ -189,17 +184,13 @@ def get_j_alignment_score(
     matching_aas = [seq_aa == j_aa for seq_aa, j_aa in zip(seq_align, j_region_align)]
 
     return _get_max_score_from_matches(
-        matching_aas, max_mismatches, mismatch_penalty, gene="J"
+        matching_aas, allow_mismatches, mismatch_penalty, gene="J"
     )
 
 
 def get_v_alignment_score(
-    seq: str,
-    v_region: str,
-    v_offset: int,
-    max_mismatches: int = 1,
-    mismatch_penalty: float = -1.5,
-) -> float:
+    seq, v_region, v_offset, allow_mismatches=True, mismatch_penalty=-1.5
+):
     """
     Determines the alignment score given a V region, CDR3 sequence and alignment offset.
     - Slice out the overlapping part of the alignment between the CDR3 and V region
@@ -215,16 +206,17 @@ def get_v_alignment_score(
     matching_aas = [a == b for a, b in zip(seq_align, v_region_align)]
 
     return _get_max_score_from_matches(
-        matching_aas, max_mismatches, mismatch_penalty, gene="V"
+        matching_aas, allow_mismatches, mismatch_penalty, gene="V"
     )
 
 
 def j_anchor_is_valid(
-    seq: str, j_region: str, j_conserved_idx: int, j_offset: int
-) -> bool:
+    seq, j_region, j_conserved_idx, j_offset, allow_flank_mismatches=True
+):
     """
-    Given a J alignment offset, this function checks if the CDR3 sequence does not contradict the conserved anchor
-    residues (anything after the conserved F/W).
+    Given a J alignment offset, this function checks if the CDR3 sequence
+    - Matches at the conserved anchor position (if this falls inside the alignment)
+    - Sufficiently matches the J end region (match at least 2/3 of amino acids for long alignments)
     """
 
     # safety check: index exists in J region
@@ -233,22 +225,35 @@ def j_anchor_is_valid(
 
     seq_anchor_start = j_offset + j_conserved_idx
 
-    # case 1: conserved anchor would be just after the last aa of sequence
-    if seq_anchor_start == len(seq):
+    # case 1: conserved anchor would be after the last aa of sequence
+    if seq_anchor_start >= len(seq):
         return True
 
-    # case 2: conserved anchor is within seq, check if tail matches J region
+    # case 2: conserved anchor is within seq, check if tail sufficiently matches J region
     seq_tail = seq[seq_anchor_start:]
     j_tail = j_region[j_conserved_idx : j_conserved_idx + len(seq_tail)]
-    return seq_tail == j_tail
+    matches_tail = [seq_aa == j_aa for seq_aa, j_aa in zip(seq_tail, j_tail)]
+
+    # conserved anchor *must* match
+    if not matches_tail[0]:
+        return False
+
+    if allow_flank_mismatches:
+        # permit some amount of mismatches in J end to account for SHM/errors
+        # at least 2/3 of amino acids must match
+        return 3 * sum(matches_tail) >= 2 * len(matches_tail)
+    else:
+        return all(matches_tail)
 
 
 def v_anchor_is_valid(
-    seq: str, v_region: str, v_conserved_idx_neg: int, v_offset: int
-) -> bool:
+    seq, v_region, v_conserved_idx_neg, v_offset, allow_flank_mismatches=True
+):
     """
-    Given a V alignment offset, this function checks if the CDR3 sequence does not contradict the conserved anchor
-    residues (anything before the conserved C).
+    Given a V alignment offset, this function checks if the CDR3 sequence
+    - Matches at the conserved anchor position (if this falls inside the alignment)
+    - Sufficiently matches the V frw region (1 mismatch for short alignments, or
+      at least 2/3 of amino acids for long alignments)
     """
     assert v_conserved_idx_neg < 0
     assert v_offset < 0
@@ -257,141 +262,130 @@ def v_anchor_is_valid(
     if v_offset - 1 >= v_conserved_idx_neg:
         return True
 
-    # case 2: conserved C is somewhere in the seq, make sure seq head matches V
-    seq_conserved = seq[0 : (v_conserved_idx_neg - v_offset) + 1]
-    v_conserved = v_region[
-        v_conserved_idx_neg - len(seq_conserved) + 1 : v_conserved_idx_neg + 1
-    ]
+    # case 2: conserved C is somewhere in the seq, make sure seq head (sufficiently) matches V
+    seq_frw = seq[0 : (v_conserved_idx_neg - v_offset) + 1]
 
-    return seq_conserved == v_conserved
+    v_conserved_pos = len(v_region) + v_conserved_idx_neg
+    v_frw = v_region[v_conserved_pos - len(seq_frw) + 1 : v_conserved_pos + 1]
+
+    matches_frw = [seq_aa == v_aa for seq_aa, v_aa in zip(seq_frw, v_frw)]
+
+    # conserved anchor *must* match
+    if not matches_frw[-1]:
+        return False
+
+    # permit some amount of mismatches in frw to account for SHM/errors
+    if allow_flank_mismatches:
+        # if conserved anchor matches, and frw contains at most 1 additional aa (len 2),
+        # then we say 'anchor is valid' regardless of if that second aa mismatches
+        # note that this only applies to the V side: the J FGxG motif is far more conserved
+        if len(matches_frw) <= 2:
+            return True
+
+        # for longer flanks at least 2/3 of amino acids must match
+        return 3 * sum(matches_frw) >= 2 * len(matches_frw)
+    else:
+        return all(matches_frw)
 
 
 def get_best_j_alignment_for_region(
-    seq: str,
-    j_region: str,
-    j_conserved_idx: int,
-    max_mismatches: int = 1,
-    mismatch_penalty: float = -1.5,
-) -> tuple[int | None, float]:
+    seq, j_region, j_conserved_idx, allow_mismatches=True, mismatch_penalty=-1.5
+):
     """
-    Get the best alignment index for one given J region.
+    Get all equally best alignment offsets for one given J region
 
-    Parameters
-    ----------
-    seq
-        CDR3 sequence to be aligned.
-    j_region
-        J region sequence.
-    j_conserved_idx
-        Index of the conserved F/W in the J region.
-    max_mismatches
-        Maximum number of mismatches allowed.
-    mismatch_penalty
-        Penalty subtracted for single mismatch.
-
-    Returns
-    -------
-    tuple[int | None, float]
-        Alignment offset of the best-scoring alignment, plus the score.
+    :param seq: CDR3 sequence to be aligned
+    :param j_region: J region sequence
+    :param j_conserved_idx: index of the conserved F/W in the J region
+    :param allow_mismatches: whether mismatches are allowed
+    :param mismatch_penalty: penalty subtracted for single mismatch
+    :return: list of alignment offsets that share the best score (empty if no valid alignment), plus the score
     """
-    best_offset = None
+    best_offsets = []
     best_score = -1
 
-    for j_offset in range(len(seq) - len(j_region), len(seq)):
-        if j_anchor_is_valid(seq, j_region, j_conserved_idx, j_offset):
+    min_offset_j_region = len(seq) - len(j_region)
+    min_offset_anchor = -j_conserved_idx
+
+    for j_offset in range(max(min_offset_j_region, min_offset_anchor), len(seq)):
+        if j_anchor_is_valid(
+            seq,
+            j_region,
+            j_conserved_idx,
+            j_offset,
+            allow_flank_mismatches=allow_mismatches,
+        ):
             score = get_j_alignment_score(
                 seq,
                 j_region,
                 j_offset,
-                max_mismatches=max_mismatches,
+                allow_mismatches=allow_mismatches,
                 mismatch_penalty=mismatch_penalty,
             )
 
             if score > best_score:
                 best_score = score
-                best_offset = j_offset
+                best_offsets = [j_offset]
+            elif score == best_score and score > 0:
+                best_offsets.append(j_offset)
 
-    return best_offset, best_score
+    return best_offsets, best_score
 
 
 def get_best_v_alignment_for_region(
-    seq: str,
-    v_region: str,
-    v_conserved_idx_neg: int,
-    max_mismatches: int = 1,
-    mismatch_penalty: float = -1.5,
-) -> tuple[int | None, float]:
+    seq, v_region, v_conserved_idx_neg, allow_mismatches=True, mismatch_penalty=-1.5
+):
     """
-    Get the best alignment index for one given V region.
+    Get all equally best alignment offsets for one given V region
 
-    Parameters
-    ----------
-    seq
-        CDR3 sequence to be aligned.
-    v_region
-        V region sequence.
-    v_conserved_idx_neg
-        Index of the conserved C in the V region expressed as negative number
-        (number of aa's from the right).
-    max_mismatches
-        Maximum number of mismatches allowed.
-    mismatch_penalty
-        Penalty subtracted for single mismatch.
-
-    Returns
-    -------
-    tuple[int | None, float]
-        Alignment offset of the best-scoring alignment, plus the score.
+    :param seq: CDR3 sequence to be aligned
+    :param v_region: V region sequence
+    :param v_conserved_idx_neg: index of the conserved C in the V region expressed as negative number
+                                (number of aa's from the right)
+    :param allow_mismatches: whether mismatches are allowed
+    :param mismatch_penalty: penalty subtracted for single mismatch
+    :return: list of alignment offsets that share the best score (empty if no valid alignment), plus the score
     """
-    best_offset = None
+    best_offsets = []
     best_score = -1
 
-    for v_offset in range(-1, v_conserved_idx_neg - len(seq), -1):
-        if v_anchor_is_valid(seq, v_region, v_conserved_idx_neg, v_offset):
+    for v_offset in range(v_conserved_idx_neg - len(seq) + 1, 0):
+        if v_anchor_is_valid(
+            seq,
+            v_region,
+            v_conserved_idx_neg,
+            v_offset,
+            allow_flank_mismatches=allow_mismatches,
+        ):
             score = get_v_alignment_score(
                 seq,
                 v_region,
                 v_offset,
-                max_mismatches=max_mismatches,
+                allow_mismatches=allow_mismatches,
                 mismatch_penalty=mismatch_penalty,
             )
 
             if score > best_score:
                 best_score = score
-                best_offset = v_offset
+                best_offsets = [v_offset]
+            elif score == best_score and score > 0:
+                best_offsets.append(v_offset)
 
-    return best_offset, best_score
+    return best_offsets, best_score
 
 
-def align_j_regions(
-    seq: str,
-    j_aa_dict: dict[str, dict[str, str]],
-    min_j_score: float,
-    mismatch_penalty: float,
-    max_mismatches: int,
-) -> list[dict[str, str | int | float]]:
+def align_j_regions(seq, j_aa_dict, min_j_score, mismatch_penalty, allow_mismatches):
     """
     Get all best alignments across all J genes.
 
-    Parameters
-    ----------
-    seq
-        CDR3 sequence to be aligned.
-    j_aa_dict
-        Dictionary of J gene sequence details (J-MOTIF + J-REGION) per allele/gene.
-    min_j_score
-        Minimum overlap score required.
-    mismatch_penalty
-        Penalty subtracted for single mismatch.
-    max_mismatches
-        Maximum number of mismatches allowed.
-
-    Returns
-    -------
-    list[dict[str, str | int | float]]
-        Alignment details for all J genes with the best alignment scores.
-        This includes 'offset' indices (difference between conserved aa idx and end of aligned sequence idx)
-        needed to calculate the corrected sequence.
+    :param seq: CDR3 sequence to be aligned
+    :param j_aa_dict: dictionary of J gene sequence details (J-MOTIF + J-REGION) per allele/gene
+    :param min_j_score: minimum overlap score required
+    :param mismatch_penalty: penalty subtracted for single mismatch
+    :param allow_mismatches: whether mismatches are allowed
+    :return: alignment details for all J genes with the best alignment scores, one entry per equally best offset
+             this includes 'offset' indices (difference between conserved aa idx and end of aligned sequence idx)
+             needed to calculate the corrected sequence
     """
     best_score = min_j_score
     best_alignments = []
@@ -402,22 +396,29 @@ def align_j_regions(
         if "J-MOTIF" in gene_seqs_dict:
             j_conserved_idx = j_region.index(gene_seqs_dict["J-MOTIF"])
 
-            j_offset, score = get_best_j_alignment_for_region(
-                seq, j_region, j_conserved_idx, max_mismatches, mismatch_penalty
+            j_offsets, score = get_best_j_alignment_for_region(
+                seq,
+                j_region,
+                j_conserved_idx,
+                allow_mismatches=allow_mismatches,
+                mismatch_penalty=mismatch_penalty,
             )
-            cur_alinment = {
-                "gene": gene,
-                "j_region": j_region,
-                "j_conserved_idx": j_conserved_idx,
-                "j_offset": j_offset,
-                "score": score,
-            }
+            cur_alignments = [
+                {
+                    "gene": gene,
+                    "j_region": j_region,
+                    "j_conserved_idx": j_conserved_idx,
+                    "j_offset": j_offset,
+                    "score": score,
+                }
+                for j_offset in j_offsets
+            ]
 
             if score > best_score:
                 best_score = score
-                best_alignments = [cur_alinment]
+                best_alignments = cur_alignments
             elif score == best_score:
-                best_alignments.append(cur_alinment)
+                best_alignments.extend(cur_alignments)
 
     return best_alignments
 
@@ -443,35 +444,18 @@ def get_conserved_c_idx(gene: str, v_gene_seqs_dict: dict[str, str]) -> int | No
         return v_conserved_idx_neg
 
 
-def align_v_regions(
-    seq: str,
-    v_aa_dict: dict[str, dict[str, str]],
-    min_v_score: float,
-    mismatch_penalty: float,
-    max_mismatches: int,
-) -> list[dict[str, str | int | float]]:
+def align_v_regions(seq, v_aa_dict, min_v_score, mismatch_penalty, allow_mismatches):
     """
     Get all best alignments across all V genes.
 
-    Parameters
-    ----------
-    seq
-        CDR3 sequence to be aligned.
-    v_aa_dict
-        Dictionary of V gene sequence details (V-REGION) per allele/gene.
-    min_v_score
-        Minimum overlap score required.
-    mismatch_penalty
-        Penalty subtracted for single mismatch.
-    max_mismatches
-        Maximum number of mismatches allowed.
-
-    Returns
-    -------
-    list[dict[str, str | int | float]]
-        Alignment details for all V genes with the best alignment scores.
-        This includes 'offset' indices (difference between V region end and CDR3 start)
-        needed to calculate the corrected sequence.
+    :param seq: CDR3 sequence to be aligned
+    :param v_aa_dict: dictionary of V gene sequence details (V-REGION) per allele/gene
+    :param min_v_score: minimum overlap score required
+    :param mismatch_penalty: penalty subtracted for single mismatch
+    :param allow_mismatches: whether mismatches are allowed
+    :return: alignment details for all V genes with the best alignment scores
+             this includes 'offset' indices (difference between V region end and CDR3 start)
+             needed to calculate the corrected sequence
     """
     best_score = min_v_score
     best_alignments = []
@@ -480,25 +464,28 @@ def align_v_regions(
         v_conserved_idx_neg = get_conserved_c_idx(gene, gene_seqs_dict)
 
         if v_conserved_idx_neg is not None:
-            v_offset, score = get_best_v_alignment_for_region(
+            v_offsets, score = get_best_v_alignment_for_region(
                 seq,
                 gene_seqs_dict["V-REGION"],
                 v_conserved_idx_neg,
-                max_mismatches,
-                mismatch_penalty,
+                allow_mismatches=allow_mismatches,
+                mismatch_penalty=mismatch_penalty,
             )
-            cur_alinment = {
-                "gene": gene,
-                "v_region": gene_seqs_dict["V-REGION"],
-                "v_conserved_idx": v_conserved_idx_neg,
-                "v_offset": v_offset,
-                "score": score,
-            }
+            cur_alignments = [
+                {
+                    "gene": gene,
+                    "v_region": gene_seqs_dict["V-REGION"],
+                    "v_conserved_idx": v_conserved_idx_neg,
+                    "v_offset": v_offset,
+                    "score": score,
+                }
+                for v_offset in v_offsets
+            ]
 
             if score > best_score:
                 best_score = score
-                best_alignments = [cur_alinment]
+                best_alignments = cur_alignments
             elif score == best_score:
-                best_alignments.append(cur_alinment)
+                best_alignments.extend(cur_alignments)
 
     return best_alignments

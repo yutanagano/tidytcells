@@ -76,42 +76,42 @@ class Teststandardize:
     def test_multi_v_symbol(self):
         # Reconstruction with TRBV10-1 adds 'CAS'
         result = junction.standardize(
-            seq="SPGGADRRIDGYTF",
+            seq="SEPGGADRRIDGYTF",
             locus="TR",
             v_symbol="TRBV10-1",
             max_v_reconstruction=3,
         )
-        assert result.junction == "CASSPGGADRRIDGYTF"
+        assert result.junction == "CASSEPGGADRRIDGYTF"
 
         # Reconstruction with TRBV10-3 adds 'CAI'
         result = junction.standardize(
-            seq="SPGGADRRIDGYTF",
+            seq="SEPGGADRRIDGYTF",
             locus="TR",
             v_symbol="TRBV10-3",
             max_v_reconstruction=3,
         )
-        assert result.junction == "CAISPGGADRRIDGYTF"
+        assert result.junction == "CAISEPGGADRRIDGYTF"
 
         # Allowing both TRBV10-1 and TRBV10-3 causes ambiguity, no matter the order or spaces
         result = junction.standardize(
-            seq="SPGGADRRIDGYTF",
+            seq="SEPGGADRRIDGYTF",
             locus="TR",
             v_symbol="TRBV10-1,TRBV10-3",
             max_v_reconstruction=3,
         )
         assert result.error.startswith("V side reconstruction ambiguous: ")
-        assert "CAISPGGADRRIDGYTF" in result.error
-        assert "CASSPGGADRRIDGYTF" in result.error
+        assert "CAISEPGGADRRIDGYTF" in result.error
+        assert "CASSEPGGADRRIDGYTF" in result.error
 
         result = junction.standardize(
-            seq="SPGGADRRIDGYTF",
+            seq="SEPGGADRRIDGYTF",
             locus="TR",
             v_symbol="TRBV10-3, TRBV10-1",
             max_v_reconstruction=3,
         )
         assert result.error.startswith("V side reconstruction ambiguous: ")
-        assert "CAISPGGADRRIDGYTF" in result.error
-        assert "CASSPGGADRRIDGYTF" in result.error
+        assert "CAISEPGGADRRIDGYTF" in result.error
+        assert "CASSEPGGADRRIDGYTF" in result.error
 
     def test_log_failures(self, caplog):
         junction.standardize(seq="123456", log_failures=False, locus="TR")
