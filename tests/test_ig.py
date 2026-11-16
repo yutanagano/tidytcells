@@ -61,7 +61,6 @@ class TestStandardize:
         if result.is_standardized:
             assert result.gene_type == "V"
 
-
     @pytest.mark.filterwarnings("ignore:Failed to standardize")
     @pytest.mark.parametrize(
         ("symbol", "expected", "allow_subgroup"),
@@ -74,13 +73,14 @@ class TestStandardize:
     )
     def test_allow_subgroup(self, symbol, expected, allow_subgroup):
         result = ig.standardize(
-            symbol=symbol, species="homosapiens", allow_subgroup=allow_subgroup,
+            symbol=symbol,
+            species="homosapiens",
+            allow_subgroup=allow_subgroup,
         )
 
         assert result.symbol == expected
         assert result.allele is None
         assert result.gene == expected or result.subgroup == expected
-
 
     @pytest.mark.filterwarnings("ignore:Failed to standardize")
     @pytest.mark.parametrize(
@@ -94,29 +94,58 @@ class TestStandardize:
             ("IGLV(VI)-22-1-1", "IGLV(VI)-22-1"),
         ),
     )
-    def test_remove_illegal_dash1(self, symbol, expected, ):
+    def test_remove_illegal_dash1(
+        self,
+        symbol,
+        expected,
+    ):
         result = ig.standardize(
-            symbol=symbol, species="homosapiens",
+            symbol=symbol,
+            species="homosapiens",
         )
 
         assert result.is_standardized
         assert result.symbol == expected
 
     @pytest.mark.parametrize(
-        ("symbol", "allow_subgroup", "expected_allele", "expected_gene", "expected_subgroup", "expected_symbol"),
+        (
+            "symbol",
+            "allow_subgroup",
+            "expected_allele",
+            "expected_gene",
+            "expected_subgroup",
+            "expected_symbol",
+        ),
         (
             ("IGLV7-43*01", True, "IGLV7-43*01", "IGLV7-43", "IGLV7", "IGLV7-43*01"),
             ("IGLV7-43*01", False, "IGLV7-43*01", "IGLV7-43", "IGLV7", "IGLV7-43*01"),
-            ("IGHV3-30-3*01", False, "IGHV3-30-3*01", "IGHV3-30-3", "IGHV3", "IGHV3-30-3*01"),
+            (
+                "IGHV3-30-3*01",
+                False,
+                "IGHV3-30-3*01",
+                "IGHV3-30-3",
+                "IGHV3",
+                "IGHV3-30-3*01",
+            ),
             ("IGLV8-61", True, None, "IGLV8-61", "IGLV8", "IGLV8-61"),
             ("IGLV8-61", False, None, "IGLV8-61", "IGLV8", "IGLV8-61"),
             ("IGLV8", True, None, None, "IGLV8", "IGLV8"),
             ("IGLV8", False, None, None, None, None),
         ),
     )
-    def test_precision(self, symbol, allow_subgroup, expected_allele, expected_gene, expected_subgroup, expected_symbol):
+    def test_precision(
+        self,
+        symbol,
+        allow_subgroup,
+        expected_allele,
+        expected_gene,
+        expected_subgroup,
+        expected_symbol,
+    ):
         result = ig.standardize(
-            symbol=symbol, species="homosapiens", allow_subgroup=allow_subgroup,
+            symbol=symbol,
+            species="homosapiens",
+            allow_subgroup=allow_subgroup,
         )
 
         assert result.allele == expected_allele
@@ -189,41 +218,90 @@ class TestStandardizeHomoSapiens:
     @pytest.mark.parametrize(
         ("symbol", "expected_alleles", "enforce_functional", "species"),
         (
-            ("IGHV1-3", ["IGHV1-3*01", "IGHV1-3*02", "IGHV1-3*03", "IGHV1-3*04", "IGHV1-3*05"], True, "homosapiens"),
+            (
+                "IGHV1-3",
+                ["IGHV1-3*01", "IGHV1-3*02", "IGHV1-3*03", "IGHV1-3*04", "IGHV1-3*05"],
+                True,
+                "homosapiens",
+            ),
             ("IGHV1-1", [], True, "musmusculus"),
-            ("IGHV1-1", ["IGHV1-1*01", "IGHV1-1*02", "IGHV1-1*03"], False, "musmusculus"),
+            (
+                "IGHV1-1",
+                ["IGHV1-1*01", "IGHV1-1*02", "IGHV1-1*03"],
+                False,
+                "musmusculus",
+            ),
             ("IGKJ5", ["IGKJ5*01"], True, "homosapiens"),
             ("IGHV3-36", [], True, "homosapiens"),
-            ("IGHV3-36", ["IGHV3-36*01", "IGHV3-36*02", "IGHV3-36*03"], False, "homosapiens"),
+            (
+                "IGHV3-36",
+                ["IGHV3-36*01", "IGHV3-36*02", "IGHV3-36*03"],
+                False,
+                "homosapiens",
+            ),
         ),
     )
-    def test_get_all_alleles(self, symbol, expected_alleles, enforce_functional, species):
+    def test_get_all_alleles(
+        self, symbol, expected_alleles, enforce_functional, species
+    ):
         result = ig.standardize(symbol=symbol, species=species, allow_subgroup=True)
 
         assert result.symbol == symbol
         assert result.species == species
-        assert sorted(result.get_all_alleles(enforce_functional=enforce_functional)) == sorted(expected_alleles)
-
+        assert sorted(
+            result.get_all_alleles(enforce_functional=enforce_functional)
+        ) == sorted(expected_alleles)
 
     @pytest.mark.parametrize(
         ("symbol", "sequence_type", "expected_result"),
         (
-            ("IGLV1-40", "CDR1-IMGT", {"IGLV1-40*01": "SSNIGAGYD", "IGLV1-40*02": "SSNIGAGYD", "IGLV1-40*03": "SSNIGAGYD"}),
-            ("IGLV1-40", "CDR1", {"IGLV1-40*01": "SSNIGAGYD", "IGLV1-40*02": "SSNIGAGYD", "IGLV1-40*03": "SSNIGAGYD"}),
-            ("IGLV1-40", "cdr1", {"IGLV1-40*01": "SSNIGAGYD", "IGLV1-40*02": "SSNIGAGYD", "IGLV1-40*03": "SSNIGAGYD"}),
-            ("IGKJ5", "all", {"IGKJ5*01": {
-                                    "functionality": "F",
-                                    "J-REGION": "ITFGQGTRLEIK",
-                                    "J-MOTIF": "FGQG"
-                                }}),
+            (
+                "IGLV1-40",
+                "CDR1-IMGT",
+                {
+                    "IGLV1-40*01": "SSNIGAGYD",
+                    "IGLV1-40*02": "SSNIGAGYD",
+                    "IGLV1-40*03": "SSNIGAGYD",
+                },
+            ),
+            (
+                "IGLV1-40",
+                "CDR1",
+                {
+                    "IGLV1-40*01": "SSNIGAGYD",
+                    "IGLV1-40*02": "SSNIGAGYD",
+                    "IGLV1-40*03": "SSNIGAGYD",
+                },
+            ),
+            (
+                "IGLV1-40",
+                "cdr1",
+                {
+                    "IGLV1-40*01": "SSNIGAGYD",
+                    "IGLV1-40*02": "SSNIGAGYD",
+                    "IGLV1-40*03": "SSNIGAGYD",
+                },
+            ),
+            (
+                "IGKJ5",
+                "all",
+                {
+                    "IGKJ5*01": {
+                        "functionality": "F",
+                        "J-REGION": "ITFGQGTRLEIK",
+                        "J-MOTIF": "FGQG",
+                    }
+                },
+            ),
         ),
     )
     def test_get_aa_sequences(self, symbol, sequence_type, expected_result):
-        result = ig.standardize(symbol=symbol, species="homosapiens", allow_subgroup=True)
+        result = ig.standardize(
+            symbol=symbol, species="homosapiens", allow_subgroup=True
+        )
 
         assert result.symbol == symbol
         assert result.get_aa_sequences(sequence_type) == expected_result
-
 
     def test_receptor_database_symbol_standardization(self):
         config.set_receptor_database("IMGT")
@@ -258,7 +336,14 @@ class TestStandardizeHomoSapiens:
         config.set_receptor_database("IMGT")
         result = ig.standardize("IGHV3-23", species="homosapiens")
         assert result.is_standardized
-        imgt_alleles = {'IGHV3-23*01', 'IGHV3-23*02', 'IGHV3-23*03', 'IGHV3-23*04', 'IGHV3-23*05', 'IGHV3-23D*01'}
+        imgt_alleles = {
+            "IGHV3-23*01",
+            "IGHV3-23*02",
+            "IGHV3-23*03",
+            "IGHV3-23*04",
+            "IGHV3-23*05",
+            "IGHV3-23D*01",
+        }
         assert set(result.get_all_alleles()) == imgt_alleles
         assert set(result.get_aa_sequences("V-REGION")) == imgt_alleles
 
@@ -288,6 +373,7 @@ class TestStandardizeMusMusculus:
         assert result.symbol is None
         assert result.species == "musmusculus"
         assert str(result) == ""
+
 
 class TestQuery:
     @pytest.mark.parametrize(
@@ -369,4 +455,3 @@ class TestQuery:
         result = ig.query(precision="gene", contains_pattern="HJ")
         assert len(result) == 9
         assert "IGHJ3" in result
-

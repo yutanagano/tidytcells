@@ -5,13 +5,14 @@ import requests
 import re
 from numpy import ndarray
 import script_utility
-from typing import Iterable
 
 
 def main() -> None:
-    print("Fetching HLA allele data from IMGT...")
+    print("Fetching HLA allele data from IPD...")
     valid_allele_tree = get_hla_alleles_tree()
-    script_utility.save_as_json(valid_allele_tree, "ipd_homosapiens_mh_valid_allele.json")
+    script_utility.save_as_json(
+        valid_allele_tree, "ipd_homosapiens_mh_valid_allele.json"
+    )
 
     print("Fetching HLA symbol synonyms from HGNC...")
     synonyms_data = script_utility.get_hgnc_synonyms_data(valid_allele_tree)
@@ -114,7 +115,6 @@ def make_hla_tree(current_root: dict, token_lists: list) -> None:
         ]
 
         make_hla_tree(current_root[token], new_token_lists)
-
 
 
 if __name__ == "__main__":

@@ -1,48 +1,54 @@
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
-
 def get_is_valid_locus_gene_fn(locus: str, gene: str):
-    '''
+    """
     Utility funciton to check if a given gene is valid for a given locus, considering the shared TRAV/DV genes, and
     the fact that TRA chains frequently use TRDV genes (even if they're not called TRAV/DV)
     source: doi.org/10.1016/j.immuno.2025.100058
-    '''
+    """
     if gene == "V":
         if locus == "TRA" or locus == "TRA/D":
             return lambda symbol: symbol.startswith("TRAV") or symbol.startswith("TRDV")
 
         if locus == "TRD":
-            return lambda symbol: symbol.startswith("TRDV") or (symbol.startswith("TRAV") and "/DV" in symbol)
+            return lambda symbol: symbol.startswith("TRDV") or (
+                symbol.startswith("TRAV") and "/DV" in symbol
+            )
 
     if len(locus) == 3:
         return lambda symbol: symbol.startswith(locus + gene)
 
     return lambda symbol: symbol.startswith(locus) and gene in symbol
 
+
 def get_is_valid_locus_multi_gene_fn(locus: str, gene: str):
-    '''
+    """
     wrapper around get_is_valid_locus_gene_fn for multi-gene strings
-    '''
+    """
 
     is_valid_locus_gene_fn = get_is_valid_locus_gene_fn(locus, gene)
-    return lambda symbol: all(is_valid_locus_gene_fn(sub_symbol.strip()) for sub_symbol in symbol.split(","))
+    return lambda symbol: all(
+        is_valid_locus_gene_fn(sub_symbol.strip()) for sub_symbol in symbol.split(",")
+    )
+
 
 def is_valid_functionality(aa_dict, candidate, enforce_functional):
-    if (not enforce_functional) or (aa_dict[candidate]["functionality"] in {"F", "[F]", "(F)"}):
+    if (not enforce_functional) or (
+        aa_dict[candidate]["functionality"] in {"F", "[F]", "(F)"}
+    ):
         return True
 
     return False
 
 
 def get_compatible_symbols(symbol, aa_dict, gene, locus, enforce_functional):
-    '''
+    """
     For a given gene symbol, return all alleles which are considered to be valid extensions of the gene symbol.
     A gene symbol can be an allele (return itself), gene, subgroup, or even locus (TRA) or receptor (TR)
-    '''
+    """
     if symbol in aa_dict.keys():
         if is_valid_functionality(aa_dict, symbol, enforce_functional):
             return [symbol]
@@ -57,11 +63,14 @@ def get_compatible_symbols(symbol, aa_dict, gene, locus, enforce_functional):
         and is_valid_locus_gene(candidate)
         and candidate.startswith(symbol)
         and not (symbol[-1].isnumeric() and candidate[len(symbol)].isnumeric())
-        and not (symbol[-1].isnumeric() and candidate[len(symbol)] == "P")  # do not add 'pseudogene'
+        and not (
+            symbol[-1].isnumeric() and candidate[len(symbol)] == "P"
+        )  # do not add 'pseudogene'
     ]
 
+
 def _get_genes_to_alleles(alleles):
-    '''Create mapping from gene to all its alleles'''
+    """Create mapping from gene to all its alleles"""
     genes_to_alleles = dict()
 
     for allele in alleles:
@@ -76,10 +85,10 @@ def _get_genes_to_alleles(alleles):
 
 
 def collapse_aa_dict_per_gene(symbol_to_aa_dict):
-    '''
+    """
     Reduce the number of items in the sequence_aa dict by collapsing all alleles at the gene level
     for any gene where all alleles have the same sequence (keep separate alleles if sequences differ)
-    '''
+    """
     genes_to_alleles = _get_genes_to_alleles(symbol_to_aa_dict.keys())
     genes_to_aa = dict()
 
@@ -142,7 +151,7 @@ def get_j_alignment_score(seq, j_region, j_offset, allow_mismatches = True, mism
     - Slice out the overlapping part of the alignment between the CDR3 and J region
     - For each amino acid in the slice, determine if they match (True/False)
     - Use _get_max_score_from_matches to compute the alignment score from the list of boolean matches
-    '''
+    """
 
     # figure out start positions
     s_start = max(j_offset, 0)
@@ -154,8 +163,8 @@ def get_j_alignment_score(seq, j_region, j_offset, allow_mismatches = True, mism
     if alignment_length <= 0:
         return -1
 
-    seq_align = seq[s_start:s_start + alignment_length]
-    j_region_align = j_region[j_start:j_start + alignment_length]
+    seq_align = seq[s_start : s_start + alignment_length]
+    j_region_align = j_region[j_start : j_start + alignment_length]
 
     matching_aas = [seq_aa == j_aa for seq_aa, j_aa in zip(seq_align, j_region_align)]
 
@@ -168,12 +177,12 @@ def get_v_alignment_score(seq, v_region, v_offset, allow_mismatches = True, mism
     - Slice out the overlapping part of the alignment between the CDR3 and V region
     - For each amino acid in the slice, determine if they match (True/False)
     - Use _get_max_score_from_matches to compute the alignment score from the list of boolean matches
-    '''
+    """
 
     assert v_offset < 0, "V offset can only be smaller than 0"
 
     v_region_align = v_region[v_offset:]
-    seq_align = seq[:len(v_region_align)]
+    seq_align = seq[: len(v_region_align)]
 
     matching_aas = [a == b for a, b in zip(seq_align, v_region_align)]
 
@@ -325,7 +334,7 @@ def align_j_regions(seq, j_aa_dict, min_j_score, mismatch_penalty, allow_mismatc
     :return: alignment details for all J genes with the best alignment scores, one entry per equally best offset
              this includes 'offset' indices (difference between conserved aa idx and end of aligned sequence idx)
              needed to calculate the corrected sequence
-    '''
+    """
     best_score = min_j_score
     best_alignments = []
 
@@ -350,9 +359,9 @@ def align_j_regions(seq, j_aa_dict, min_j_score, mismatch_penalty, allow_mismatc
 
 
 def get_conserved_c_idx(gene, v_gene_seqs_dict):
-    '''
+    """
     Compute the conserved 'C' index for a given V gene, expressed as negative number (number of aa's from the right)
-    '''
+    """
     v_region = v_gene_seqs_dict["V-REGION"]
     v_conserved_idx_neg = None
 
@@ -382,7 +391,7 @@ def align_v_regions(seq, v_aa_dict, min_v_score, mismatch_penalty, allow_mismatc
     :return: alignment details for all V genes with the best alignment scores
              this includes 'offset' indices (difference between V region end and CDR3 start)
              needed to calculate the corrected sequence
-    '''
+    """
     best_score = min_v_score
     best_alignments = []
 
@@ -402,4 +411,3 @@ def align_v_regions(seq, v_aa_dict, min_v_score, mismatch_penalty, allow_mismatc
                 best_alignments.extend(cur_alignments)
 
     return best_alignments
-

@@ -1,31 +1,26 @@
 import json
-from pathlib import Path
-
-RESOURCES_DIR = Path(__file__).parent
+from importlib.resources import files
 
 
-def get_json_resource(filename: str) -> dict:
-    with open(RESOURCES_DIR / filename, "r") as f:
-        return json.load(f)
+def load_json(filename: str) -> dict:
+    return json.loads(files(__name__).joinpath(filename).read_text())
 
 
-VALID_HOMOSAPIENS_TR_IMGT = get_json_resource("valid_homosapiens_tr.json")
-HOMOSAPIENS_TR_SYNONYMS = get_json_resource("homosapiens_tr_synonyms.json")
-HOMOSAPIENS_TR_AA_SEQUENCES_IMGT = get_json_resource("homosapiens_tr_aa_sequences.json")
+VALID_HOMOSAPIENS_TR_IMGT = load_json("valid_homosapiens_tr.json")
+HOMOSAPIENS_TR_SYNONYMS = load_json("homosapiens_tr_synonyms.json")
+HOMOSAPIENS_TR_AA_SEQUENCES_IMGT = load_json("homosapiens_tr_aa_sequences.json")
 
-VALID_HOMOSAPIENS_IG_IMGT = get_json_resource("valid_homosapiens_ig.json")
-VALID_HOMOSAPIENS_IG_OGRDB = get_json_resource("valid_homosapiens_ig_ogrdb.json")
-HOMOSAPIENS_IG_SYNONYMS = get_json_resource("homosapiens_ig_synonyms.json")
-HOMOSAPIENS_IG_AA_SEQUENCES_IMGT = get_json_resource("homosapiens_ig_aa_sequences.json")
-HOMOSAPIENS_IG_AA_SEQUENCES_OGRDB = get_json_resource(
-    "homosapiens_ig_aa_sequences_ogrdb.json"
-)
+VALID_HOMOSAPIENS_IG_IMGT = load_json("valid_homosapiens_ig.json")
+VALID_HOMOSAPIENS_IG_OGRDB = load_json("valid_homosapiens_ig_ogrdb.json")
+HOMOSAPIENS_IG_SYNONYMS = load_json("homosapiens_ig_synonyms.json")
+HOMOSAPIENS_IG_AA_SEQUENCES_IMGT = load_json("homosapiens_ig_aa_sequences.json")
+HOMOSAPIENS_IG_AA_SEQUENCES_OGRDB = load_json("homosapiens_ig_aa_sequences_ogrdb.json")
 
-VALID_MUSMUSCULUS_TR_IMGT = get_json_resource("valid_musmusculus_tr.json")
-MUSMUSCULUS_TR_AA_SEQUENCES_IMGT = get_json_resource("musmusculus_tr_aa_sequences.json")
+VALID_MUSMUSCULUS_TR_IMGT = load_json("valid_musmusculus_tr.json")
+MUSMUSCULUS_TR_AA_SEQUENCES_IMGT = load_json("musmusculus_tr_aa_sequences.json")
 
-VALID_MUSMUSCULUS_IG_IMGT = get_json_resource("valid_musmusculus_ig.json")
-MUSMUSCULUS_IG_AA_SEQUENCES_IMGT = get_json_resource("musmusculus_ig_aa_sequences.json")
+VALID_MUSMUSCULUS_IG_IMGT = load_json("valid_musmusculus_ig.json")
+MUSMUSCULUS_IG_AA_SEQUENCES_IMGT = load_json("musmusculus_ig_aa_sequences.json")
 
 
 SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES = {
@@ -72,70 +67,53 @@ SUPPORTED_TR_SPECIES_AND_THEIR_GENES = {
 }
 
 
-HOMOSAPIENS_MH_VALID_IPD = get_json_resource("ipd_homosapiens_mh_valid_allele.json")
-HOMOSAPIENS_MH_VALID_PROTEIN_MRO = get_json_resource(
-    "mro_homosapiens_mh_valid_protein.json"
-)
-
-MUSMUSCULUS_MH_VALID_PROTEIN_MRO = get_json_resource(
-    "mro_musmusculus_mh_valid_protein.json"
-)
-
-SUPPORTED_MH_SPECIES_AND_THEIR_GENES = {
+MH_SYMBOLS_BY_SP_DB = {
     "homosapiens": {
         "IPD": {
-            "valid_symbols": HOMOSAPIENS_MH_VALID_IPD,
+            "valid_symbols": load_json("ipd_homosapiens_mh_valid_allele.json"),
             "allele_synonyms": dict(),
-            "hgnc_synonyms": get_json_resource("ipd_homosapiens_mh_synonyms_hgnc.json"),
+            "hgnc_synonyms": load_json("ipd_homosapiens_mh_synonyms_hgnc.json"),
         },
         "MRO": {
-            "valid_symbols": HOMOSAPIENS_MH_VALID_PROTEIN_MRO,
-            "allele_synonyms": get_json_resource("mro_homosapiens_mh_synonyms.json"),
-            "hgnc_synonyms": get_json_resource("mro_homosapiens_mh_synonyms_hgnc.json"),
+            "valid_symbols": load_json("mro_homosapiens_mh_valid_protein.json"),
+            "allele_synonyms": load_json("mro_homosapiens_mh_synonyms.json"),
+            "hgnc_synonyms": load_json("mro_homosapiens_mh_synonyms_hgnc.json"),
         },
     },
     "musmusculus": {
         "MRO": {
-            "valid_symbols": MUSMUSCULUS_MH_VALID_PROTEIN_MRO,
-            "allele_synonyms": get_json_resource("mro_musmusculus_mh_synonyms.json"),
+            "valid_symbols": load_json("mro_musmusculus_mh_valid_protein.json"),
+            "allele_synonyms": load_json("mro_musmusculus_mh_synonyms.json"),
         },
     },
     "bostaurus": {
         "MRO": {
-            "valid_symbols": get_json_resource("mro_bostaurus_mh_valid_protein.json"),
-            "allele_synonyms": get_json_resource("mro_bostaurus_mh_synonyms.json"),
+            "valid_symbols": load_json("mro_bostaurus_mh_valid_protein.json"),
+            "allele_synonyms": load_json("mro_bostaurus_mh_synonyms.json"),
         },
     },
     "macacamulatta": {
         "MRO": {
-            "valid_symbols": get_json_resource(
-                "mro_macacamulatta_mh_valid_protein.json"
-            ),
-            "allele_synonyms": get_json_resource("mro_macacamulatta_mh_synonyms.json"),
+            "valid_symbols": load_json("mro_macacamulatta_mh_valid_protein.json"),
+            "allele_synonyms": load_json("mro_macacamulatta_mh_synonyms.json"),
         },
     },
     "pantroglodytes": {
         "MRO": {
-            "valid_symbols": get_json_resource(
-                "mro_pantroglodytes_mh_valid_protein.json"
-            ),
-            "allele_synonyms": get_json_resource("mro_pantroglodytes_mh_synonyms.json"),
+            "valid_symbols": load_json("mro_pantroglodytes_mh_valid_protein.json"),
+            "allele_synonyms": load_json("mro_pantroglodytes_mh_synonyms.json"),
         },
     },
     "rattusnorvegicus": {
         "MRO": {
-            "valid_symbols": get_json_resource(
-                "mro_rattusnorvegicus_mh_valid_protein.json"
-            ),
-            "allele_synonyms": get_json_resource(
-                "mro_rattusnorvegicus_mh_synonyms.json"
-            ),
+            "valid_symbols": load_json("mro_rattusnorvegicus_mh_valid_protein.json"),
+            "allele_synonyms": load_json("mro_rattusnorvegicus_mh_synonyms.json"),
         },
     },
     "susscrofa": {
         "MRO": {
-            "valid_symbols": get_json_resource("mro_susscrofa_mh_valid_protein.json"),
-            "allele_synonyms": get_json_resource("mro_susscrofa_mh_synonyms.json"),
+            "valid_symbols": load_json("mro_susscrofa_mh_valid_protein.json"),
+            "allele_synonyms": load_json("mro_susscrofa_mh_synonyms.json"),
         },
     },
 }

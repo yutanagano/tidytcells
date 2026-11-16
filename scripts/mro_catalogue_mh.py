@@ -9,7 +9,6 @@ import pandas as pd
 
 import script_utility
 
-
 RELEASE_URL = "https://github.com/IEDB/MRO/releases/latest/download"
 
 # Only these species will be included
@@ -30,7 +29,23 @@ def main() -> None:
     molecules = load_molecules(fetch_protein_complexes(), fetch_molecule_export())
     molecules["species"] = [get_species_name(taxon) for taxon in molecules["In Taxon"]]
 
-    for species, df in molecules[molecules["species"].notna()].groupby("species"):
+    mapped_molecules = molecules[molecules["species"].notna()]
+
+    present_species = set(mapped_molecules["species"].unique())
+
+    missing_species = set(SPECIES_NAMES.values()) - present_species
+    if missing_species:
+        raise ValueError(f"Expected species with no rows: {sorted(missing_species)}")
+
+    unmapped_taxa = molecules.loc[
+        molecules["species"].isna(), "In Taxon"
+    ].value_counts()
+    if len(unmapped_taxa) > 0:
+        print("Warning: rows with unmapped 'In Taxon' values (not converted):")
+        for taxon, count in unmapped_taxa.items():
+            print(f"  {taxon!r}: {count} rows")
+
+    for species, df in mapped_molecules.groupby("species"):
         print(f"Converting MRO data for {species}...")
 
         df = drop_incomplete_names(df)
@@ -46,7 +61,10 @@ def main() -> None:
 
         if species == "homosapiens":
             print(f"Adding HGNC gene synonyms for homosapiens...")
-            script_utility.save_as_json(script_utility.get_hgnc_synonyms_data(valid), f"mro_{species}_mh_synonyms_hgnc.json")
+            script_utility.save_as_json(
+                script_utility.get_hgnc_synonyms_data(valid),
+                f"mro_{species}_mh_synonyms_hgnc.json",
+            )
 
 
 def fetch_protein_complexes() -> pd.DataFrame:
@@ -58,7 +76,9 @@ def fetch_molecule_export() -> pd.DataFrame:
 
     with zipfile.ZipFile(io.BytesIO(download(f"{RELEASE_URL}/iedb.zip"))) as archive:
         members = [m for m in archive.namelist() if Path(m).name == file_name]
-        assert len(members) == 1, f"Expected one {file_name} in iedb.zip, found {len(members)}"
+        assert (
+            len(members) == 1
+        ), f"Expected one {file_name} in iedb.zip, found {len(members)}"
 
         with archive.open(members[0]) as f:
             return read_tsv(f)
@@ -74,7 +94,11 @@ def read_tsv(file) -> pd.DataFrame:
 
 
 def load_molecules(complexes: pd.DataFrame, molecules: pd.DataFrame) -> pd.DataFrame:
-    return complexes.merge(molecules[["MRO ID", "In Taxon", "In Taxon ID"]], left_on="id", right_on="MRO ID")
+    return complexes.merge(
+        molecules[["MRO ID", "In Taxon", "In Taxon ID"]],
+        left_on="id",
+        right_on="MRO ID",
+    )
 
 
 def get_species_name(taxon: str) -> Optional[str]:
@@ -134,12 +158,12 @@ def build_mro_synonyms(df: pd.DataFrame) -> dict:
         if " " in term or "/" in term:
             continue
 
-        for alternative in filter(None, alternatives.split("|")):
+        for alternative in re.split(r"[|,]", alternatives):
+            key = alternative.strip().upper()
             # skips junk alternative names without any digits, e.g. "A" for HLA-DRB3*01:52
-            if not re.search(r"\d", alternative):
+            if not key or not re.search(r"\d", key):
                 continue
 
-            key = alternative.upper()
             if key != term.upper():
                 candidates[key].add(term)
 
@@ -153,9 +177,6 @@ def build_mro_synonyms(df: pd.DataFrame) -> dict:
         synonyms[key] = targets.pop()
 
     return synonyms
-
-
-
 
 
 if __name__ == "__main__":

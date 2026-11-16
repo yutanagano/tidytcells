@@ -6,12 +6,12 @@ class Teststandardize:
     @pytest.mark.parametrize(
         ("seq", "locus"),
         (
-                ("CASSPGGADRRIDGYTF", "TR"),
-                ("CASSLMPGQGSYEQYF", "TR"),
-                ("CSARDPGDDKPQHF", "TR"),
-                ("CAALRATGGNNKLTF", "TR"),
-                ("CVVAVSNFGNEKLTF", "TR"),
-                ("CAASASFGDNSKLIW", "IG"),
+            ("CASSPGGADRRIDGYTF", "TR"),
+            ("CASSLMPGQGSYEQYF", "TR"),
+            ("CSARDPGDDKPQHF", "TR"),
+            ("CAALRATGGNNKLTF", "TR"),
+            ("CVVAVSNFGNEKLTF", "TR"),
+            ("CAASASFGDNSKLIW", "IG"),
         ),
     )
     def test_already_correct(self, seq, locus):
@@ -57,14 +57,20 @@ class Teststandardize:
 
     def test_multi_j_symbol(self):
         # When using either TRBJ1 and TRBJ2 subgroups, the best match is TRBJ1-2, no matter the order of the subgroups or spaces
-        result = junction.standardize(seq="CASSPGGADRRIDGYTF", locus="TR", j_symbol="TRBJ1,TRBJ2")
+        result = junction.standardize(
+            seq="CASSPGGADRRIDGYTF", locus="TR", j_symbol="TRBJ1,TRBJ2"
+        )
         assert result.j_gene_match == "TRBJ1-2"
 
-        result = junction.standardize(seq="CASSPGGADRRIDGYTF", locus="TR", j_symbol="TRBJ2, TRBJ1")
+        result = junction.standardize(
+            seq="CASSPGGADRRIDGYTF", locus="TR", j_symbol="TRBJ2, TRBJ1"
+        )
         assert result.j_gene_match == "TRBJ1-2"
 
         # When using only the TRBJ2 subgroup, TRBJ2-6 is the best match (only one ending with TF)
-        result = junction.standardize(seq="CASSPGGADRRIDGYTF", locus="TR", j_symbol="TRBJ2")
+        result = junction.standardize(
+            seq="CASSPGGADRRIDGYTF", locus="TR", j_symbol="TRBJ2"
+        )
         assert result.j_gene_match == "TRBJ2-6"
 
     def test_multi_v_symbol(self):
@@ -106,9 +112,7 @@ class Teststandardize:
             junction.standardize("AELNAGNNRKLI", locus="TRB", j_symbol="TRA")
 
     def test_j_symbol_fail(self, caplog):
-        result = junction.standardize(
-            "AAAAAA", j_symbol="TRAJ", locus="TR"
-        )
+        result = junction.standardize("AAAAAA", j_symbol="TRAJ", locus="TR")
 
         assert "J side reconstruction unsuccessful" in caplog.text
         assert "J side reconstruction unsuccessful" in result.error
@@ -124,7 +128,7 @@ class Teststandardize:
                 "AAAAAA", j_symbol="IGH", species="musmusculus", locus="TR"
             )
 
-    def test_j_symbol_fail_species(self,caplog):
+    def test_j_symbol_fail_species(self, caplog):
         result = junction.standardize(
             "AAAAAA", j_symbol="IGHJ", species="nonexistent", locus="IG"
         )
@@ -155,7 +159,6 @@ class Teststandardize:
         assert result.germline_database == "OGRDB"
 
         config.reset_receptor_database()
-
 
     @pytest.mark.parametrize(
         ("seq", "j_symbol", "v_symbol", "locus", "species", "expected"),
@@ -201,9 +204,150 @@ class Teststandardize:
                 ("YFCAVVFNMDSNYQLIWGRGTSL", "TRAJ38*01", "TRAV", "TR", "homosapiens", "CAVVFNMDSNYQLIW"),
                 ("VFYCARFNMDSNYQYFQHWGQGTLVTVSS", "IGHJ", "IGHV", "IG", "homosapiens", "CARFNMDSNYQYFQHW"),
         )
+            ("CASSPGVFGANVLTFG", None, None, "TR", "homosapiens", "CASSPGVFGANVLTF"),
+            ("AELNAGNNR", "TRAJ38*01", None, "TR", "homosapiens", "CAELNAGNNRKLIW"),
+            (
+                "CASSPGVFGANVLTL",
+                None,
+                None,
+                "TR",
+                "homosapiens",
+                "CASSPGVFGANVLTF",
+            ),  # fw mismatch
+            (
+                "WASSPGVFGANVLTFG",
+                None,
+                None,
+                "TR",
+                "homosapiens",
+                "CASSPGVFGANVLTF",
+            ),  # C mismatch
+            ("RASSPGVFGANVLTFG", None, None, "TR", "homosapiens", "CASSPGVFGANVLTF"),
+            (
+                "SASSPGVFGANVLTFG",
+                None,
+                "TRBV20-1",
+                "TR",
+                "homosapiens",
+                "CSASSPGVFGANVLTF",
+            ),
+            ("SASSPGVFGANVLTFG", None, None, "TR", "homosapiens", "CASSPGVFGANVLTF"),
+            (
+                "DASSPGVFGANVLTFG",
+                None,
+                None,
+                "TR",
+                "homosapiens",
+                None,
+            ),  # do not correct D to C (only W/S/R/G/Y/F/A)
+            ("MRESENMDSNYQYVF", None, None, "TRA", "homosapiens", "CAMRESENMDSNYQYVF"),
+            (
+                "AELNAGNNRKLI",
+                "TRAJ38*01",
+                None,
+                "TR",
+                "homosapiens",
+                "CAELNAGNNRKLIW",
+            ),  # for human this is CAE-
+            (
+                "AELNAGNNRKLI",
+                "TRAJ38*01",
+                None,
+                "TR",
+                "musmusculus",
+                "CAAELNAGNNRKLIW",
+            ),  # functional mouse gene best match contributes CAAE-
+            (
+                "AELNAGNNRKLI",
+                "TRAJ38*01",
+                "TRAV5-2*01",
+                "TR",
+                "musmusculus",
+                "CAELNAGNNRKLIW",
+            ),  # specifying a specific allele which contributes CAE- but is pseudogene overrides 'enforce_functional'
+            (
+                "YFCAVVFNMDSNYQLIWGLGTSL",
+                "TRAJ38*01",
+                "TRAV",
+                "TR",
+                "homosapiens",
+                "CAVVFNMDSNYQLIW",
+            ),
+            (
+                "YFCAVVFNMDSNYQLIWGLGTSL",
+                None,
+                None,
+                "TRA",
+                "homosapiens",
+                "CAVVFNMDSNYQLIW",
+            ),
+            (
+                "YFCAVVFNMDSNYQLIWTTTT",
+                "TRAJ38*01",
+                None,
+                "TR",
+                "homosapiens",
+                None,
+            ),  # J anchor invalid, no output
+            (
+                "VYYCARFNMDSNYQYFQHWGQGTLVTVSS",
+                "IGHJ",
+                "IGHV",
+                "IG",
+                "homosapiens",
+                "CARFNMDSNYQYFQHW",
+            ),
+            ("YFCAELNAGNNVLH", "TRAJ35", None, "TR", "homosapiens", "CAELNAGNNVLHC"),
+            ("AGGYQNFYFGKGTMLLVSP", None, None, "TR", "homosapiens", "CAGGYQNFYF"),
+            ("VVNRGTGGFKTIFGAG", None, None, "TR", "homosapiens", "CVVNRGTGGFKTIF"),
+            (
+                "DSSIYLCSVEATRADTQYFGPGTRLTVL",
+                None,
+                None,
+                "TR",
+                "homosapiens",
+                "CSVEATRADTQYF",
+            ),
+            ("ASSTRSSGEL", None, None, "TR", "homosapiens", "CASSTRSSGELFF"),
+            ("YSTDSSGDIWV", None, None, "IG", "homosapiens", "CYSTDSSGDIWVF"),
+            ("QQYGSSPLT", "IGKJ4", "IGKV3", "IG", "homosapiens", "CQQYGSSPLTF"),
+            ("CASTGSYGYTFGSGTRLTV", None, None, "TR", "homosapiens", "CASTGSYGYTF"),
+            ("ASRPVAG", None, None, "TR", "homosapiens", None),
+            ("csadaf", None, None, "TR", "homosapiens", "CSADAF"),
+            ("yicsadafg", None, None, "TR", "homosapiens", "CSADAF"),
+            ("csadkli", "TRAJ38", None, "TR", "homosapiens", "CSADKLIW"),
+            ("csadkli", "TRAJ37", None, "TR", "homosapiens", "CSADKLIF"),
+            ("CSYAYVF", None, "IGLV2-11", "IG", "homosapiens", "CCSYAYVF"),
+            ("SYAYVF", None, "IGLV2-11", "IG", "homosapiens", "CCSYAYVF"),
+            ("CSYAYVF", None, "IGLV2-14", "IG", "homosapiens", "CSYAYVF"),
+            ("MRESENMD", None, None, "TRA", "homosapiens", "CAMRESENMDSSYKLIF"),
+            ("CAGGSYGLTFGAG", None, None, "IG", "musmusculus", "CAGGSYGLTF"),
+            ("ASGDWQGQNT", None, "TRBV13-2*01", "TRB", "musmusculus", "CASGDWQGQNTLYF"),
+            (
+                "AIWDYEFHVMDY",
+                "IGHJ4*01",
+                "IGHV1S34*01",
+                "IG",
+                "musmusculus",
+                "CAIWDYEFHVMDYW",
+            ),
+            ("ASSIRSNEKL", None, "TRBV19", "TRB", "homosapiens", "CASSIRSNEKLFF"),
+            ("ASSSRSTGEL", None, "TRBV19", "TRB", "homosapiens", "CASSSRSTGELFF"),
+        ),
     )
     def test_various_examples(self, seq, j_symbol, v_symbol, locus, species, expected):
-        result = junction.standardize(seq=seq, j_symbol=j_symbol, v_symbol=v_symbol, species=species, locus=locus, allow_c_correction=True, allow_fw_correction=True, max_v_reconstruction=3, max_j_reconstruction=8, enforce_functional_j=True)
+        result = junction.standardize(
+            seq=seq,
+            j_symbol=j_symbol,
+            v_symbol=v_symbol,
+            species=species,
+            locus=locus,
+            allow_c_correction=True,
+            allow_fw_correction=True,
+            max_v_reconstruction=3,
+            max_j_reconstruction=8,
+            enforce_functional_j=True,
+        )
 
         assert result.junction == expected
         assert result.species == species

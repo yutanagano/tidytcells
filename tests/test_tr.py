@@ -53,7 +53,9 @@ class TestStandardize:
     )
     def test_enforce_functional(self, symbol, expected, enforce_functional):
         result = tr.standardize(
-            symbol=symbol, species="homosapiens", enforce_functional=enforce_functional,
+            symbol=symbol,
+            species="homosapiens",
+            enforce_functional=enforce_functional,
         )
 
         assert result.symbol == expected
@@ -73,7 +75,9 @@ class TestStandardize:
     )
     def test_allow_subgroup(self, symbol, expected, allow_subgroup):
         result = tr.standardize(
-            symbol=symbol, species="homosapiens", allow_subgroup=allow_subgroup,
+            symbol=symbol,
+            species="homosapiens",
+            allow_subgroup=allow_subgroup,
         )
 
         assert result.symbol == expected
@@ -96,30 +100,65 @@ class TestStandardize:
             ("TCRAV36-01*01", "TRAV36/DV7*01"),
         ),
     )
-    def test_remove_illegal_dash1(self, symbol, expected, ):
+    def test_remove_illegal_dash1(
+        self,
+        symbol,
+        expected,
+    ):
         result = tr.standardize(
-            symbol=symbol, species="homosapiens",
+            symbol=symbol,
+            species="homosapiens",
         )
 
         assert result.is_standardized
         assert result.symbol == expected
         assert result.species == "homosapiens"
 
-
     @pytest.mark.parametrize(
-        ("symbol", "allow_subgroup", "expected_allele", "expected_gene", "expected_subgroup", "expected_symbol"),
         (
-            ("TRBV24/OR9-2*01", True, "TRBV24/OR9-2*01", "TRBV24/OR9-2", "TRBV24/OR9", "TRBV24/OR9-2*01"),
-            ("TRBV24/OR9-2*01", False, "TRBV24/OR9-2*01", "TRBV24/OR9-2", "TRBV24/OR9", "TRBV24/OR9-2*01"),
+            "symbol",
+            "allow_subgroup",
+            "expected_allele",
+            "expected_gene",
+            "expected_subgroup",
+            "expected_symbol",
+        ),
+        (
+            (
+                "TRBV24/OR9-2*01",
+                True,
+                "TRBV24/OR9-2*01",
+                "TRBV24/OR9-2",
+                "TRBV24/OR9",
+                "TRBV24/OR9-2*01",
+            ),
+            (
+                "TRBV24/OR9-2*01",
+                False,
+                "TRBV24/OR9-2*01",
+                "TRBV24/OR9-2",
+                "TRBV24/OR9",
+                "TRBV24/OR9-2*01",
+            ),
             ("TRAV16", True, None, "TRAV16", "TRAV16", "TRAV16"),
             ("TRAV16", False, None, "TRAV16", "TRAV16", "TRAV16"),
             ("TRBV24/OR9", True, None, None, "TRBV24/OR9", "TRBV24/OR9"),
             ("TRBV24/OR9", False, None, None, None, None),
         ),
     )
-    def test_precision(self, symbol, allow_subgroup, expected_allele, expected_gene, expected_subgroup, expected_symbol):
+    def test_precision(
+        self,
+        symbol,
+        allow_subgroup,
+        expected_allele,
+        expected_gene,
+        expected_subgroup,
+        expected_symbol,
+    ):
         result = tr.standardize(
-            symbol=symbol, species="homosapiens", allow_subgroup=allow_subgroup,
+            symbol=symbol,
+            species="homosapiens",
+            allow_subgroup=allow_subgroup,
         )
 
         assert result.allele == expected_allele
@@ -198,7 +237,6 @@ class TestStandardizeHomoSapiens:
             ("TRAV15-1", "TRAV15", "homosapiens"),
             ("TRAV15-1", "TRAV15-1/DV6-1", "musmusculus"),
             ("TCRBJ2S1", "TRBJ2-1", "musmusculus"),
-
         ),
     )
     def test_various_typos(self, symbol, expected, species):
@@ -212,20 +250,52 @@ class TestStandardizeHomoSapiens:
         (
             ("TRAV1-1", ["TRAV1-1*01", "TRAV1-1*02"], True, "homosapiens"),
             ("TRAV12-4", [], True, "musmusculus"),
-            ("TRAV12-4", ["TRAV12-4*01", "TRAV12-4*02", "TRAV12-4*03"], False, "musmusculus"),
-            ("TRAV14", ["TRAV14/DV4*01", "TRAV14/DV4*02",
-                        "TRAV14/DV4*03", "TRAV14/DV4*04", "TRAV14/DV4*05"], True, "homosapiens"),
-            ("TRAV14", ["TRAV14-1*01", "TRAV14-1*02", "TRAV14-1*03",
-                        "TRAV14-1*04", "TRAV14/DV4*01", "TRAV14/DV4*02",
-                        "TRAV14/DV4*03", "TRAV14/DV4*04", "TRAV14/DV4*05"], False, "homosapiens"),
+            (
+                "TRAV12-4",
+                ["TRAV12-4*01", "TRAV12-4*02", "TRAV12-4*03"],
+                False,
+                "musmusculus",
+            ),
+            (
+                "TRAV14",
+                [
+                    "TRAV14/DV4*01",
+                    "TRAV14/DV4*02",
+                    "TRAV14/DV4*03",
+                    "TRAV14/DV4*04",
+                    "TRAV14/DV4*05",
+                ],
+                True,
+                "homosapiens",
+            ),
+            (
+                "TRAV14",
+                [
+                    "TRAV14-1*01",
+                    "TRAV14-1*02",
+                    "TRAV14-1*03",
+                    "TRAV14-1*04",
+                    "TRAV14/DV4*01",
+                    "TRAV14/DV4*02",
+                    "TRAV14/DV4*03",
+                    "TRAV14/DV4*04",
+                    "TRAV14/DV4*05",
+                ],
+                False,
+                "homosapiens",
+            ),
         ),
     )
-    def test_get_all_alleles(self, symbol, expected_alleles, enforce_functional, species):
+    def test_get_all_alleles(
+        self, symbol, expected_alleles, enforce_functional, species
+    ):
         result = tr.standardize(symbol=symbol, species=species, allow_subgroup=True)
 
         assert result.symbol == symbol
         assert result.species == species
-        assert sorted(result.get_all_alleles(enforce_functional=enforce_functional)) == sorted(expected_alleles)
+        assert sorted(
+            result.get_all_alleles(enforce_functional=enforce_functional)
+        ) == sorted(expected_alleles)
 
     @pytest.mark.parametrize(
         ("symbol", "sequence_type", "expected_result"),
@@ -233,15 +303,23 @@ class TestStandardizeHomoSapiens:
             ("TRAV1-1", "CDR1-IMGT", {"TRAV1-1*01": "TSGFYG", "TRAV1-1*02": "TSGFYG"}),
             ("TRAV1-1", "CDR1", {"TRAV1-1*01": "TSGFYG", "TRAV1-1*02": "TSGFYG"}),
             ("TRAV1-1", "cdr1", {"TRAV1-1*01": "TSGFYG", "TRAV1-1*02": "TSGFYG"}),
-            ("TRAJ10", "all", {"TRAJ10*01": {
-                                    "functionality": "F",
-                                    "J-REGION": "ILTGGGNKLTFGTGTQLKVEL",
-                                    "J-MOTIF": "FGTG"
-                                }}),
+            (
+                "TRAJ10",
+                "all",
+                {
+                    "TRAJ10*01": {
+                        "functionality": "F",
+                        "J-REGION": "ILTGGGNKLTFGTGTQLKVEL",
+                        "J-MOTIF": "FGTG",
+                    }
+                },
+            ),
         ),
     )
     def test_get_aa_sequences(self, symbol, sequence_type, expected_result):
-        result = tr.standardize(symbol=symbol, species="homosapiens", allow_subgroup=True)
+        result = tr.standardize(
+            symbol=symbol, species="homosapiens", allow_subgroup=True
+        )
 
         assert result.symbol == symbol
         assert result.get_aa_sequences(sequence_type) == expected_result

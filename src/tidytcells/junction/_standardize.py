@@ -1,7 +1,11 @@
 import logging
 from tidytcells import config
 from tidytcells import _utils
-from tidytcells._resources import AMINO_ACIDS, AMINO_ACIDS_WITH_SPECIAL, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES
+from tidytcells._resources import (
+    AMINO_ACIDS,
+    AMINO_ACIDS_WITH_SPECIAL,
+    SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES,
+)
 
 from tidytcells.result._junction import Junction
 from tidytcells._utils.alignment import get_is_valid_locus_multi_gene_fn
@@ -10,7 +14,6 @@ from tidytcells._standardized_junction import JunctionStandardizer
 from typing import Optional
 
 logger = logging.getLogger(__name__)
-
 
 
 def standardize(
@@ -310,23 +313,29 @@ def standardize(
     seq = Parameter(seq, "seq").throw_error_if_not_of_type(str).value
     locus = (
         Parameter(locus, "locus")
-        .throw_error_if_not_one_of("TRA", "TRB", "TRG", "TRD", "IGH", "IGK", "IGL", "IG", "TR")
+        .throw_error_if_not_one_of(
+            "TRA", "TRB", "TRG", "TRD", "IGH", "IGK", "IGL", "IG", "TR"
+        )
         .value
     )
     j_symbol = (
         Parameter(j_symbol, "j_symbol")
         .throw_error_if_not_of_type(str, optional=True)
-        .throw_error_if_failed_test(test=get_is_valid_locus_multi_gene_fn(locus, "J"),
-                                    mssg=f"is not a valid J gene for \"locus\" {locus}",
-                                    optional=True)
+        .throw_error_if_failed_test(
+            test=get_is_valid_locus_multi_gene_fn(locus, "J"),
+            mssg=f'is not a valid J gene for "locus" {locus}',
+            optional=True,
+        )
         .value
     )
     v_symbol = (
         Parameter(v_symbol, "v_symbol")
         .throw_error_if_not_of_type(str, optional=True)
-        .throw_error_if_failed_test(test=get_is_valid_locus_multi_gene_fn(locus, "V"),
-                                    mssg=f"is not a valid V gene for \"locus\" {locus}",
-                                    optional=True)
+        .throw_error_if_failed_test(
+            test=get_is_valid_locus_multi_gene_fn(locus, "V"),
+            mssg=f'is not a valid V gene for "locus" {locus}',
+            optional=True,
+        )
         .value
     )
     species = (
@@ -399,58 +408,70 @@ def standardize(
         if char not in legal_chars:
             if log_failures:
                 logger.warning(
-                    f'Failed to standardize {original_input}. Not a valid amino acid sequence, found: {char}'
+                    f"Failed to standardize {original_input}. Not a valid amino acid sequence, found: {char}"
                 )
-            return Junction(original_input, f'Not a valid amino acid sequence, found: {char}')
-
-
-    if species not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES:
-        if log_failures:
-            _utils.warn_unsupported_species(species, "junction", SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES.keys(), logger)
-
-        return Junction(original_input, f'Unsupported species: {species}')
-
-
-    if locus[0:2] not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species]:
-        if log_failures:
-            logger.warning(
-                f'Unsupported locus: "{locus}" for species "{species}" (valid options are: {sorted(SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species])}). ' f"Skipping junction standardization."
+            return Junction(
+                original_input, f"Not a valid amino acid sequence, found: {char}"
             )
 
-        return Junction(original_input, f'Unsupported locus: "{locus}" for species "{species}"')
+    if species not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES:
+        msg = _utils.unsupported_species_message(
+            species, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES.keys()
+        )
+        if log_failures:
+            logger.warning(f"{msg} Skipping junction standardization.")
+
+        return Junction(original_input, msg)
+
+    if locus[0:2] not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species]:
+        msg = _utils.unsupported_locus_message(
+            locus, species, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species]
+        )
+        if log_failures:
+            logger.warning(f"{msg} Skipping junction standardization.")
+
+        return Junction(original_input, msg)
 
     receptor_database = config.get_receptor_database()
-    if receptor_database not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]]:
-        error = _utils.warn_unsupported_receptor_database(
+    if (
+        receptor_database
+        not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]]
+    ):
+        msg = _utils.unsupported_receptor_database_message(
             receptor_database,
             species,
-            "junction",
-            SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]].keys(),
-            logger,
-            log_failures=log_failures,
+            SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][
+                locus[0:2]
+            ].keys(),
             locus=locus,
         )
+        if log_failures:
+            logger.warning(f"{msg} Skipping junction standardization.")
 
-        return Junction(original_input, error)
+        return Junction(original_input, msg)
 
-    sequence_dictionary = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]][receptor_database]
+    sequence_dictionary = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][
+        locus[0:2]
+    ][receptor_database]
 
-    result = JunctionStandardizer(seq=seq, locus=locus, j_symbol=j_symbol, v_symbol=v_symbol,
-                                  allow_c_correction=allow_c_correction,
-                                  allow_fw_correction=allow_fw_correction,
-                                  enforce_functional_v=enforce_functional_v,
-                                  enforce_functional_j=enforce_functional_j,
-                                  max_v_reconstruction=max_v_reconstruction,
-                                  max_j_reconstruction=max_j_reconstruction,
-                                  species=species,
-                                  germline_database=receptor_database,
-                                  sequence_dictionary=sequence_dictionary).result
+    result = JunctionStandardizer(
+        seq=seq,
+        locus=locus,
+        j_symbol=j_symbol,
+        v_symbol=v_symbol,
+        allow_c_correction=allow_c_correction,
+        allow_fw_correction=allow_fw_correction,
+        enforce_functional_v=enforce_functional_v,
+        enforce_functional_j=enforce_functional_j,
+        max_v_reconstruction=max_v_reconstruction,
+        max_j_reconstruction=max_j_reconstruction,
+        species=species,
+        germline_database=receptor_database,
+        sequence_dictionary=sequence_dictionary,
+    ).result
 
     if (not result.is_standardized) and log_failures:
-        _utils.warn_result_failure(
-            result=result,
-            logger=logger,
-        )
+        logger.warning(_utils.standardization_failure_message(result))
 
     return result
 
