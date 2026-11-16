@@ -1,9 +1,9 @@
-from typing import Optional, Union
+from collections.abc import Iterable
 
 from tidytcells.result import MhGene, ReceptorGene, Junction
 
 
-def unsupported_species_message(species: str, valid_species) -> str:
+def unsupported_species_message(species: str, valid_species: Iterable[str]) -> str:
     """
     Format an error message for an unsupported species.
     """
@@ -16,8 +16,8 @@ def unsupported_species_message(species: str, valid_species) -> str:
 def unsupported_receptor_database_message(
     receptor_database: str,
     species: str,
-    valid_databases,
-    locus: Optional[str] = None,
+    valid_databases: Iterable[str],
+    locus: str | None = None,
 ) -> str:
     """
     Format an error message for an unsupported receptor_database setting.
@@ -33,7 +33,7 @@ def unsupported_receptor_database_message(
 def unsupported_mh_database_message(
     mh_database: str,
     species: str,
-    valid_databases,
+    valid_databases: Iterable[str],
 ) -> str:
     """
     Format an error message for an unsupported mh_database setting.
@@ -45,7 +45,9 @@ def unsupported_mh_database_message(
     )
 
 
-def unsupported_locus_message(locus: str, species: str, valid_loci) -> str:
+def unsupported_locus_message(
+    locus: str, species: str, valid_loci: Iterable[str]
+) -> str:
     """
     Format an error message for an unsupported locus.
     """
@@ -56,7 +58,7 @@ def unsupported_locus_message(locus: str, species: str, valid_loci) -> str:
 
 
 def standardization_failure_message(
-    result: Union[MhGene, ReceptorGene, Junction],
+    result: MhGene | ReceptorGene | Junction,
 ) -> str:
     """
     Format a warning message for a failed standardization result.

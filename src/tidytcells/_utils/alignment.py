@@ -1,9 +1,10 @@
 import logging
+from collections.abc import Callable, Iterable
 
 logger = logging.getLogger(__name__)
 
 
-def get_is_valid_locus_gene_fn(locus: str, gene: str):
+def get_is_valid_locus_gene_fn(locus: str, gene: str) -> Callable[[str], bool]:
     """
     Utility funciton to check if a given gene is valid for a given locus, considering the shared TRAV/DV genes, and
     the fact that TRA chains frequently use TRDV genes (even if they're not called TRAV/DV)
@@ -24,7 +25,7 @@ def get_is_valid_locus_gene_fn(locus: str, gene: str):
     return lambda symbol: symbol.startswith(locus) and gene in symbol
 
 
-def get_is_valid_locus_multi_gene_fn(locus: str, gene: str):
+def get_is_valid_locus_multi_gene_fn(locus: str, gene: str) -> Callable[[str], bool]:
     """
     wrapper around get_is_valid_locus_gene_fn for multi-gene strings
     """
@@ -35,7 +36,9 @@ def get_is_valid_locus_multi_gene_fn(locus: str, gene: str):
     )
 
 
-def is_valid_functionality(aa_dict, candidate, enforce_functional):
+def is_valid_functionality(
+    aa_dict: dict[str, dict[str, str]], candidate: str, enforce_functional: bool
+) -> bool:
     if (not enforce_functional) or (
         aa_dict[candidate]["functionality"] in {"F", "[F]", "(F)"}
     ):
@@ -44,7 +47,13 @@ def is_valid_functionality(aa_dict, candidate, enforce_functional):
     return False
 
 
-def get_compatible_symbols(symbol, aa_dict, gene, locus, enforce_functional):
+def get_compatible_symbols(
+    symbol: str,
+    aa_dict: dict[str, dict[str, str]],
+    gene: str,
+    locus: str,
+    enforce_functional: bool,
+) -> list[str]:
     """
     For a given gene symbol, return all alleles which are considered to be valid extensions of the gene symbol.
     A gene symbol can be an allele (return itself), gene, subgroup, or even locus (TRA) or receptor (TR)
@@ -69,7 +78,7 @@ def get_compatible_symbols(symbol, aa_dict, gene, locus, enforce_functional):
     ]
 
 
-def _get_genes_to_alleles(alleles):
+def _get_genes_to_alleles(alleles: Iterable[str]) -> dict[str, list[str]]:
     """Create mapping from gene to all its alleles"""
     genes_to_alleles = dict()
 
@@ -84,7 +93,9 @@ def _get_genes_to_alleles(alleles):
     return genes_to_alleles
 
 
-def collapse_aa_dict_per_gene(symbol_to_aa_dict):
+def collapse_aa_dict_per_gene(
+    symbol_to_aa_dict: dict[str, dict[str, str]],
+) -> dict[str, dict[str, str]]:
     """
     Reduce the number of items in the sequence_aa dict by collapsing all alleles at the gene level
     for any gene where all alleles have the same sequence (keep separate alleles if sequences differ)
@@ -112,7 +123,12 @@ def collapse_aa_dict_per_gene(symbol_to_aa_dict):
     return genes_to_aa
 
 
-def _get_max_score_from_matches(matching_aas, max_mismatches, mismatch_penalty, gene):
+def _get_max_score_from_matches(
+    matching_aas: list[bool],
+    max_mismatches: int,
+    mismatch_penalty: float,
+    gene: str,
+) -> float:
     """
     Utility function for computing the alignment score based on a boolean list of matching/non-matching amino acids.
 
@@ -144,8 +160,12 @@ def _get_max_score_from_matches(matching_aas, max_mismatches, mismatch_penalty, 
 
 
 def get_j_alignment_score(
-    seq, j_region, j_offset, max_mismatches=1, mismatch_penalty=-1.5
-):
+    seq: str,
+    j_region: str,
+    j_offset: int,
+    max_mismatches: int = 1,
+    mismatch_penalty: float = -1.5,
+) -> float:
     """
     Determines the alignment score given a J region, CDR3 sequence and alignment offset.
     - Slice out the overlapping part of the alignment between the CDR3 and J region
@@ -174,8 +194,12 @@ def get_j_alignment_score(
 
 
 def get_v_alignment_score(
-    seq, v_region, v_offset, max_mismatches=1, mismatch_penalty=-1.5
-):
+    seq: str,
+    v_region: str,
+    v_offset: int,
+    max_mismatches: int = 1,
+    mismatch_penalty: float = -1.5,
+) -> float:
     """
     Determines the alignment score given a V region, CDR3 sequence and alignment offset.
     - Slice out the overlapping part of the alignment between the CDR3 and V region
@@ -195,7 +219,9 @@ def get_v_alignment_score(
     )
 
 
-def j_anchor_is_valid(seq, j_region, j_conserved_idx, j_offset):
+def j_anchor_is_valid(
+    seq: str, j_region: str, j_conserved_idx: int, j_offset: int
+) -> bool:
     """
     Given a J alignment offset, this function checks if the CDR3 sequence does not contradict the conserved anchor
     residues (anything after the conserved F/W).
@@ -217,7 +243,9 @@ def j_anchor_is_valid(seq, j_region, j_conserved_idx, j_offset):
     return seq_tail == j_tail
 
 
-def v_anchor_is_valid(seq, v_region, v_conserved_idx_neg, v_offset):
+def v_anchor_is_valid(
+    seq: str, v_region: str, v_conserved_idx_neg: int, v_offset: int
+) -> bool:
     """
     Given a V alignment offset, this function checks if the CDR3 sequence does not contradict the conserved anchor
     residues (anything before the conserved C).
@@ -239,8 +267,12 @@ def v_anchor_is_valid(seq, v_region, v_conserved_idx_neg, v_offset):
 
 
 def get_best_j_alignment_for_region(
-    seq, j_region, j_conserved_idx, max_mismatches=1, mismatch_penalty=-1.5
-):
+    seq: str,
+    j_region: str,
+    j_conserved_idx: int,
+    max_mismatches: int = 1,
+    mismatch_penalty: float = -1.5,
+) -> tuple[int | None, float]:
     """
     Get the best alignment index for one given J region.
 
@@ -259,7 +291,7 @@ def get_best_j_alignment_for_region(
 
     Returns
     -------
-    tuple
+    tuple[int | None, float]
         Alignment offset of the best-scoring alignment, plus the score.
     """
     best_offset = None
@@ -283,8 +315,12 @@ def get_best_j_alignment_for_region(
 
 
 def get_best_v_alignment_for_region(
-    seq, v_region, v_conserved_idx_neg, max_mismatches=1, mismatch_penalty=-1.5
-):
+    seq: str,
+    v_region: str,
+    v_conserved_idx_neg: int,
+    max_mismatches: int = 1,
+    mismatch_penalty: float = -1.5,
+) -> tuple[int | None, float]:
     """
     Get the best alignment index for one given V region.
 
@@ -304,7 +340,7 @@ def get_best_v_alignment_for_region(
 
     Returns
     -------
-    tuple
+    tuple[int | None, float]
         Alignment offset of the best-scoring alignment, plus the score.
     """
     best_offset = None
@@ -327,7 +363,13 @@ def get_best_v_alignment_for_region(
     return best_offset, best_score
 
 
-def align_j_regions(seq, j_aa_dict, min_j_score, mismatch_penalty, max_mismatches):
+def align_j_regions(
+    seq: str,
+    j_aa_dict: dict[str, dict[str, str]],
+    min_j_score: float,
+    mismatch_penalty: float,
+    max_mismatches: int,
+) -> list[dict[str, str | int | float]]:
     """
     Get all best alignments across all J genes.
 
@@ -346,7 +388,7 @@ def align_j_regions(seq, j_aa_dict, min_j_score, mismatch_penalty, max_mismatche
 
     Returns
     -------
-    list
+    list[dict[str, str | int | float]]
         Alignment details for all J genes with the best alignment scores.
         This includes 'offset' indices (difference between conserved aa idx and end of aligned sequence idx)
         needed to calculate the corrected sequence.
@@ -380,7 +422,7 @@ def align_j_regions(seq, j_aa_dict, min_j_score, mismatch_penalty, max_mismatche
     return best_alignments
 
 
-def get_conserved_c_idx(gene, v_gene_seqs_dict):
+def get_conserved_c_idx(gene: str, v_gene_seqs_dict: dict[str, str]) -> int | None:
     """
     Compute the conserved 'C' index for a given V gene, expressed as negative number (number of aa's from the right)
     """
@@ -401,7 +443,13 @@ def get_conserved_c_idx(gene, v_gene_seqs_dict):
         return v_conserved_idx_neg
 
 
-def align_v_regions(seq, v_aa_dict, min_v_score, mismatch_penalty, max_mismatches):
+def align_v_regions(
+    seq: str,
+    v_aa_dict: dict[str, dict[str, str]],
+    min_v_score: float,
+    mismatch_penalty: float,
+    max_mismatches: int,
+) -> list[dict[str, str | int | float]]:
     """
     Get all best alignments across all V genes.
 
@@ -420,7 +468,7 @@ def align_v_regions(seq, v_aa_dict, min_v_score, mismatch_penalty, max_mismatche
 
     Returns
     -------
-    list
+    list[dict[str, str | int | float]]
         Alignment details for all V genes with the best alignment scores.
         This includes 'offset' indices (difference between V region end and CDR3 start)
         needed to calculate the corrected sequence.

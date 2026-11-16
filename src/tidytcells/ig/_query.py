@@ -1,5 +1,4 @@
 import re
-from typing import Dict, FrozenSet, Optional, Type
 
 from tidytcells import _utils
 from tidytcells._utils import Parameter
@@ -8,17 +7,17 @@ from tidytcells._query_engine import (
     HomoSapiensIgQueryEngine,
 )
 
-QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
+QUERY_ENGINES: dict[str, type[QueryEngine]] = {
     "homosapiens": HomoSapiensIgQueryEngine,
 }
 
 
 def query(
-    species: Optional[str] = None,
-    precision: Optional[str] = None,
-    functionality: Optional[str] = None,
-    contains_pattern: Optional[str] = None,
-) -> FrozenSet[str]:
+    species: str | None = None,
+    precision: str | None = None,
+    functionality: str | None = None,
+    contains_pattern: str | None = None,
+) -> frozenset[str]:
     """
     Query the list of all known IG genes / alleles.
 

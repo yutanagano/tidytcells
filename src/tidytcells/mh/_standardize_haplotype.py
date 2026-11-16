@@ -1,6 +1,5 @@
 import re
 from collections import defaultdict
-from typing import Dict, Optional
 
 from tidytcells._resources import MH_SYMBOLS_BY_SP_DB
 from tidytcells._standardized_gene_symbol.mutation import interpret_remainder
@@ -47,7 +46,7 @@ def standardize_haplotype(
     # trailing text examined as a mutation specification
     mutation = None
     if gene_name not in valid_symbols:
-        error: Optional[str] = "Unrecognized gene name"
+        error: str | None = "Unrecognized gene name"
     else:
         mutation, mutation_error = interpret_remainder(remainder)
         if mutation_error is not None:
@@ -67,7 +66,7 @@ def standardize_haplotype(
     )
 
 
-def _mh_data(species: str, mh_database: str):
+def _mh_data(species: str, mh_database: str) -> tuple[dict[str, dict], dict[str, str]]:
     """
     The valid-symbol and synonym data for a species and MH database.
     """
@@ -77,9 +76,9 @@ def _mh_data(species: str, mh_database: str):
 
 def _resolve(
     cleaned_symbol: str,
-    exact_index: Dict[str, str],
-    prefixed_index: Dict[str, str],
-    bare_index: Dict[str, str],
+    exact_index: dict[str, str],
+    prefixed_index: dict[str, str],
+    bare_index: dict[str, str],
     prefix_regex: re.Pattern,
 ) -> str:
     if cleaned_symbol.upper() in exact_index:
@@ -95,8 +94,8 @@ def _resolve(
 
 
 def build_prefixed_index(
-    valid_symbols: Dict, allele_synonyms: Dict[str, str], prefix_regex: re.Pattern
-) -> Dict[str, str]:
+    valid_symbols: dict, allele_synonyms: dict[str, str], prefix_regex: re.Pattern
+) -> dict[str, str]:
     index = {
         strip_prefix_and_hyphens(s, prefix_regex).upper(): s for s in valid_symbols
     }

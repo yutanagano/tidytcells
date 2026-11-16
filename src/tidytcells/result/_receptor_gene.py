@@ -1,4 +1,3 @@
-from typing import Optional
 from tidytcells._resources import SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES
 from tidytcells._utils.alignment import get_compatible_symbols
 
@@ -13,14 +12,14 @@ class ReceptorGene:
 
     def __init__(
         self,
-        original_input,
-        error,
-        gene_name=None,
-        allele_designation=None,
-        subgroup_name=None,
-        species=None,
-        germline_database=None,
-    ):
+        original_input: str,
+        error: str | None,
+        gene_name: str | None = None,
+        allele_designation: str | None = None,
+        subgroup_name: str | None = None,
+        species: str | None = None,
+        germline_database: str | None = None,
+    ) -> None:
         self._original_input = original_input
         self._error = error
         self._gene_name = gene_name
@@ -40,7 +39,7 @@ class ReceptorGene:
         elif self._subgroup_name is not None:
             self._highest_precision_symbol = self._subgroup_name
 
-    def __str__(self):
+    def __str__(self) -> str:
         str_repr = self.symbol
 
         if str_repr is not None:
@@ -49,12 +48,12 @@ class ReceptorGene:
             return ""
 
     @property
-    def original_input(self) -> Optional[str]:
+    def original_input(self) -> str | None:
         """The original input symbol."""
         return self._original_input
 
     @property
-    def error(self) -> Optional[str]:
+    def error(self) -> str | None:
         """The error message, only if standardization failed, otherwise ``None``."""
         return self._error
 
@@ -64,19 +63,19 @@ class ReceptorGene:
         return self.error is None
 
     @property
-    def attempted_fix(self) -> Optional[str]:
+    def attempted_fix(self) -> str | None:
         """The best attempt at fixing the input symbol, only of standardization failed, if the standardization was a success this returns ``None``."""
         if not self.is_standardized:
             return self._highest_precision_symbol
 
     @property
-    def symbol(self) -> Optional[str]:
+    def symbol(self) -> str | None:
         """The allele, gene or subgroup (whichever is most precise) if standardization was successful, otherwise ``None``."""
         if self.is_standardized:
             return self._highest_precision_symbol
 
     @property
-    def allele(self) -> Optional[str]:
+    def allele(self) -> str | None:
         """The allele name, if standardization was successful and allele-level information is available, otherwise ``None``."""
         if (
             self.is_standardized
@@ -86,19 +85,19 @@ class ReceptorGene:
             return f"{self._gene_name}*{self._allele_designation}"
 
     @property
-    def gene(self) -> Optional[str]:
+    def gene(self) -> str | None:
         """The gene name, if standardization was successful and gene-level information is available, otherwise ``None``."""
         if self.is_standardized:
             return self._gene_name
 
     @property
-    def subgroup(self) -> Optional[str]:
+    def subgroup(self) -> str | None:
         """The subgroup name, if standardization was successful, otherwise ``None``."""
         if self.is_standardized:
             return self._subgroup_name
 
     @property
-    def locus(self) -> Optional[str]:
+    def locus(self) -> str | None:
         """
         The locus of the gene.
         This is typically the three-letter code ('TRA', 'TRB', 'TRG', 'TRD', 'IGH', 'IGL', 'IGK'),
@@ -111,28 +110,28 @@ class ReceptorGene:
             return locus
 
     @property
-    def receptor_type(self):
+    def receptor_type(self) -> str | None:
         """'TR' for T cell receptor genes, or 'IG' for antibody genes if standardization was successful, otherwise ``None``."""
         if self.is_standardized:
             return self.symbol[0:2]
 
     @property
-    def gene_type(self) -> Optional[str]:
+    def gene_type(self) -> str | None:
         """The gene type ('V', 'D' or 'J'), if standardization was successful, otherwise ``None``."""
         if self.is_standardized:
             return self.symbol[3]
 
     @property
-    def species(self) -> Optional[str]:
+    def species(self) -> str | None:
         """The species used to validate the gene name."""
         return self._species
 
     @property
-    def germline_database(self) -> Optional[str]:
+    def germline_database(self) -> str | None:
         """The germline database that was used to standardize this receptor gene (IMGT or OGRDB)"""
         return self._germline_database
 
-    def get_all_alleles(self, enforce_functional=True):
+    def get_all_alleles(self, enforce_functional: bool = True) -> list[str] | None:
         """
         Get all alleles related to the standardized symbol.
 
@@ -143,7 +142,7 @@ class ReceptorGene:
 
         Returns
         -------
-        list
+        list[str] | None
             A list of allele names.
         """
         if self.is_standardized:
@@ -155,7 +154,9 @@ class ReceptorGene:
                 self.symbol, aa_dict, self.gene_type, self.locus, enforce_functional
             )
 
-    def get_aa_sequences(self, sequence_type="ALL", enforce_functional=True):
+    def get_aa_sequences(
+        self, sequence_type: str = "ALL", enforce_functional: bool = True
+    ) -> dict[str, dict[str, str]] | dict[str, str | None] | None:
         """
         Get amino acid sequence information related to the alleles of the standardized symbol.
 
@@ -172,7 +173,7 @@ class ReceptorGene:
 
         Returns
         -------
-        dict
+        dict[str, dict[str, str]] | dict[str, str | None] | None
             A dictionary with allele names as keys and sequences as values.
             When sequence_type is 'ALL', the result is a nested dictionary with allele names
             as outer keys, sequence types as inner keys, and sequences as inner values.

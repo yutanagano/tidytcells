@@ -6,20 +6,17 @@ from tidytcells.result._receptor_gene import ReceptorGene
 from tidytcells._utils import Parameter
 from tidytcells._resources import SUPPORTED_IG_SPECIES_AND_THEIR_GENES
 
-
-from typing import Dict, Optional, Type
-
 logger = logging.getLogger(__name__)
 
 
 def standardize(
-    symbol: Optional[str] = None,
-    species: Optional[str] = None,
-    enforce_functional: Optional[bool] = None,
-    allow_subgroup: Optional[bool] = None,
-    log_failures: Optional[bool] = None,
-    gene: Optional[str] = None,
-    suppress_warnings: Optional[bool] = None,
+    symbol: str | None = None,
+    species: str | None = None,
+    enforce_functional: bool | None = None,
+    allow_subgroup: bool | None = None,
+    log_failures: bool | None = None,
+    gene: str | None = None,
+    suppress_warnings: bool | None = None,
 ) -> ReceptorGene:
     """
     Attempt to standardize a IG gene / allele symbol to be IMGT-compliant.

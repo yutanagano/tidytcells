@@ -1,8 +1,6 @@
 from abc import abstractmethod
 import itertools
 import re
-from typing import Tuple, Optional
-from typing import Dict, Optional, List, Set
 from tidytcells import _utils
 from tidytcells._standardized_gene_symbol import ReceptorGeneSymbolStandardizer
 
@@ -28,7 +26,7 @@ class TrSymbolParser:
 
 class TrSymbolStandardizer(ReceptorGeneSymbolStandardizer):
 
-    def _parse_symbol(self, tr_symbol: str) -> Tuple[Optional[str], Optional[str]]:
+    def _parse_symbol(self, tr_symbol: str) -> tuple[str | None, str | None]:
         cleaned_tr_symbol = _utils.clean_and_uppercase(tr_symbol)
         parsed_tr_symbol = TrSymbolParser(cleaned_tr_symbol)
 
@@ -97,7 +95,7 @@ class TrSymbolStandardizer(ReceptorGeneSymbolStandardizer):
                         f"TRAV{parse_attempt.group(1)}/{parse_attempt.group(2)}"
                     )
 
-    def _try_removing_dash1(self):
+    def _try_removing_dash1(self) -> None:
         orig_gene_name = self._gene_name
 
         if "-1" in self._gene_name:

@@ -1,5 +1,6 @@
 from functools import partial
-from typing import Callable, Dict, FrozenSet, Optional, Literal
+from typing import Literal
+from collections.abc import Callable
 
 from tidytcells import config
 from tidytcells import _utils
@@ -17,7 +18,7 @@ _PROTEIN_LEVEL_WARNING = (
     "(two allele designations)."
 )
 
-QUERY_ENGINES: Dict[str, Callable] = {
+QUERY_ENGINES: dict[str, Callable] = {
     "homosapiens": partial(
         query_symbols, species="homosapiens", warning=_PROTEIN_LEVEL_WARNING
     ),
@@ -43,10 +44,10 @@ QUERY_ENGINES: Dict[str, Callable] = {
 
 
 def query(
-    species: Optional[str] = None,
-    precision: Optional[Literal["allele", "gene"]] = None,
-    contains_pattern: Optional[str] = None,
-) -> FrozenSet[str]:
+    species: str | None = None,
+    precision: Literal["allele", "gene"] | None = None,
+    contains_pattern: str | None = None,
+) -> frozenset[str]:
     """
     Query the list of all known MH genes / alleles.
 

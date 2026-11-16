@@ -1,8 +1,10 @@
 import warnings
+from collections.abc import Callable
+from typing import Any
 
 
 class Parameter:
-    def __init__(self, value: any, name: str) -> None:
+    def __init__(self, value: Any, name: str) -> None:
         self.value = value
         self.name = name
 
@@ -11,13 +13,13 @@ class Parameter:
         else:
             self.is_explicitly_set = False
 
-    def set_default(self, default_value: any) -> "Parameter":
+    def set_default(self, default_value: Any) -> "Parameter":
         if not self.is_explicitly_set:
             self.value = default_value
 
         return self
 
-    def resolve_with_alias(self, alias_value: any, alias_name: str) -> "Parameter":
+    def resolve_with_alias(self, alias_value: Any, alias_name: str) -> "Parameter":
         if alias_value is None:
             return self
 
@@ -52,7 +54,7 @@ class Parameter:
 
         return self
 
-    def throw_error_if_not_one_of(self, *allowed_values) -> "Parameter":
+    def throw_error_if_not_one_of(self, *allowed_values: Any) -> "Parameter":
         if not self.value in allowed_values:
             raise ValueError(
                 f'"{self.name}" must be one of ({allowed_values}), got {self.value}.'
@@ -61,7 +63,7 @@ class Parameter:
         return self
 
     def throw_error_if_failed_test(
-        self, test, mssg, optional: bool = True
+        self, test: Callable[[Any], bool], mssg: str, optional: bool = True
     ) -> "Parameter":
         if optional and self.value is None:
             return self

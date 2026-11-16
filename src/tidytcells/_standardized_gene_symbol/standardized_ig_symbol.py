@@ -1,13 +1,12 @@
 import re
 import itertools
-from typing import Tuple, Optional
 from tidytcells import _utils
 from tidytcells._standardized_gene_symbol import ReceptorGeneSymbolStandardizer
 
 
 class IgSymbolParser:
     gene_name: str
-    allele_designation: Optional[str]
+    allele_designation: str | None
 
     def __init__(self, ig_symbol: str, species: str, germline_database: str) -> None:
         if species == "homosapiens":
@@ -44,7 +43,7 @@ class IgSymbolParser:
 
 class IgSymbolStandardizer(ReceptorGeneSymbolStandardizer):
 
-    def _parse_symbol(self, ig_symbol: str) -> Tuple[Optional[str], Optional[str]]:
+    def _parse_symbol(self, ig_symbol: str) -> tuple[str | None, str | None]:
         cleaned_ig_symbol = self._safe_clean_ig_symbol(ig_symbol)
         parsed_ig_symbol = IgSymbolParser(
             cleaned_ig_symbol,
@@ -107,7 +106,7 @@ class IgSymbolStandardizer(ReceptorGeneSymbolStandardizer):
         self._gene_name = re.sub(r"(?<!\/)-?OR", "/OR", self._gene_name)
         self._gene_name = re.sub(r"(?<!\d)0+", "", self._gene_name)
 
-    def _try_removing_dash1(self):
+    def _try_removing_dash1(self) -> None:
         if "-1" not in self._gene_name:
             return
 

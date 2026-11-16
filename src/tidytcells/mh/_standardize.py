@@ -1,7 +1,7 @@
 import logging
 import re
 from functools import partial
-from typing import Callable, Dict, Optional
+from collections.abc import Callable
 
 from tidytcells import config
 from tidytcells import _utils
@@ -15,7 +15,7 @@ from tidytcells.result._mh_gene import MhGene
 logger = logging.getLogger(__name__)
 
 
-SPECIES_TO_STANDARDIZER: Dict[str, Callable] = {
+SPECIES_TO_STANDARDIZER: dict[str, Callable] = {
     "homosapiens": partial(
         standardize_allele,
         species="homosapiens",
@@ -55,11 +55,11 @@ SPECIES_TO_STANDARDIZER: Dict[str, Callable] = {
 
 
 def standardize(
-    symbol: Optional[str] = None,
-    species: Optional[str] = None,
-    log_failures: Optional[bool] = None,
-    gene: Optional[str] = None,
-    suppress_warnings: Optional[bool] = None,
+    symbol: str | None = None,
+    species: str | None = None,
+    log_failures: bool | None = None,
+    gene: str | None = None,
+    suppress_warnings: bool | None = None,
 ) -> MhGene:
     """
     Attempt to standardize an MH gene / allele symbol to its name in the MHC

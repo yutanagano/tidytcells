@@ -6,19 +6,17 @@ from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import TrSymbolStandardizer
 from tidytcells._resources import SUPPORTED_TR_SPECIES_AND_THEIR_GENES
 
-from typing import Dict, Optional, Type
-
 logger = logging.getLogger(__name__)
 
 
 def standardize(
-    symbol: Optional[str] = None,
-    species: Optional[str] = None,
-    enforce_functional: Optional[bool] = None,
-    allow_subgroup: Optional[bool] = None,
-    log_failures: Optional[str] = None,
-    gene: Optional[str] = None,
-    suppress_warnings: Optional[bool] = None,
+    symbol: str | None = None,
+    species: str | None = None,
+    enforce_functional: bool | None = None,
+    allow_subgroup: bool | None = None,
+    log_failures: str | None = None,
+    gene: str | None = None,
+    suppress_warnings: bool | None = None,
 ) -> ReceptorGene:
     """
     Attempt to standardize a TR gene / allele symbol to be IMGT-compliant.

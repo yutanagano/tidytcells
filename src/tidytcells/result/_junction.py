@@ -1,6 +1,3 @@
-from typing import Optional
-
-
 class Junction:
     """
     A wrapper object for the CDR3 junction sequence.
@@ -11,13 +8,13 @@ class Junction:
 
     def __init__(
         self,
-        original_input,
-        error,
-        corrected_junction=None,
-        species=None,
-        j_gene_match=None,
-        germline_database=None,
-    ):
+        original_input: str,
+        error: str | None,
+        corrected_junction: str | None = None,
+        species: str | None = None,
+        j_gene_match: str | None = None,
+        germline_database: str | None = None,
+    ) -> None:
         self._original_input = original_input
         self._error = error
         self._corrected_junction = corrected_junction
@@ -25,7 +22,7 @@ class Junction:
         self._j_gene_match = j_gene_match
         self._germline_database = germline_database
 
-    def __str__(self):
+    def __str__(self) -> str:
         str_repr = self.junction
 
         if str_repr is not None:
@@ -34,12 +31,12 @@ class Junction:
             return ""
 
     @property
-    def original_input(self) -> Optional[str]:
+    def original_input(self) -> str | None:
         """The original input sequence."""
         return self._original_input
 
     @property
-    def error(self) -> Optional[str]:
+    def error(self) -> str | None:
         """The error message, only if standardization failed, otherwise ``None``."""
         return self._error
 
@@ -49,7 +46,7 @@ class Junction:
         return self.error is None
 
     @property
-    def attempted_fix(self) -> Optional[str]:
+    def attempted_fix(self) -> str | None:
         """
         The best attempt at fixing the input sequence, only of standardization failed,
         if the standardization was a success this returns ``None``.
@@ -58,13 +55,13 @@ class Junction:
             return self._corrected_junction
 
     @property
-    def junction(self) -> Optional[str]:
+    def junction(self) -> str | None:
         """The IMGT-junction, including conserved leading C and trailing F / W / C if the standardization was successful, otherwise ``None``."""
         if self.is_standardized:
             return self._corrected_junction
 
     @property
-    def cdr3(self) -> Optional[str]:
+    def cdr3(self) -> str | None:
         """The IMGT-CDR3, excluding conserved leading C and trailing F / W / C if the standardization was successful, otherwise ``None``."""
         if self.is_standardized:
             if (
@@ -74,18 +71,18 @@ class Junction:
                 return self._corrected_junction[1:-1]
 
     @property
-    def species(self) -> Optional[str]:
+    def species(self) -> str | None:
         """The species used for the gene lookup to validate the CDR3 junction."""
         return self._species
 
     @property
-    def j_gene_match(self) -> Optional[str]:
+    def j_gene_match(self) -> str | None:
         """The closest matching J gene(s) that were used to validate or reconstruct the CDR3 junction.
         If multiple J genes have an identical matching score, the returned gene names will be separated by ', '.
         """
         return self._j_gene_match
 
     @property
-    def germline_database(self) -> Optional[str]:
+    def germline_database(self) -> str | None:
         """The germline database that was used to standardize this junction (IMGT or OGRDB)"""
         return self._germline_database

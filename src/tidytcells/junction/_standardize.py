@@ -11,7 +11,6 @@ from tidytcells.result._junction import Junction
 from tidytcells._utils.alignment import get_is_valid_locus_multi_gene_fn
 from tidytcells._utils.parameter import Parameter
 from tidytcells._standardized_junction import JunctionStandardizer
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -19,18 +18,18 @@ logger = logging.getLogger(__name__)
 def standardize(
     seq: str,
     locus: str,
-    j_symbol: Optional[str] = None,
-    v_symbol: Optional[str] = None,
-    species: Optional[str] = None,
-    allow_c_correction: Optional[bool] = None,
-    allow_fw_correction: Optional[bool] = None,
-    enforce_functional_v: Optional[bool] = None,
-    enforce_functional_j: Optional[bool] = None,
-    max_v_reconstruction: Optional[int] = None,
-    max_j_reconstruction: Optional[int] = None,
-    allow_special_chars: Optional[bool] = None,
-    log_failures: Optional[bool] = None,
-    suppress_warnings: Optional[bool] = None,
+    j_symbol: str | None = None,
+    v_symbol: str | None = None,
+    species: str | None = None,
+    allow_c_correction: bool | None = None,
+    allow_fw_correction: bool | None = None,
+    enforce_functional_v: bool | None = None,
+    enforce_functional_j: bool | None = None,
+    max_v_reconstruction: int | None = None,
+    max_j_reconstruction: int | None = None,
+    allow_special_chars: bool | None = None,
+    log_failures: bool | None = None,
+    suppress_warnings: bool | None = None,
 ) -> Junction:
     """
     Corrects a given CDR3/Junction sequence into a valid
