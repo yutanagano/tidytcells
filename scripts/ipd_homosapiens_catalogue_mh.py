@@ -15,7 +15,7 @@ def main() -> None:
     )
 
     print("Fetching HLA symbol synonyms from HGNC...")
-    synonyms_data = script_utility.get_hgnc_synonyms_data(valid_allele_tree)
+    synonyms_data = script_utility.get_mh_synonyms_data(valid_allele_tree)
     script_utility.save_as_json(synonyms_data, "ipd_homosapiens_mh_synonyms_hgnc.json")
 
 

@@ -7,7 +7,7 @@ import pandas as pd
 from pandas import DataFrame
 from pathlib import Path
 import requests
-from typing import Tuple, Iterable
+from typing import Tuple, Collection
 import re
 import time
 
@@ -294,6 +294,14 @@ def add_j_motifs(j_aa_dict):
     return j_aa_dict
 
 
+def get_genedb_release() -> str:
+    response = requests.get(
+        "https://www.imgt.org/download/GENE-DB/RELEASE",
+        headers={"User-Agent": "Mozilla/5.0"},
+    )
+    response.raise_for_status()
+    return response.text.strip()
+
 def save_as_json(data: dict, file_name: str) -> None:
     path_to_resources_dir = Path("src") / "tidytcells" / "_resources"
     with open(path_to_resources_dir / file_name, "w") as f:
@@ -309,13 +317,53 @@ def fetch_hgnc_data() -> DataFrame:
     return pd.read_csv(buffer, sep="\t", on_bad_lines="warn")
 
 
-def get_hgnc_synonyms_data(valid_genes: Iterable[str]) -> dict:
-    """
-    Get HGNC synonyms for the given valid genes.
+def _get_synonyms_data(
+    genes: DataFrame, valid_genes: Collection[str], exclude: Collection[str] = ()
+) -> dict:
+    # Only keep genes whose 'approved symbols' are in the provided list of valid genes
+    genes = genes[genes["Approved symbol"].map(lambda x: x in valid_genes)].copy()
 
-    Membership is tested with gene names only: when a dict (e.g. a valid-symbol
-    tree) is passed, its top-level keys are the gene names tested against.
-    """
+    # Get genes with "alias symbols"
+    genes_with_aliases = genes[genes["Alias symbols"].notna()][
+        ["Approved symbol", "Alias symbols"]
+    ]
+    genes_with_aliases["Alias symbols"] = genes_with_aliases["Alias symbols"].map(
+        lambda x: [element.strip() for element in x.split(",")]
+    )
+    genes_with_aliases.columns = ["Approved symbol", "Synonym"]
+    genes_with_aliases = genes_with_aliases.explode("Synonym")
+
+    # Get genes with "previous symbols" (deprecated symbols)
+    genes_with_depnames = genes[genes["Previous symbols"].notna()][
+        ["Approved symbol", "Previous symbols"]
+    ]
+    genes_with_depnames["Previous symbols"] = genes_with_depnames[
+        "Previous symbols"
+    ].map(lambda x: [element.strip() for element in x.split(",")])
+    genes_with_depnames.columns = ["Approved symbol", "Synonym"]
+    genes_with_depnames = genes_with_depnames.explode("Synonym")
+
+    # Combine and uppercase
+    synonyms = pd.concat([genes_with_aliases, genes_with_depnames])
+    synonyms["Synonym"] = synonyms["Synonym"].str.upper()
+
+    # Remove ambiguous synonyms
+    synonyms = synonyms.groupby("Synonym").aggregate(lambda x: x.tolist())
+    synonyms = synonyms[synonyms["Approved symbol"].map(len) == 1].copy()
+    synonyms["Approved symbol"] = synonyms["Approved symbol"].map(lambda x: x.pop())
+
+    # Remove redundant items
+    synonyms = synonyms[synonyms.index != synonyms["Approved symbol"]]
+
+    # Remove any synonyms that are also names of other valid genes
+    synonyms = synonyms[
+        synonyms.index.map(lambda x: x not in valid_genes and x not in exclude)
+    ]
+
+    return synonyms["Approved symbol"].to_dict()
+
+
+def get_mh_synonyms_data(valid_genes: Collection[str]) -> dict:
     hgnc = fetch_hgnc_data()
 
     mh_genes = hgnc[hgnc["Gene group name"].notna()]
@@ -323,44 +371,38 @@ def get_hgnc_synonyms_data(valid_genes: Iterable[str]) -> dict:
         mh_genes["Gene group name"].str.contains("Histocompatibility complex")
     ]
 
-    # Only keep genes whose 'approved symbols' are in the provided list of valid genes
-    mh_genes = mh_genes[mh_genes["Approved symbol"].map(lambda x: x in valid_genes)]
+    return _get_synonyms_data(mh_genes, valid_genes)
 
-    # Get MH genes with "alias symbols"
-    mh_genes_with_aliases = mh_genes[mh_genes["Alias symbols"].notna()][
-        ["Approved symbol", "Alias symbols"]
-    ]
-    mh_genes_with_aliases["Alias symbols"] = mh_genes_with_aliases["Alias symbols"].map(
-        lambda x: [element.strip() for element in x.split(",")]
+
+def get_tr_synonyms_data(valid_alleles: Collection[str]) -> dict:
+    hgnc = fetch_hgnc_data()
+
+    genes = hgnc[hgnc["Locus type"].str.contains("T cell receptor gene")].copy()
+
+    genes["Approved symbol"] = genes["Approved symbol"].str.replace(
+        r"(?<!TR)DV", "/DV", regex=True
     )
-    mh_genes_with_aliases.columns = ["Approved symbol", "Synonym"]
-    mh_genes_with_aliases = mh_genes_with_aliases.explode("Synonym")
-
-    # Get MH genes with "previous symbols" (deprecated symbols)
-    mh_genes_with_depnames = mh_genes[mh_genes["Previous symbols"].notna()][
-        ["Approved symbol", "Previous symbols"]
-    ]
-    mh_genes_with_depnames["Previous symbols"] = mh_genes_with_depnames[
-        "Previous symbols"
-    ].map(lambda x: [element.strip() for element in x.split(",")])
-    mh_genes_with_depnames.columns = ["Approved symbol", "Synonym"]
-    mh_genes_with_depnames = mh_genes_with_depnames.explode("Synonym")
-
-    # Combine and uppercase
-    mh_synonyms = pd.concat([mh_genes_with_aliases, mh_genes_with_depnames])
-    mh_synonyms["Synonym"] = mh_synonyms["Synonym"].str.upper()
-
-    # Remove ambiguous synonyms
-    mh_synonyms = mh_synonyms.groupby("Synonym").aggregate(lambda x: x.tolist())
-    mh_synonyms = mh_synonyms[mh_synonyms["Approved symbol"].map(len) == 1].copy()
-    mh_synonyms["Approved symbol"] = mh_synonyms["Approved symbol"].map(
-        lambda x: x.pop()
+    genes["Approved symbol"] = genes["Approved symbol"].str.replace(
+        r"OR", "/OR", regex=True
     )
 
-    # Remove redundant items
-    mh_synonyms = mh_synonyms[mh_synonyms.index != mh_synonyms["Approved symbol"]]
+    alleles_without_locus = {name[3:] for name in valid_alleles}
 
-    # Remove any synonyms that are also names of other valid genes
-    mh_synonyms = mh_synonyms[mh_synonyms.index.map(lambda x: x not in valid_genes)]
+    return _get_synonyms_data(genes, valid_alleles, exclude=alleles_without_locus)
 
-    return mh_synonyms["Approved symbol"].to_dict()
+
+def get_ig_synonyms_data(valid_alleles: Collection[str]) -> dict:
+    hgnc = fetch_hgnc_data()
+
+    genes = hgnc[hgnc["Locus type"].str.contains("immunoglobulin gene")].copy()
+
+    genes["Approved symbol"] = genes["Approved symbol"].str.replace(
+        r"(?<!TR)DV", "/DV", regex=True
+    )
+    genes["Approved symbol"] = genes["Approved symbol"].str.replace(
+        r"OR", "/OR", regex=True
+    )
+
+    alleles_without_locus = {name[3:] for name in valid_alleles}
+
+    return _get_synonyms_data(genes, valid_alleles, exclude=alleles_without_locus)
