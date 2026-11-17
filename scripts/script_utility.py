@@ -302,6 +302,7 @@ def get_genedb_release() -> str:
     response.raise_for_status()
     return response.text.strip()
 
+
 def save_as_json(data: dict, file_name: str) -> None:
     path_to_resources_dir = Path("src") / "tidytcells" / "_resources"
     with open(path_to_resources_dir / file_name, "w") as f:
@@ -377,7 +378,8 @@ def get_mh_synonyms_data(valid_genes: Collection[str]) -> dict:
 def get_tr_synonyms_data(valid_alleles: Collection[str]) -> dict:
     hgnc = fetch_hgnc_data()
 
-    genes = hgnc[hgnc["Locus type"].str.contains("T cell receptor gene")].copy()
+    genes = hgnc[hgnc["Locus type"].notna()]
+    genes = genes[genes["Locus type"].str.contains("T cell receptor gene")].copy()
 
     genes["Approved symbol"] = genes["Approved symbol"].str.replace(
         r"(?<!TR)DV", "/DV", regex=True
@@ -394,11 +396,9 @@ def get_tr_synonyms_data(valid_alleles: Collection[str]) -> dict:
 def get_ig_synonyms_data(valid_alleles: Collection[str]) -> dict:
     hgnc = fetch_hgnc_data()
 
-    genes = hgnc[hgnc["Locus type"].str.contains("immunoglobulin gene")].copy()
+    genes = hgnc[hgnc["Locus type"].notna()]
+    genes = genes[genes["Locus type"].str.contains("immunoglobulin gene")].copy()
 
-    genes["Approved symbol"] = genes["Approved symbol"].str.replace(
-        r"(?<!TR)DV", "/DV", regex=True
-    )
     genes["Approved symbol"] = genes["Approved symbol"].str.replace(
         r"OR", "/OR", regex=True
     )
