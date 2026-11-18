@@ -4,7 +4,9 @@ import script_utility
 def main() -> None:
     print("Fetching IG allele data from IMGT...")
     valid_allele_data = script_utility.get_ig_alleles_list("Homo+sapiens")
-    script_utility.save_as_json(valid_allele_data, "homosapiens_ig_imgt_valid_genes.json")
+    script_utility.save_as_json(
+        valid_allele_data, "homosapiens_ig_imgt_valid_genes.json"
+    )
 
     print("Fetching IG symbol synonyms from HGNC...")
     synonyms_data = script_utility.get_ig_synonyms_data(valid_allele_data)

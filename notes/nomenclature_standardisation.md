@@ -20,7 +20,7 @@ We downloaded HGNC data via their [custom downloads](https://www.genenames.org/d
 where data on withdrawn genes were excluded from the download.
 
 This allows you to download the specified column data for every entry in HGNC as a TSV (tab-separated values) file.
-This source table was parsed (using code in `scripts/homosapiens_catalogue_tr.py` and `scripts/homosapiens_catalogue_ig.py`) 
+This source table was parsed (using code in `scripts/homosapiens_tr_imgt_catalogue.py` and `scripts/homosapiens_ig_imgt_catalogue.py`) 
 to create a dictionary of deprecated/alias TR/IG gene symbols and their modern translation.
 
 ### Cross-checking standardisation attempt with list of known TR/IG genes
@@ -30,7 +30,7 @@ In order to ensure this fact, the standardisation programme cross-checks its att
 If an attempted fix does not look like any real TR/IG gene/allele, it considers the input to be nonsensical and will throw it away.
 
 The data listing all known TR/IG genes and alleles is sourced from [IMGT](www.imgt.org).
-The raw source data is parsed by `scripts/homosapiens_catalogue_tr.py` and  `scripts/homosapiens_catalogue_ig.py` to create reference jsons for the standardiser programme.
+The raw source data is parsed by `scripts/homosapiens_tr_imgt_catalogue.py` and  `scripts/homosapiens_ig_imgt_catalogue.py` to create reference jsons for the standardiser programme.
 
 
 ## Human MH (HLA) genes
@@ -42,4 +42,4 @@ Similarly to the case with human TR/IG genes, we used downloaded data from [HGNC
 ### Cross-checking standardisation attempt with list of known HLA genes/groups
 
 Similarly to the case with TR/IG genes, we needed a set of reference data of approved symbols for known HLA genes.
-This data was downloaded from the [IPD-IMGT](https://www.ebi.ac.uk/ipd/imgt/hla/download/) database service and parsed by `scripts/homosapiens_catalogue_mh.py` to create a hierarchical tree of possible HLA names.
+This data was downloaded from the [IPD-IMGT](https://www.ebi.ac.uk/ipd/imgt/hla/download/) database service and parsed by `scripts/homosapiens_mh_ipd_catalogue.py` to create a hierarchical tree of possible HLA names.

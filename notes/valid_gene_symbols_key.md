@@ -10,7 +10,7 @@
     - Downloaded FASTA data found at: https://github.com/yutanagano/tidytcells/tree/main/data/homosapiens_tr.fasta
 - Last date of access: 22nd September 2023
 - Data parsing:
-    - Using the FASTA data retrieved as above, use the data processing script (found at: https://github.com/yutanagano/tidytcells/tree/main/scripts/homosapiens_catalogue_tr.py) to transform the data to json form, where the data is encoded as:
+    - Using the FASTA data retrieved as above, use the data processing script (found at: https://github.com/yutanagano/tidytcells/tree/main/scripts/homosapiens_tr_imgt_catalogue.py) to transform the data to json form, where the data is encoded as:
     ```
     {
         gene name: {
@@ -25,7 +25,7 @@
     - Directly pull HLA nomenclature files from the web using github's raw file API (e.g. https://raw.githubusercontent.com/ANHIG/IMGTHLA/Latest/wmda/hla_nom.txt)
 - Last date of access: 22nd September 2023
 - Data parsing:
-    - The data processing script (found at: https://github.com/yutanagano/tidytcells/tree/main/scripts/homosapiens_catalogue_mh.py) is used to automatically retrieve the latest HLA data from the github repository above, and the data retrieved is transformed into json form, where the data is encoded as:
+    - The data processing script (found at: https://github.com/yutanagano/tidytcells/tree/main/scripts/homosapiens_mh_ipd_catalogue.py) is used to automatically retrieve the latest HLA data from the github repository above, and the data retrieved is transformed into json form, where the data is encoded as:
     ```
     {
         gene name: {
@@ -50,7 +50,7 @@
     - Downloaded FASTA data found at: https://github.com/yutanagano/tidytcells/tree/main/data/musmusculus_tr.fasta
 - Last date of access: 22nd September 2023
 - Data parsing:
-    - Using the FASTA data retrieved as above, use the data processing script (found at: https://github.com/yutanagano/tidytcells/tree/main/scripts/musmusculus_catalogue_tr.py) to transform the data to json form, where the data is encoded as:
+    - Using the FASTA data retrieved as above, use the data processing script (found at: https://github.com/yutanagano/tidytcells/tree/main/scripts/musmusculus_tr_imgt_catalogue.py) to transform the data to json form, where the data is encoded as:
     ```
     {
         gene name: {
@@ -65,7 +65,7 @@
     - Tabular data from the above website is copied onto an ODS spreadsheet (found at: https://github.com/yutanagano/tidytcells/tree/main/data/musmusculus_mh.ods)
 - Last date of access: 22nd September 2023
 - Data parsing:
-    - The data processing script (found at: https://github.com/yutanagano/tidytcells/tree/main/scripts/musmusculus_catalogue_mh.py) transforms the data from the spreadsheet as above into a json, where the data is encoded as:
+    - The data processing script (found at: https://github.com/yutanagano/tidytcells/tree/main/scripts/mh_mro_catalogue.py) transforms the data from the spreadsheet as above into a json, where the data is encoded as:
     ```
     [
         gene name

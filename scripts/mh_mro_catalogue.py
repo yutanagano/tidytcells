@@ -57,7 +57,9 @@ def main() -> None:
         allele_synonyms = build_mro_synonyms(df)
 
         script_utility.save_as_json(valid, f"{species}_mh_mro_valid_proteins.json")
-        script_utility.save_as_json(allele_synonyms, f"{species}_mh_mro_synonyms_allele.json")
+        script_utility.save_as_json(
+            allele_synonyms, f"{species}_mh_mro_synonyms_allele.json"
+        )
 
         if species == "homosapiens":
             print(f"Adding HGNC gene synonyms for homosapiens...")
@@ -76,9 +78,9 @@ def fetch_molecule_export() -> pd.DataFrame:
 
     with zipfile.ZipFile(io.BytesIO(download(f"{RELEASE_URL}/iedb.zip"))) as archive:
         members = [m for m in archive.namelist() if Path(m).name == file_name]
-        assert (
-            len(members) == 1
-        ), f"Expected one {file_name} in iedb.zip, found {len(members)}"
+        assert len(members) == 1, (
+            f"Expected one {file_name} in iedb.zip, found {len(members)}"
+        )
 
         with archive.open(members[0]) as f:
             return read_tsv(f)

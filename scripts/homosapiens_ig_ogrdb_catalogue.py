@@ -113,9 +113,9 @@ def download_germline_set(locus: str) -> dict:
     with tempfile.TemporaryDirectory() as tmp_dir:
         subprocess.run(command, cwd=tmp_dir, check=True)
         downloaded = list(Path(tmp_dir).glob("*.json"))
-        assert (
-            len(downloaded) == 1
-        ), f"Expected one downloaded file for {locus}, found {len(downloaded)}"
+        assert len(downloaded) == 1, (
+            f"Expected one downloaded file for {locus}, found {len(downloaded)}"
+        )
 
         with open(downloaded[0], "r") as f:
             return json.load(f)
