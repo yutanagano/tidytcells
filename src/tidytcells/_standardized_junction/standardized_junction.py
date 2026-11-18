@@ -7,12 +7,9 @@ F_MISMATCH_AAS = {"I", "L", "V", "Y", "S", "C"}
 W_MISMATCH_AAS = {"C", "G", "L", "R", "S"}
 FW_MISMATCH_AAS = F_MISMATCH_AAS.union(W_MISMATCH_AAS)
 
-MIN_J_SCORE = 1
-MIN_V_SCORE = 1
-MAX_J_MISMATCHES = 1
-MAX_V_MISMATCHES = 0
-TCR_MISMATCH_PENALTY = -1.5
-BCR_MISMATCH_PENALTY = -0.5
+MIN_ALIGNMENT_SCORES = {"TR": 2, "IG": 1}
+
+MISMATCH_PENALTY = {"TR": -1.5, "IG": -0.75}
 
 
 class JunctionStandardizer:
@@ -48,9 +45,6 @@ class JunctionStandardizer:
         self.germline_database = germline_database
         self.sequence_dictionary = sequence_dictionary
 
-        self.mismatch_penalty = (
-            TCR_MISMATCH_PENALTY if self.locus.startswith("T") else BCR_MISMATCH_PENALTY
-        )
         self.corrected_first_aa = False
         self.corrected_last_aa = False
         self.correction_j_genes = None
@@ -154,16 +148,21 @@ class JunctionStandardizer:
         )
         corrected_seq = self.orig_seq[:-1] + conserved_aa
 
+        min_j_score = MIN_ALIGNMENT_SCORES[self.locus[0:2]]
+        mismatch_penalty = MISMATCH_PENALTY[self.locus[0:2]]
         corr_best_alignments = align_j_regions(
             corrected_seq,
             self.j_aa_dict,
-            MIN_J_SCORE + 1,
-            self.mismatch_penalty,
-            max_mismatches=0,
+            min_j_score + 1,
+            mismatch_penalty,
+            allow_mismatches=False,
         )
         keep_alignments = []
 
         for alignment in corr_best_alignments:
+            # Correct for the "+1" that was added by correcting the anchor residue
+            alignment["score"] -= 1
+
             if alignment["score"] > best_score:
                 new_seq_len = alignment["j_offset"] + alignment["j_conserved_idx"] + 1
                 if len(corrected_seq) == new_seq_len:
@@ -190,12 +189,21 @@ class JunctionStandardizer:
         )
         corrected_seq = "C" + self.orig_seq[1:]
 
+        min_v_score = MIN_ALIGNMENT_SCORES[self.locus[0:2]]
+        mismatch_penalty = MISMATCH_PENALTY[self.locus[0:2]]
         corr_best_alignments = align_v_regions(
-            corrected_seq, self.v_aa_dict, MIN_V_SCORE + 1, self.mismatch_penalty, 0
+            corrected_seq,
+            self.v_aa_dict,
+            min_v_score + 1,
+            mismatch_penalty,
+            allow_mismatches=False,
         )
         keep_alignments = []
 
         for alignment in corr_best_alignments:
+            # Correct for the "+1" that was added by correcting the anchor residue
+            alignment["score"] -= 1
+
             if alignment["score"] > best_score:
                 # only allow alignments that keep the same length
                 if alignment["v_conserved_idx"] == alignment["v_offset"]:
@@ -212,13 +220,14 @@ class JunctionStandardizer:
         """
         Compute alignments for each sequence in self.j_aa_dict, keep only the best alignments
         """
-
+        min_j_score = MIN_ALIGNMENT_SCORES[self.locus[0:2]]
+        mismatch_penalty = MISMATCH_PENALTY[self.locus[0:2]]
         best_alignments = align_j_regions(
             self.orig_seq,
             self.j_aa_dict,
-            MIN_J_SCORE,
-            self.mismatch_penalty,
-            MAX_J_MISMATCHES,
+            min_j_score,
+            mismatch_penalty=mismatch_penalty,
+            allow_mismatches=True,
         )
 
         if self.allow_fw_correction and self.orig_seq[-1] in F_MISMATCH_AAS:
@@ -250,13 +259,14 @@ class JunctionStandardizer:
         """
         Compute alignments for each sequence in self.v_aa_dict, keep only the best alignments
         """
-
+        min_v_score = MIN_ALIGNMENT_SCORES[self.locus[0:2]]
+        mismatch_penalty = MISMATCH_PENALTY[self.locus[0:2]]
         best_alignments = align_v_regions(
             self.orig_seq,
             self.v_aa_dict,
-            MIN_V_SCORE,
-            self.mismatch_penalty,
-            MAX_V_MISMATCHES,
+            min_v_score,
+            mismatch_penalty,
+            allow_mismatches=True,
         )
 
         if self.allow_c_correction and self.orig_seq[0] in C_MISMATCH_AAS:
@@ -351,24 +361,25 @@ class JunctionStandardizer:
         if len(corrected_seqs) > 1:
             # When Junction-reconstruction results are ambiguous (different J's)
             # - prefer the junctions which add 1 aa (conserved anchor), if there are any
-            # - without J symbol, prefer to keep only canonical F/W anchors
-
+            # - if the only difference is the last aa, prefer to keep only canonical F/W anchors
             if len(seq) + 1 in {len(s) for s in corrected_seqs}:
                 corrected_seqs = {s for s in corrected_seqs if len(s) == len(seq) + 1}
 
-            if self.j_symbol is None:
-                if len(corrected_seqs) > 1:
-                    corrected_seqs = {s for s in corrected_seqs if s[-1] in ("F", "W")}
+            if len({s[:-1] for s in corrected_seqs}) == 1:
+                canonical_seqs = {s for s in corrected_seqs if s[-1] in ("F", "W")}
 
-            if len(corrected_seqs) > 1:
-                self.reasons_invalid.append(
-                    f"J side reconstruction ambiguous: {corrected_seqs}"
-                )
-                return seq, None
+                if len(canonical_seqs) > 0:
+                    corrected_seqs = canonical_seqs
 
         if len(corrected_seqs) == 0:
             self.reasons_invalid.append(f"J side reconstruction unsuccessful")
             self.reasons_invalid.extend(alignment_too_long)
+            return seq, None
+
+        if len(corrected_seqs) > 1:
+            self.reasons_invalid.append(
+                f"J side reconstruction ambiguous: {corrected_seqs}"
+            )
             return seq, None
 
         corrected_seq = corrected_seqs.pop()

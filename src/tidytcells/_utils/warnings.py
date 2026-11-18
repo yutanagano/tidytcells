@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 
-from tidytcells.result import MhGene, ReceptorGene, Junction
+from tidytcells.result import Junction, MhGene, ReceptorGene
 
 
 def unsupported_species_message(species: str, valid_species: Iterable[str]) -> str:
