@@ -12,7 +12,7 @@ def get_is_valid_locus_gene_fn(locus: str, gene: str) -> Callable[[str], bool]:
     """
     if gene == "V":
         if locus == "TRA" or locus == "TRA/D":
-            return lambda symbol: symbol.startswith("TRAV") or symbol.startswith("TRDV")
+            return lambda symbol: symbol.startswith(("TRAV", "TRDV"))
 
         if locus == "TRD":
             return lambda symbol: (
@@ -40,12 +40,7 @@ def get_is_valid_locus_multi_gene_fn(locus: str, gene: str) -> Callable[[str], b
 def is_valid_functionality(
     aa_dict: dict[str, dict[str, str]], candidate: str, enforce_functional: bool
 ) -> bool:
-    if (not enforce_functional) or (
-        aa_dict[candidate]["functionality"] in {"F", "[F]", "(F)"}
-    ):
-        return True
-
-    return False
+    return bool(not enforce_functional or aa_dict[candidate]["functionality"] in {"F", "[F]", "(F)"})
 
 
 def get_compatible_symbols(
@@ -59,7 +54,7 @@ def get_compatible_symbols(
     For a given gene symbol, return all alleles which are considered to be valid extensions of the gene symbol.
     A gene symbol can be an allele (return itself), gene, subgroup, or even locus (TRA) or receptor (TR)
     """
-    if symbol in aa_dict.keys():
+    if symbol in aa_dict:
         if is_valid_functionality(aa_dict, symbol, enforce_functional):
             return [symbol]
         return []
@@ -68,7 +63,7 @@ def get_compatible_symbols(
 
     return [
         candidate
-        for candidate in aa_dict.keys()
+        for candidate in aa_dict
         if is_valid_functionality(aa_dict, candidate, enforce_functional)
         and is_valid_locus_gene(candidate)
         and candidate.startswith(symbol)
@@ -81,7 +76,7 @@ def get_compatible_symbols(
 
 def _get_genes_to_alleles(alleles: Iterable[str]) -> dict[str, list[str]]:
     """Create mapping from gene to all its alleles"""
-    genes_to_alleles = dict()
+    genes_to_alleles = {}
 
     for allele in alleles:
         gene = allele.rsplit("*")[0]
@@ -102,7 +97,7 @@ def collapse_aa_dict_per_gene(
     for any gene where all alleles have the same sequence (keep separate alleles if sequences differ)
     """
     genes_to_alleles = _get_genes_to_alleles(symbol_to_aa_dict.keys())
-    genes_to_aa = dict()
+    genes_to_aa = {}
 
     for gene in genes_to_alleles:
         all_genes_same_aa = True
