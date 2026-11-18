@@ -18,6 +18,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install tox tox-gh-actions
+          pip install tox tox-gh
       - name: Run tox
         run: tox
