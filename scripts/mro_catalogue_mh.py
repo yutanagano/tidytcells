@@ -56,14 +56,14 @@ def main() -> None:
 
         allele_synonyms = build_mro_synonyms(df)
 
-        script_utility.save_as_json(valid, f"mro_{species}_mh_valid_protein.json")
-        script_utility.save_as_json(allele_synonyms, f"mro_{species}_mh_synonyms.json")
+        script_utility.save_as_json(valid, f"{species}_mh_mro_valid_proteins.json")
+        script_utility.save_as_json(allele_synonyms, f"{species}_mh_mro_synonyms_allele.json")
 
         if species == "homosapiens":
             print(f"Adding HGNC gene synonyms for homosapiens...")
             script_utility.save_as_json(
                 script_utility.get_mh_synonyms_data(valid),
-                f"mro_{species}_mh_synonyms_hgnc.json",
+                f"{species}_mh_mro_synonyms_gene.json",
             )
 
 
