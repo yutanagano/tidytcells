@@ -62,7 +62,7 @@ def main() -> None:
         if species == "homosapiens":
             print(f"Adding HGNC gene synonyms for homosapiens...")
             script_utility.save_as_json(
-                script_utility.get_hgnc_synonyms_data(valid),
+                script_utility.get_mh_synonyms_data(valid),
                 f"mro_{species}_mh_synonyms_hgnc.json",
             )
 
