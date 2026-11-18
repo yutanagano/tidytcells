@@ -1,5 +1,6 @@
 from functools import partial
-from typing import Callable, Dict, FrozenSet, Optional, Literal
+from typing import Literal
+from collections.abc import Callable
 
 from tidytcells import config
 from tidytcells import _utils
@@ -17,7 +18,7 @@ _PROTEIN_LEVEL_WARNING = (
     "(two allele designations)."
 )
 
-QUERY_ENGINES: Dict[str, Callable] = {
+QUERY_ENGINES: dict[str, Callable] = {
     "homosapiens": partial(
         query_symbols, species="homosapiens", warning=_PROTEIN_LEVEL_WARNING
     ),
@@ -43,10 +44,10 @@ QUERY_ENGINES: Dict[str, Callable] = {
 
 
 def query(
-    species: Optional[str] = None,
-    precision: Optional[Literal["allele", "gene"]] = None,
-    contains_pattern: Optional[str] = None,
-) -> FrozenSet[str]:
+    species: str | None = None,
+    precision: Literal["allele", "gene"] | None = None,
+    contains_pattern: str | None = None,
+) -> frozenset[str]:
     """
     Query the list of all known MH genes / alleles.
 
@@ -69,30 +70,27 @@ def query(
         *Rattus norvegicus*, there is currently only support for gene-level
         querying.
 
-    :param species:
+    Parameters
+    ----------
+    species
         Species to query (see above for supported species). Defaults to
         ``"homosapiens"``.
-    :type species:
-        str
-    :param precision:
+    precision
         The level of precision to query. ``allele`` will query from the set of
         all possible alleles. ``gene`` will query from the set of all possible
         genes. Defaults to ``allele``.
-    :type precision:
-        str
-    :param contains_pattern:
+    contains_pattern
         An optional **regular expression** string which will be used to filter
         the query result. If supplied, only genes / alleles which contain the
         regular expression will be returned. Defaults to ``None``.
-    :type contains_pattern:
-        str
 
-    :return:
+    Returns
+    -------
+    frozenset[str]
         The set of all genes / alleles that satisfy the given constraints.
-    :rtype:
-        FrozenSet[str]
 
-    .. topic:: Example usage
+    Examples
+    --------
 
         List all known HLA-TAP1 variants (TAP is only present in the IPD
         database, which is not the default).

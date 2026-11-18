@@ -1,7 +1,7 @@
 import itertools
 import re
 from functools import partial
-from typing import Callable, Dict, List, Optional, Tuple
+from collections.abc import Callable
 
 from tidytcells import _utils
 from tidytcells._resources import MH_SYMBOLS_BY_SP_DB
@@ -124,8 +124,8 @@ def standardize_allele(
 def parse_allele_symbol(
     symbol: str,
     symbol_regex: re.Pattern,
-    class_ii_regex: Optional[re.Pattern] = None,
-) -> Tuple[str, str, List[str], str]:
+    class_ii_regex: re.Pattern | None = None,
+) -> tuple[str, str, list[str], str]:
     """
     Split an MH allele-style symbol (e.g. HLA-A*02:01, Mamu-A1*001:01) into
     its parts.
@@ -153,7 +153,9 @@ def parse_allele_symbol(
     return _utils.clean_and_uppercase(symbol), symbol, [], ""
 
 
-def _mh_data(species: str, mh_database: str):
+def _mh_data(
+    species: str, mh_database: str
+) -> tuple[dict[str, dict], dict[str, str], dict[str, str]]:
     """
     The valid-symbol, synonym, and HGNC gene-synonym data for a species and
     MH database.
@@ -170,7 +172,7 @@ def _replace_periods_between_digits_with_colon(string: str) -> str:
     return re.sub(r"(?<=\d)\.(?=\d)", ":", string)
 
 
-def _listify_allele_designation(allele_designation: Optional[str]) -> List[str]:
+def _listify_allele_designation(allele_designation: str | None) -> list[str]:
     if allele_designation is None:
         return []
 
@@ -179,7 +181,7 @@ def _listify_allele_designation(allele_designation: Optional[str]) -> List[str]:
     return [d.zfill(2) if d.isdigit() else d for d in allele_designation.split(":")]
 
 
-def _is_group(allele_designation: List[str]) -> bool:
+def _is_group(allele_designation: list[str]) -> bool:
     if not allele_designation:
         return False
 
@@ -188,12 +190,12 @@ def _is_group(allele_designation: List[str]) -> bool:
 
 def _validation_error(
     gene_name: str,
-    allele_designation: List[str],
+    allele_designation: list[str],
     *,
     species: str,
-    canonical_gene_names: Dict[str, str],
-    valid_symbols: Dict[str, Dict],
-) -> Optional[str]:
+    canonical_gene_names: dict[str, str],
+    valid_symbols: dict[str, dict],
+) -> str | None:
     if species == "homosapiens" and gene_name == "B2M" and not allele_designation:
         return None
 
@@ -237,7 +239,7 @@ def _validation_error(
 
 
 def _add_missing_prefix(
-    gene_name: str, prefixes: List[str], canonical_gene_names: Dict[str, str]
+    gene_name: str, prefixes: list[str], canonical_gene_names: dict[str, str]
 ) -> str:
     if any(gene_name.startswith(f"{prefix}-") for prefix in prefixes):
         return gene_name
@@ -252,9 +254,9 @@ def _add_missing_prefix(
 
 def _handle_forgotten_asterisk(
     gene_name: str,
-    allele_designation: List[str],
-    canonical_gene_names: Dict[str, str],
-) -> Tuple[str, List[str]]:
+    allele_designation: list[str],
+    canonical_gene_names: dict[str, str],
+) -> tuple[str, list[str]]:
     if allele_designation:
         return gene_name, allele_designation
 
@@ -269,7 +271,7 @@ def _handle_forgotten_asterisk(
 
 def _split_into_designator_fields(
     digits: str, allow_zero_padded_three_digit_fields: bool, max_fields: int = 4
-) -> List[List[str]]:
+) -> list[list[str]]:
     candidates = [
         fields
         for fields in _all_designator_field_splits(
@@ -282,7 +284,7 @@ def _split_into_designator_fields(
 
 def _all_designator_field_splits(
     digits: str, allow_zero_padded_three_digit_fields: bool
-) -> List[List[str]]:
+) -> list[list[str]]:
     if not digits:
         return [[]]
 
@@ -303,10 +305,10 @@ def _all_designator_field_splits(
 
 
 def _handle_forgotten_colon(
-    allele_designation: List[str],
+    allele_designation: list[str],
     allow_zero_padded_three_digit_fields: bool,
-    is_valid: Callable[[List[str]], Optional[str]],
-) -> List[str]:
+    is_valid: Callable[[list[str]], str | None],
+) -> list[str]:
     if not allele_designation or not allele_designation[0].isdigit():
         return allele_designation
 
@@ -323,10 +325,10 @@ def _handle_forgotten_colon(
 
 
 def _try_different_amounts_of_leading_zeros(
-    allele_designation: List[str],
+    allele_designation: list[str],
     allow_zero_padded_three_digit_fields: bool,
-    is_valid: Callable[[List[str]], Optional[str]],
-) -> List[str]:
+    is_valid: Callable[[list[str]], str | None],
+) -> list[str]:
     original = allele_designation
     reformatted_allele_designators = [
         [f"{int(ad):02}", f"{int(ad):03}"] if ad.isdigit() else [ad]
@@ -343,10 +345,10 @@ def _try_different_amounts_of_leading_zeros(
 
 def _canonical_allele_designation(
     gene_name: str,
-    allele_designation: List[str],
-    canonical_gene_names: Dict[str, str],
-    valid_symbols: Dict[str, Dict],
-) -> List[str]:
+    allele_designation: list[str],
+    canonical_gene_names: dict[str, str],
+    valid_symbols: dict[str, dict],
+) -> list[str]:
     canonical_gene_name = canonical_gene_names.get(gene_name, gene_name)
     node = valid_symbols.get(canonical_gene_name, dict())
     canonical = []

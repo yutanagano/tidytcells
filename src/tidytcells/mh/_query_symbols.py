@@ -1,18 +1,17 @@
 import re
 import warnings
-from typing import Dict, FrozenSet, Optional
 
 from tidytcells._resources import MH_SYMBOLS_BY_SP_DB
 
 
 def query_symbols(
     precision: str,
-    contains_pattern: Optional[str] = None,
+    contains_pattern: str | None = None,
     *,
     species: str,
     mh_database: str,
-    warning: Optional[str] = None,
-) -> FrozenSet[str]:
+    warning: str | None = None,
+) -> frozenset[str]:
     """
     Query all known MH gene/allele symbols for a species and MH database at
     the requested precision, optionally filtered by a regular expression.
@@ -58,7 +57,7 @@ def query_symbols(
     return frozenset(query_results)
 
 
-def _valid_symbols(species: str, mh_database: str) -> Dict:
+def _valid_symbols(species: str, mh_database: str) -> dict:
     """
     The valid-symbol tree for a species and MH database.
     """

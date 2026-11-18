@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from typing import Dict, FrozenSet
 
 from tidytcells._query_engine import QueryEngine
 
@@ -7,11 +6,11 @@ from tidytcells._query_engine import QueryEngine
 class TrIgQueryEngine(QueryEngine):
     @property
     @abstractmethod
-    def _valid_gene_dictionary(self) -> Dict[str, Dict[int, str]]:
+    def _valid_gene_dictionary(self) -> dict[str, dict[str, str]]:
         pass
 
     @classmethod
-    def query(cls, precision: str, functionality: str) -> FrozenSet[str]:
+    def query(cls, precision: str, functionality: str) -> frozenset[str]:
         query_results = []
 
         for gene_symbol, allele_dictionary in cls._valid_gene_dictionary.items():
@@ -32,7 +31,7 @@ class TrIgQueryEngine(QueryEngine):
 
     @classmethod
     def _gene_matches_functionality_requirements(
-        cls, allele_dictionary: dict, functionality_setting: str
+        cls, allele_dictionary: dict[str, str], functionality_setting: str
     ) -> bool:
         gene_alleles_matching_functionality_requirements = [
             cls._allele_matches_functionality_requirements(

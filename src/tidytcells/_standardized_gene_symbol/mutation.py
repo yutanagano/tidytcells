@@ -1,5 +1,4 @@
 import re
-from typing import Optional, Tuple
 
 SUBSTITUTION = r"(?:[A-Z]:)?[ACDEFGHIKLMNPQRSTVWY]\d+[ACDEFGHIKLMNPQRSTVWY]"
 MUTATION_REGEX = re.compile(
@@ -12,7 +11,7 @@ def _normalise(mutation: str) -> str:
     return re.sub(r"\s*,\s*|\s+", ", ", mutation).upper()
 
 
-def validate_mutation(mutation: str) -> Optional[str]:
+def validate_mutation(mutation: str) -> str | None:
     """
     Return an error message if the mutation is not a valid substitution
     description, otherwise ``None``.
@@ -23,7 +22,7 @@ def validate_mutation(mutation: str) -> Optional[str]:
     return None
 
 
-def interpret_remainder(remainder: str) -> Tuple[Optional[str], Optional[str]]:
+def interpret_remainder(remainder: str) -> tuple[str | None, str | None]:
     """
     Interpret the text that follows a gene symbol as a potential mutation
     specification.

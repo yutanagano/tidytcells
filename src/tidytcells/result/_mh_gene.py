@@ -1,6 +1,3 @@
-from typing import Optional
-
-
 class MhGene:
     """
     A wrapper object for the MH gene.
@@ -13,14 +10,14 @@ class MhGene:
 
     def __init__(
         self,
-        original_input,
-        error,
-        gene_name=None,
-        allele_designation=None,
-        species=None,
-        mutation=None,
-        mh_database=None,
-    ):
+        original_input: str,
+        error: str | None,
+        gene_name: str | None = None,
+        allele_designation: list[str] | None = None,
+        species: str | None = None,
+        mutation: str | None = None,
+        mh_database: str | None = None,
+    ) -> None:
         self._original_input = original_input
         self._error = error
         self._gene_name = gene_name
@@ -43,7 +40,7 @@ class MhGene:
         if self._highest_precision_symbol is not None and self._mutation is not None:
             self._highest_precision_symbol += f" {self._mutation} mutant"
 
-    def __str__(self):
+    def __str__(self) -> str:
         str_repr = self.symbol
 
         if str_repr is not None:
@@ -52,14 +49,14 @@ class MhGene:
             return ""
 
     @property
-    def original_input(self) -> Optional[str]:
+    def original_input(self) -> str | None:
         """
         The original input symbol.
         """
         return self._original_input
 
     @property
-    def error(self) -> Optional[str]:
+    def error(self) -> str | None:
         """
         The error message, only if standardization failed, otherwise ``None``.
         """
@@ -73,7 +70,7 @@ class MhGene:
         return self.error is None
 
     @property
-    def attempted_fix(self) -> Optional[str]:
+    def attempted_fix(self) -> str | None:
         """
         The best attempt at fixing the input symbol.
 
@@ -83,7 +80,7 @@ class MhGene:
             return self._highest_precision_symbol
 
     @property
-    def symbol(self) -> Optional[str]:
+    def symbol(self) -> str | None:
         """
         The allele or gene (whichever is most precise), with the mutation
         description appended if the input was a mutant (e.g. ``'HLA-A*02:01
@@ -95,7 +92,7 @@ class MhGene:
             return self._highest_precision_symbol
 
     @property
-    def allele(self) -> Optional[str]:
+    def allele(self) -> str | None:
         """
         The allele name, if standardization was successful and allele-level
         information is available, otherwise ``None``.
@@ -108,7 +105,7 @@ class MhGene:
             return f"{self._gene_name}*{':'.join(self._allele_designation)}"
 
     @property
-    def gene(self) -> Optional[str]:
+    def gene(self) -> str | None:
         """
         The gene name, if standardization was successful, otherwise ``None``.
         """
@@ -116,7 +113,7 @@ class MhGene:
             return self._gene_name
 
     @property
-    def protein(self) -> Optional[str]:
+    def protein(self) -> str | None:
         """
         The protein name, if standardization was successful and protein-level
         information is available, otherwise ``None``.
@@ -129,24 +126,25 @@ class MhGene:
             return f"{self._gene_name}*{':'.join(self._allele_designation[:2])}"
 
     @property
-    def mutation(self) -> Optional[str]:
+    def mutation(self) -> str | None:
         """
-        The mutation description (e.g. ``'K66A'`` for ``'HLA-A*02:01 K66A
-        mutant'``) if standardization was successful and the input was a
-        mutant, otherwise ``None``.
+        The mutation description, if standardization was successful and the
+        input was a mutant, otherwise ``None``.
+
+        For example, ``'K66A'`` for ``'HLA-A*02:01 K66A mutant'``.
         """
         if self.is_standardized:
             return self._mutation
 
     @property
-    def species(self) -> Optional[str]:
+    def species(self) -> str | None:
         """
         The species used to validate the gene name.
         """
         return self._species
 
     @property
-    def mh_database(self) -> Optional[str]:
+    def mh_database(self) -> str | None:
         """
         The MH database (``"IPD"`` or ``"MRO"``) used to validate the symbol.
         """

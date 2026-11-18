@@ -1,6 +1,5 @@
 from abc import ABC
 from abc import abstractmethod
-from typing import Dict, Optional, Tuple, Set
 
 from tidytcells.result import ReceptorGene
 
@@ -17,8 +16,8 @@ class ReceptorGeneSymbolStandardizer(ABC):
         allow_subgroup: bool,
         species: str,
         germline_database: str,
-        valid_gene_dictionary: dict,
-        synonym_dictionary: dict,
+        valid_gene_dictionary: dict[str, dict[str, str]],
+        synonym_dictionary: dict[str, str],
     ) -> None:
         self.original_symbol = symbol
         self.enforce_functional = enforce_functional
@@ -40,7 +39,7 @@ class ReceptorGeneSymbolStandardizer(ABC):
         self._compile_result()
 
     @abstractmethod
-    def _parse_symbol(self, symbol: str) -> Tuple[Optional[str], Optional[str]]:
+    def _parse_symbol(self, symbol: str) -> tuple[str | None, str | None]:
         pass
 
     @abstractmethod
@@ -56,7 +55,7 @@ class ReceptorGeneSymbolStandardizer(ABC):
 
         return False
 
-    def get_reason_why_invalid(self) -> Optional[str]:
+    def get_reason_why_invalid(self) -> str | None:
         if not self._gene_name in self._valid_gene_dictionary:
             if self._gene_name in self._valid_subgroups:
                 if self._allow_subgroup:
@@ -93,7 +92,7 @@ class ReceptorGeneSymbolStandardizer(ABC):
 
         return None
 
-    def _compile_result(self):
+    def _compile_result(self) -> None:
         gene_name = (
             self._gene_name if self._gene_name in self._valid_gene_dictionary else None
         )

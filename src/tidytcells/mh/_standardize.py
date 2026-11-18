@@ -1,7 +1,7 @@
 import logging
 import re
 from functools import partial
-from typing import Callable, Dict, Optional
+from collections.abc import Callable
 
 from tidytcells import config
 from tidytcells import _utils
@@ -15,7 +15,7 @@ from tidytcells.result._mh_gene import MhGene
 logger = logging.getLogger(__name__)
 
 
-SPECIES_TO_STANDARDIZER: Dict[str, Callable] = {
+SPECIES_TO_STANDARDIZER: dict[str, Callable] = {
     "homosapiens": partial(
         standardize_allele,
         species="homosapiens",
@@ -55,11 +55,11 @@ SPECIES_TO_STANDARDIZER: Dict[str, Callable] = {
 
 
 def standardize(
-    symbol: Optional[str] = None,
-    species: Optional[str] = None,
-    log_failures: Optional[bool] = None,
-    gene: Optional[str] = None,
-    suppress_warnings: Optional[bool] = None,
+    symbol: str | None = None,
+    species: str | None = None,
+    log_failures: bool | None = None,
+    gene: str | None = None,
+    suppress_warnings: bool | None = None,
 ) -> MhGene:
     """
     Attempt to standardize an MH gene / allele symbol to its name in the MHC
@@ -95,38 +95,30 @@ def standardize(
         musculus* and *Rattus norvegicus*, symbols are verified as a whole
         (e.g. ``H2-Kb``).
 
-    :param symbol:
+    Parameters
+    ----------
+    symbol
         Potentially non-standardized MH gene / allele symbol.
-    :type symbol:
-        str
-    :param species:
+    species
         Species to standardize the symbol for (see above for supported
         species). Defaults to ``"homosapiens"``.
-    :type species:
-        str
-    :param log_failures:
+    log_failures
         Report standardization failures through logging (at level ``WARNING``).
         Defaults to ``True``.
-    :type log_failures:
-        bool
-    :param gene:
+    gene
         Alias for `symbol`.
-    :type gene:
-        str
-    :param suppress_warnings:
+    suppress_warnings
         Disable warnings that are usually logged when standardization fails.
         Deprecated in favour of `log_failures`.
-    :type suppress_warnings:
-        bool
 
-    :return:
-        A standardized MH gene wrapped in a
-        :py:class:`~tidytcells.result.MhGene` object. For details on how to use
-        this output, please refer to the class documentation.
-    :rtype:
-        :py:class:`~tidytcells.result.MhGene`
+    Returns
+    -------
+    ~tidytcells.result.MhGene
+        A standardized MH gene. For details on how to use this output, please
+        refer to the class documentation.
 
-    .. topic:: Example usage
+    Examples
+    --------
 
         When standardization is a success, attributes 'allele', 'protein' and
         'gene' can be used to retrieve the corrected information.
@@ -312,10 +304,5 @@ def standardize(
 
 
 def standardise(*args, **kwargs) -> MhGene:
-    """
-    Alias for :py:func:`tidytcells.mh.standardize`.
-
-    :rtype:
-        :py:class:`~tidytcells.result.MhGene`
-    """
+    """Alias for :py:func:`tidytcells.mh.standardize`."""
     return standardize(*args, **kwargs)

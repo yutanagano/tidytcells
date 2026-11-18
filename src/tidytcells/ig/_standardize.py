@@ -6,20 +6,17 @@ from tidytcells.result._receptor_gene import ReceptorGene
 from tidytcells._utils import Parameter
 from tidytcells._resources import SUPPORTED_IG_SPECIES_AND_THEIR_GENES
 
-
-from typing import Dict, Optional, Type
-
 logger = logging.getLogger(__name__)
 
 
 def standardize(
-    symbol: Optional[str] = None,
-    species: Optional[str] = None,
-    enforce_functional: Optional[bool] = None,
-    allow_subgroup: Optional[bool] = None,
-    log_failures: Optional[bool] = None,
-    gene: Optional[str] = None,
-    suppress_warnings: Optional[bool] = None,
+    symbol: str | None = None,
+    species: str | None = None,
+    enforce_functional: bool | None = None,
+    allow_subgroup: bool | None = None,
+    log_failures: bool | None = None,
+    gene: str | None = None,
+    suppress_warnings: bool | None = None,
 ) -> ReceptorGene:
     """
     Attempt to standardize a IG gene / allele symbol to be IMGT-compliant.
@@ -29,48 +26,37 @@ def standardize(
         - ``"homosapiens"``
         - ``"musmusculus"``
 
-    :param symbol:
+    Parameters
+    ----------
+    symbol
         Potentially non-standardized IG gene / allele symbol.
-    :type symbol:
-        str
-    :param species:
+    species
         Can be specified to standardize to an IG symbol that is known to be valid for that species (see above for supported species).
         Defaults to ``"homosapiens"``.
-    :type species:
-        str
-    :param enforce_functional:
+    enforce_functional
         If ``True``, disallows IG genes / alleles that are recognised by IMGT but are marked as non-functional (ORF or pseudogene).
         Defaults to ``False``.
-    :type enforce_functional:
-        bool
-    :param allow_subgroup:
+    allow_subgroup
         If ``True``, allows valid subgroups (as well as more specific gene/allele symbos) to pass standardization.
         If ``False``, the supplied symbol must point to at least a specific gene.
         Defaults to ``False``.
-    :type allow_subgroup:
-        bool
-    :param log_failures:
+    log_failures
         Report standardization failures through logging (at level ``WARNING``).
         Defaults to ``True``.
-    :type log_failures:
-        bool
-    :param gene:
+    gene
         Alias for the parameter `symbol`.
-    :type gene:
-        str
-    :param suppress_warnings:
+    suppress_warnings
         Disable warnings that are usually logged when standardization fails.
         Deprecated in favour of `log_failures`.
-    :type suppress_warnings:
-        bool
 
-    :return:
-        A standardized receptor gene wrapped in a :py:class:`~tidytcells.result.ReceptorGene` object.
+    Returns
+    -------
+    ~tidytcells.result.ReceptorGene
+        A standardized receptor gene.
         For details on how to use this output, please refer to the class documentation.
-    :rtype:
-        `~tidytcells.result.ReceptorGene`
 
-    .. topic:: Example usage
+    Examples
+    --------
 
         IG standardized results will be returned as a :py:class:`~tidytcells.result.ReceptorGene`.
         When standardization is a success, attributes 'allele', 'gene' and 'subgroup' can be used to retrieve the corrected information.
@@ -293,10 +279,5 @@ def standardize(
 
 
 def standardise(*args, **kwargs) -> ReceptorGene:
-    """
-    Alias for :py:func:`tidytcells.ig.standardize`.
-
-    :rtype:
-        :py:class:`~tidytcells.result.ReceptorGene`
-    """
+    """Alias for :py:func:`tidytcells.ig.standardize`."""
     return standardize(*args, **kwargs)

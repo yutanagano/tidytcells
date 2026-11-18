@@ -1,5 +1,4 @@
 import re
-from typing import Dict, FrozenSet, Optional, Type
 
 from tidytcells import _utils
 from tidytcells._utils import Parameter
@@ -8,38 +7,35 @@ from tidytcells._query_engine import (
     HomoSapiensIgQueryEngine,
 )
 
-QUERY_ENGINES: Dict[str, Type[QueryEngine]] = {
+QUERY_ENGINES: dict[str, type[QueryEngine]] = {
     "homosapiens": HomoSapiensIgQueryEngine,
 }
 
 
 def query(
-    species: Optional[str] = None,
-    precision: Optional[str] = None,
-    functionality: Optional[str] = None,
-    contains_pattern: Optional[str] = None,
-) -> FrozenSet[str]:
+    species: str | None = None,
+    precision: str | None = None,
+    functionality: str | None = None,
+    contains_pattern: str | None = None,
+) -> frozenset[str]:
     """
-    Query the list of all known IG
-     genes / alleles.
+    Query the list of all known IG genes / alleles.
 
     .. topic:: Supported species
 
         - ``"homosapiens"``
 
-    :param species:
+    Parameters
+    ----------
+    species
         Species to query (see above for supported species).
         Defaults to ``"homosapiens"``.
-    :type species:
-        str
-    :param precision:
+    precision
         The level of precision to query.
         ``allele`` will query from the set of all possible alleles.
         ``gene`` will query from the set of all possible genes.
         Defaults to ``allele``.
-    :type precision:
-        str
-    :param functionality:
+    functionality
         Gene/allele functionality to subset by.
         ``"any"`` queries from all possible genes/alleles.
         ``"F"`` queries from functional genes/alleles.
@@ -49,21 +45,18 @@ def query(
         An allele is considered queriable if its functionality label matches the description.
         A gene is considered queriable if at least one of its alleles' functionality label matches the description.
         Defaults to ``"any"``.
-    :type functionality:
-        str
-    :param contains_pattern:
+    contains_pattern
         An optional regular expression string which will be used to filter the query result.
         If supplied, only genes/alleles which contain the regular expression will be returned.
         Defaults to ``None``.
-    :type contains_pattern:
-        str
 
-    :return:
+    Returns
+    -------
+    frozenset[str]
         The set of all genes / alleles that satisfy the given constraints.
-    :rtype:
-        FrozenSet[str]
 
-    .. topic:: Example usage
+    Examples
+    --------
 
         List all known variants for the human IG gene IGLJ1.
 

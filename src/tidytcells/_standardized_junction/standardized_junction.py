@@ -1,5 +1,3 @@
-from typing import Optional
-
 from tidytcells._resources import AMINO_ACIDS
 from tidytcells.result import Junction
 from tidytcells._utils.alignment import *
@@ -27,7 +25,7 @@ class JunctionStandardizer:
         v_symbol: str,
         species: str,
         germline_database: str,
-        sequence_dictionary: dict,
+        sequence_dictionary: dict[str, dict[str, str]],
         enforce_functional_v: bool = True,
         enforce_functional_j: bool = False,
         allow_c_correction: bool = False,
@@ -69,7 +67,7 @@ class JunctionStandardizer:
             self.germline_database,
         )
 
-    def _resolve_juncton(self):
+    def _resolve_juncton(self) -> None:
         self.j_aa_dict = self.get_aa_dict_from_symbol("J")
         self.v_aa_dict = self.get_aa_dict_from_symbol("V")
 
@@ -87,7 +85,7 @@ class JunctionStandardizer:
         if len(self.corrected_seq) < 6:
             self.reasons_invalid.append("Junction too short")
 
-    def get_aa_dict_from_symbol(self, gene) -> dict:
+    def get_aa_dict_from_symbol(self, gene: str) -> dict[str, dict[str, str]]:
         """
         Given the user-provided allele/gene/subgroup symbol (v_symbol, j_symbol), this function returns
         the sequence_dictionary information for any of the alleles applicable to the given symbol.
@@ -140,7 +138,11 @@ class JunctionStandardizer:
 
         return aa_dict
 
-    def correct_sequencing_err_j_side(self, best_alignments_orig, conserved_aa):
+    def correct_sequencing_err_j_side(
+        self,
+        best_alignments_orig: list[dict[str, str | int | float]],
+        conserved_aa: str,
+    ) -> list[dict[str, str | int | float]]:
         """
         Try correcting sequencing error on the J side (replace last amino acid with conserved_aa; 'F' or 'W').
         If the alignments improve, keep corrected sequence + alignments based on the corrected sequence
@@ -174,7 +176,9 @@ class JunctionStandardizer:
 
         return best_alignments_orig
 
-    def correct_sequencing_err_v_side(self, best_alignments_orig):
+    def correct_sequencing_err_v_side(
+        self, best_alignments_orig: list[dict[str, str | int | float]]
+    ) -> list[dict[str, str | int | float]]:
         """
         Try correcting sequencing error on the V side (replace first amino acid with 'C').
         If the alignments improve, keep corrected sequence + alignments based on the corrected sequence
@@ -204,7 +208,7 @@ class JunctionStandardizer:
 
         return best_alignments_orig
 
-    def align_j(self):
+    def align_j(self) -> list[dict[str, str | int | float]]:
         """
         Compute alignments for each sequence in self.j_aa_dict, keep only the best alignments
         """
@@ -242,7 +246,7 @@ class JunctionStandardizer:
 
         return best_alignments
 
-    def align_v(self):
+    def align_v(self) -> list[dict[str, str | int | float]]:
         """
         Compute alignments for each sequence in self.v_aa_dict, keep only the best alignments
         """
@@ -273,7 +277,9 @@ class JunctionStandardizer:
 
         return best_alignments
 
-    def get_j_string_repr(self, seq, corrected_seq_with_j_gene):
+    def get_j_string_repr(
+        self, seq: str, corrected_seq_with_j_gene: list[tuple[str, str]]
+    ) -> str:
         """
         The J gene string representation concatenates all best-scoring J genes that match the sequence
         """
@@ -288,7 +294,7 @@ class JunctionStandardizer:
 
         return ", ".join(j_genes)
 
-    def correct_seq_j_side(self, seq):
+    def correct_seq_j_side(self, seq: str) -> tuple[str, str | None]:
         """
         Compute corrected sequence for J side
 
@@ -370,7 +376,7 @@ class JunctionStandardizer:
             corrected_seq, corrected_seq_with_j_gene
         )
 
-    def correct_seq_v_side(self, seq):
+    def correct_seq_v_side(self, seq: str) -> str:
         """
         Compute corrected sequence for V side
 
@@ -430,7 +436,7 @@ class JunctionStandardizer:
 
     def get_reason_why_invalid(
         self,
-    ) -> Optional[str]:  # optional: enforce_complete / no reconstruction etc
+    ) -> str | None:  # optional: enforce_complete / no reconstruction etc
         """
         If the CDR3 cannot be standardized (it is invalid), this method returns a string outlining the reason why (incomplete on the left side, right side, etc).
         Returns None if standardization was successful.
