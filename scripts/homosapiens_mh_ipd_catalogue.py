@@ -11,12 +11,12 @@ def main() -> None:
     print("Fetching HLA allele data from IPD...")
     valid_allele_tree = get_hla_alleles_tree()
     script_utility.save_as_json(
-        valid_allele_tree, "ipd_homosapiens_mh_valid_allele.json"
+        valid_allele_tree, "homosapiens_mh_ipd_valid_alleles.json"
     )
 
     print("Fetching HLA symbol synonyms from HGNC...")
     synonyms_data = script_utility.get_mh_synonyms_data(valid_allele_tree)
-    script_utility.save_as_json(synonyms_data, "ipd_homosapiens_mh_synonyms_hgnc.json")
+    script_utility.save_as_json(synonyms_data, "homosapiens_mh_ipd_synonyms_gene.json")
 
 
 def get_hla_alleles_tree() -> dict:

@@ -91,11 +91,11 @@ def main() -> None:
 
     print("Converting IG gene sequence data...")
     sequence_data = get_ig_aa_sequence_data(germline_sets)
-    script_utility.save_as_json(sequence_data, "homosapiens_ig_aa_sequences_ogrdb.json")
+    script_utility.save_as_json(sequence_data, "homosapiens_ig_ogrdb_aa_sequences.json")
 
     print("Compiling valid IG genes...")
     valid_genes = get_valid_gene_data(sequence_data)
-    script_utility.save_as_json(valid_genes, "valid_homosapiens_ig_ogrdb.json")
+    script_utility.save_as_json(valid_genes, "homosapiens_ig_ogrdb_valid_genes.json")
 
 
 def download_germline_set(locus: str) -> dict:
@@ -113,9 +113,9 @@ def download_germline_set(locus: str) -> dict:
     with tempfile.TemporaryDirectory() as tmp_dir:
         subprocess.run(command, cwd=tmp_dir, check=True)
         downloaded = list(Path(tmp_dir).glob("*.json"))
-        assert (
-            len(downloaded) == 1
-        ), f"Expected one downloaded file for {locus}, found {len(downloaded)}"
+        assert len(downloaded) == 1, (
+            f"Expected one downloaded file for {locus}, found {len(downloaded)}"
+        )
 
         with open(downloaded[0], "r") as f:
             return json.load(f)

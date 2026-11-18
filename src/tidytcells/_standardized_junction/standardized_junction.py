@@ -13,7 +13,6 @@ MISMATCH_PENALTY = {"TR": -1.5, "IG": -0.75}
 
 
 class JunctionStandardizer:
-
     def __init__(
         self,
         seq: str,

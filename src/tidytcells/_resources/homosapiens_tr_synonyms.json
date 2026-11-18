@@ -1,6 +1,11 @@
 {
     "BV05S1J2.2": "TRBC1",
     "BV07S1J2.7": "TRBV4-1",
+    "HADV14S1": "TRAV14/DV4",
+    "HADV38S2": "TRAV38-2/DV8",
+    "HDV101S1": "TRDV1",
+    "HDV102S1": "TRDV2",
+    "HDV103S1": "TRDV3",
     "MGC117421": "TRDV2",
     "TCRAV10S1": "TRAV10",
     "TCRAV12S1": "TRAV19",
@@ -233,12 +238,6 @@
     "V1S4": "TRGV4",
     "V1S5": "TRGV5",
     "V1S8": "TRGV8",
-    "V3P": "TRGV10",
     "V4P": "TRGV11",
-    "VIS2": "TRGV2",
-    "HADV14S1": "TRAV14/DV4",
-    "HADV38S2": "TRAV38-2/DV8",
-    "HDV101S1": "TRDV1",
-    "HDV102S1": "TRDV2",
-    "HDV103S1": "TRDV3"
+    "VIS2": "TRGV2"
 }
