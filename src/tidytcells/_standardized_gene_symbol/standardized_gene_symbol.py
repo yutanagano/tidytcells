@@ -5,7 +5,6 @@ from tidytcells.result import ReceptorGene
 
 
 class ReceptorGeneSymbolStandardizer(ABC):
-
     def _is_synonym(self) -> bool:
         return self._gene_name in self._synonym_dictionary
 

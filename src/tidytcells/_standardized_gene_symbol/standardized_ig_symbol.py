@@ -42,7 +42,6 @@ class IgSymbolParser:
 
 
 class IgSymbolStandardizer(ReceptorGeneSymbolStandardizer):
-
     def _parse_symbol(self, ig_symbol: str) -> tuple[str | None, str | None]:
         cleaned_ig_symbol = self._safe_clean_ig_symbol(ig_symbol)
         parsed_ig_symbol = IgSymbolParser(

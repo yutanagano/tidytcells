@@ -16,7 +16,6 @@ BCR_MISMATCH_PENALTY = -0.5
 
 
 class JunctionStandardizer:
-
     def __init__(
         self,
         seq: str,

@@ -25,7 +25,6 @@ class TrSymbolParser:
 
 
 class TrSymbolStandardizer(ReceptorGeneSymbolStandardizer):
-
     def _parse_symbol(self, tr_symbol: str) -> tuple[str | None, str | None]:
         cleaned_tr_symbol = _utils.clean_and_uppercase(tr_symbol)
         parsed_tr_symbol = TrSymbolParser(cleaned_tr_symbol)

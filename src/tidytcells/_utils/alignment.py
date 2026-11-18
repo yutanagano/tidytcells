@@ -15,8 +15,9 @@ def get_is_valid_locus_gene_fn(locus: str, gene: str) -> Callable[[str], bool]:
             return lambda symbol: symbol.startswith("TRAV") or symbol.startswith("TRDV")
 
         if locus == "TRD":
-            return lambda symbol: symbol.startswith("TRDV") or (
-                symbol.startswith("TRAV") and "/DV" in symbol
+            return lambda symbol: (
+                symbol.startswith("TRDV")
+                or (symbol.startswith("TRAV") and "/DV" in symbol)
             )
 
     if len(locus) == 3:

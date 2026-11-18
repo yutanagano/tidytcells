@@ -107,7 +107,9 @@ MH_SYMBOLS_BY_SP_DB = {
     "rattusnorvegicus": {
         "MRO": {
             "valid_symbols": load_json("rattusnorvegicus_mh_mro_valid_proteins.json"),
-            "allele_synonyms": load_json("rattusnorvegicus_mh_mro_synonyms_allele.json"),
+            "allele_synonyms": load_json(
+                "rattusnorvegicus_mh_mro_synonyms_allele.json"
+            ),
         },
     },
     "susscrofa": {
