@@ -1,6 +1,9 @@
 import pytest
 from tidytcells import ig, config
-from tidytcells._resources import VALID_HOMOSAPIENS_IG_IMGT, VALID_MUSMUSCULUS_IG_IMGT
+from tidytcells._resources import (
+    HOMOSAPIENS_IG_IMGT_ALLELES,
+    MUSMUSCULUS_IG_IMGT_ALLELES,
+)
 
 
 class TestStandardize:
@@ -168,7 +171,7 @@ class TestStandardize:
 
 
 class TestStandardizeHomoSapiens:
-    @pytest.mark.parametrize("symbol", VALID_HOMOSAPIENS_IG_IMGT)
+    @pytest.mark.parametrize("symbol", HOMOSAPIENS_IG_IMGT_ALLELES)
     def test_already_correctly_formatted(self, symbol):
         result = ig.standardize(symbol=symbol, species="homosapiens")
 
@@ -358,7 +361,7 @@ class TestStandardizeHomoSapiens:
 
 
 class TestStandardizeMusMusculus:
-    @pytest.mark.parametrize("symbol", VALID_MUSMUSCULUS_IG_IMGT)
+    @pytest.mark.parametrize("symbol", MUSMUSCULUS_IG_IMGT_ALLELES)
     def test_already_correctly_formatted(self, symbol):
         result = ig.standardize(symbol=symbol, species="musmusculus")
 

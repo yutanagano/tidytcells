@@ -294,6 +294,32 @@ def add_j_motifs(j_aa_dict):
     return j_aa_dict
 
 
+def combine_alleles(valid_tree: dict, aa_dict: dict) -> dict:
+    combined = collections.defaultdict(dict)
+
+    for gene, alleles in valid_tree.items():
+        for allele, functionality in alleles.items():
+            combined[gene][allele] = {"functionality": functionality}
+
+    for allele_symbol, data in aa_dict.items():
+        gene, allele = allele_symbol.split("*")
+        if gene not in combined or allele not in combined[gene]:
+            raise ValueError(f"{allele_symbol} has sequence data but is not a valid gene")
+
+        data = dict(data)
+        if "functionality" in data:
+            data["functionality"] = data["functionality"].strip("()[]")
+            if data["functionality"] != combined[gene][allele]["functionality"]:
+                raise ValueError(f"conflicting functionality for {allele_symbol}")
+
+        combined[gene][allele].update(data)
+
+    return {
+        gene: dict(sorted(alleles.items()))
+        for gene, alleles in sorted(combined.items())
+    }
+
+
 def get_genedb_release() -> str:
     response = requests.get(
         "https://www.imgt.org/download/GENE-DB/RELEASE",

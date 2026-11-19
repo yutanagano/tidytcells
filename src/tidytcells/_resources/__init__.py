@@ -6,21 +6,35 @@ def load_json(filename: str) -> dict:
     return json.loads(files(__name__).joinpath(filename).read_text())
 
 
-VALID_HOMOSAPIENS_TR_IMGT = load_json("homosapiens_tr_imgt_valid_genes.json")
+HOMOSAPIENS_TR_IMGT_ALLELES = load_json("homosapiens_tr_imgt_alleles.json")
 HOMOSAPIENS_TR_SYNONYMS = load_json("homosapiens_tr_synonyms.json")
-HOMOSAPIENS_TR_AA_SEQUENCES_IMGT = load_json("homosapiens_tr_imgt_aa_sequences.json")
 
-VALID_HOMOSAPIENS_IG_IMGT = load_json("homosapiens_ig_imgt_valid_genes.json")
-VALID_HOMOSAPIENS_IG_OGRDB = load_json("homosapiens_ig_ogrdb_valid_genes.json")
+HOMOSAPIENS_IG_IMGT_ALLELES = load_json("homosapiens_ig_imgt_alleles.json")
+HOMOSAPIENS_IG_OGRDB_ALLELES = load_json("homosapiens_ig_ogrdb_alleles.json")
 HOMOSAPIENS_IG_SYNONYMS = load_json("homosapiens_ig_synonyms.json")
-HOMOSAPIENS_IG_AA_SEQUENCES_IMGT = load_json("homosapiens_ig_imgt_aa_sequences.json")
-HOMOSAPIENS_IG_AA_SEQUENCES_OGRDB = load_json("homosapiens_ig_ogrdb_aa_sequences.json")
 
-VALID_MUSMUSCULUS_TR_IMGT = load_json("musmusculus_tr_imgt_valid_genes.json")
-MUSMUSCULUS_TR_AA_SEQUENCES_IMGT = load_json("musmusculus_tr_imgt_aa_sequences.json")
+MUSMUSCULUS_TR_IMGT_ALLELES = load_json("musmusculus_tr_imgt_alleles.json")
 
-VALID_MUSMUSCULUS_IG_IMGT = load_json("musmusculus_ig_imgt_valid_genes.json")
-MUSMUSCULUS_IG_AA_SEQUENCES_IMGT = load_json("musmusculus_ig_imgt_aa_sequences.json")
+MUSMUSCULUS_IG_IMGT_ALLELES = load_json("musmusculus_ig_imgt_alleles.json")
+
+
+def _flat_sequence_dict(allele_tree: dict) -> dict:
+    return {
+        f"{gene}*{allele}": dict(data)
+        for gene, alleles in allele_tree.items()
+        for allele, data in alleles.items()
+        if any(field != "functionality" for field in data)
+    }
+
+
+HOMOSAPIENS_TR_AA_SEQUENCES_IMGT = _flat_sequence_dict(HOMOSAPIENS_TR_IMGT_ALLELES)
+
+HOMOSAPIENS_IG_AA_SEQUENCES_IMGT = _flat_sequence_dict(HOMOSAPIENS_IG_IMGT_ALLELES)
+HOMOSAPIENS_IG_AA_SEQUENCES_OGRDB = _flat_sequence_dict(HOMOSAPIENS_IG_OGRDB_ALLELES)
+
+MUSMUSCULUS_TR_AA_SEQUENCES_IMGT = _flat_sequence_dict(MUSMUSCULUS_TR_IMGT_ALLELES)
+
+MUSMUSCULUS_IG_AA_SEQUENCES_IMGT = _flat_sequence_dict(MUSMUSCULUS_IG_IMGT_ALLELES)
 
 
 SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES = {
@@ -41,28 +55,28 @@ SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES = {
 SUPPORTED_IG_SPECIES_AND_THEIR_GENES = {
     "homosapiens": {
         "IMGT": {
-            "genes": VALID_HOMOSAPIENS_IG_IMGT,
+            "genes": HOMOSAPIENS_IG_IMGT_ALLELES,
             "synonyms": HOMOSAPIENS_IG_SYNONYMS,
         },
         "OGRDB": {
-            "genes": VALID_HOMOSAPIENS_IG_OGRDB,
+            "genes": HOMOSAPIENS_IG_OGRDB_ALLELES,
             "synonyms": HOMOSAPIENS_IG_SYNONYMS,
         },
     },
     "musmusculus": {
-        "IMGT": {"genes": VALID_MUSMUSCULUS_IG_IMGT, "synonyms": dict()},
+        "IMGT": {"genes": MUSMUSCULUS_IG_IMGT_ALLELES, "synonyms": dict()},
     },
 }
 
 SUPPORTED_TR_SPECIES_AND_THEIR_GENES = {
     "homosapiens": {
         "IMGT": {
-            "genes": VALID_HOMOSAPIENS_TR_IMGT,
+            "genes": HOMOSAPIENS_TR_IMGT_ALLELES,
             "synonyms": HOMOSAPIENS_TR_SYNONYMS,
         },
     },
     "musmusculus": {
-        "IMGT": {"genes": VALID_MUSMUSCULUS_TR_IMGT, "synonyms": dict()},
+        "IMGT": {"genes": MUSMUSCULUS_TR_IMGT_ALLELES, "synonyms": dict()},
     },
 }
 
