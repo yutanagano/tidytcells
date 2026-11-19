@@ -10,7 +10,7 @@ class TrSymbolParser:
     allele_designation: int
 
     def __init__(self, tr_symbol: str) -> None:
-        parse_attempt = re.match(r"^([A-Z0-9\-\.\(\)\/]+)(\*(\d+))?", tr_symbol)
+        parse_attempt = re.match(r"^([A-ZΑΒΓΔ0-9\-\.\(\)\/]+)(\*(\d+))?", tr_symbol)
 
         if parse_attempt:
             self.gene_name = parse_attempt.group(1)

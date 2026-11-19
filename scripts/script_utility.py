@@ -305,8 +305,8 @@ def get_genedb_release() -> str:
 
 def save_as_json(data: dict, file_name: str) -> None:
     path_to_resources_dir = Path("src") / "tidytcells" / "_resources"
-    with open(path_to_resources_dir / file_name, "w") as f:
-        json.dump(data, f, indent=4)
+    with open(path_to_resources_dir / file_name, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
 
 
 def fetch_hgnc_data() -> DataFrame:
@@ -318,7 +318,7 @@ def fetch_hgnc_data() -> DataFrame:
     return pd.read_csv(buffer, sep="\t", on_bad_lines="warn")
 
 
-def _get_synonyms_data(
+def _get_hcng_synonyms_data(
     genes: DataFrame, valid_genes: Collection[str], exclude: Collection[str] = ()
 ) -> dict:
     # Only keep genes whose 'approved symbols' are in the provided list of valid genes
@@ -364,7 +364,7 @@ def _get_synonyms_data(
     return synonyms["Approved symbol"].to_dict()
 
 
-def get_mh_synonyms_data(valid_genes: Collection[str]) -> dict:
+def get_mh_hgnc_synonyms_data(valid_genes: Collection[str]) -> dict:
     hgnc = fetch_hgnc_data()
 
     mh_genes = hgnc[hgnc["Gene group name"].notna()]
@@ -372,10 +372,10 @@ def get_mh_synonyms_data(valid_genes: Collection[str]) -> dict:
         mh_genes["Gene group name"].str.contains("Histocompatibility complex")
     ]
 
-    return _get_synonyms_data(mh_genes, valid_genes)
+    return _get_hcng_synonyms_data(mh_genes, valid_genes)
 
 
-def get_tr_synonyms_data(valid_alleles: Collection[str]) -> dict:
+def get_tr_hgnc_synonyms_data(valid_alleles: Collection[str]) -> dict:
     hgnc = fetch_hgnc_data()
 
     genes = hgnc[hgnc["Locus type"].notna()]
@@ -390,10 +390,10 @@ def get_tr_synonyms_data(valid_alleles: Collection[str]) -> dict:
 
     alleles_without_locus = {name[3:] for name in valid_alleles}
 
-    return _get_synonyms_data(genes, valid_alleles, exclude=alleles_without_locus)
+    return _get_hcng_synonyms_data(genes, valid_alleles, exclude=alleles_without_locus)
 
 
-def get_ig_synonyms_data(valid_alleles: Collection[str]) -> dict:
+def get_ig_hgnc_synonyms_data(valid_alleles: Collection[str]) -> dict:
     hgnc = fetch_hgnc_data()
 
     genes = hgnc[hgnc["Locus type"].notna()]
@@ -405,4 +405,39 @@ def get_ig_synonyms_data(valid_alleles: Collection[str]) -> dict:
 
     alleles_without_locus = {name[3:] for name in valid_alleles}
 
-    return _get_synonyms_data(genes, valid_alleles, exclude=alleles_without_locus)
+    return _get_hcng_synonyms_data(genes, valid_alleles, exclude=alleles_without_locus)
+
+
+GREEK_NAMES = str.maketrans({"α": "alpha", "β": "beta", "γ": "gamma", "δ": "delta"})
+
+
+def get_tr_legacy_synonyms_data(
+    species: str,
+    valid_genes: Collection[str],
+    mapping_path: Path = Path("scripts") / "data" / "mab_legacy_name_mapping.txt",
+) -> dict:
+    mapping = pd.read_csv(mapping_path, sep="\t", dtype=str)
+    mapping = mapping[mapping["IMGT gene species"] == species.replace("+", " ")]
+    synonyms = mapping.set_index("Legacy name")[["IMGT gene"]]
+
+    # Only keep synonyms that map to a valid gene or subgroup
+    subgroups = {gene.split("-")[0] for gene in valid_genes}
+    is_valid = synonyms["IMGT gene"].map(lambda x: x in valid_genes or x in subgroups)
+    for legacy, target in synonyms.loc[~is_valid, "IMGT gene"].items():
+        print(f"Skipping legacy name {species} {legacy}: {target} is not a valid gene or subgroup")
+    synonyms = synonyms[is_valid]
+
+    # Add spelled-out Greek variants, e.g. Vbeta8.1, and uppercase
+    spelled_out = synonyms.copy()
+    spelled_out.index = spelled_out.index.map(lambda x: x.translate(GREEK_NAMES))
+    synonyms = pd.concat([synonyms, spelled_out])
+    synonyms.index = synonyms.index.str.upper()
+    synonyms = synonyms[~synonyms.index.duplicated()]
+
+    # Remove any synonyms that are also names of other valid genes
+    genes_without_locus = {name[3:] for name in valid_genes}
+    synonyms = synonyms[
+        synonyms.index.map(lambda x: x not in valid_genes and x not in genes_without_locus)
+    ]
+
+    return synonyms["IMGT gene"].to_dict()

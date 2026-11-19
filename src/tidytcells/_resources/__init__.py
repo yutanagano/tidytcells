@@ -17,6 +17,7 @@ HOMOSAPIENS_IG_AA_SEQUENCES_IMGT = load_json("homosapiens_ig_imgt_aa_sequences.j
 HOMOSAPIENS_IG_AA_SEQUENCES_OGRDB = load_json("homosapiens_ig_ogrdb_aa_sequences.json")
 
 VALID_MUSMUSCULUS_TR_IMGT = load_json("musmusculus_tr_imgt_valid_genes.json")
+MUSMUSCULUS_TR_SYNONYMS = load_json("musmusculus_tr_synonyms.json")
 MUSMUSCULUS_TR_AA_SEQUENCES_IMGT = load_json("musmusculus_tr_imgt_aa_sequences.json")
 
 VALID_MUSMUSCULUS_IG_IMGT = load_json("musmusculus_ig_imgt_valid_genes.json")
@@ -62,7 +63,10 @@ SUPPORTED_TR_SPECIES_AND_THEIR_GENES = {
         },
     },
     "musmusculus": {
-        "IMGT": {"genes": VALID_MUSMUSCULUS_TR_IMGT, "synonyms": dict()},
+        "IMGT": {
+            "genes": VALID_MUSMUSCULUS_TR_IMGT,
+            "synonyms": MUSMUSCULUS_TR_SYNONYMS
+        },
     },
 }
 

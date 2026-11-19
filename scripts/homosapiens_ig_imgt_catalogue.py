@@ -9,7 +9,7 @@ def main() -> None:
     )
 
     print("Fetching IG symbol synonyms from HGNC...")
-    synonyms_data = script_utility.get_ig_synonyms_data(valid_allele_data)
+    synonyms_data = script_utility.get_ig_hgnc_synonyms_data(valid_allele_data)
     script_utility.save_as_json(synonyms_data, "homosapiens_ig_synonyms.json")
 
     print("Fetching IG gene sequence data from IMGT...")

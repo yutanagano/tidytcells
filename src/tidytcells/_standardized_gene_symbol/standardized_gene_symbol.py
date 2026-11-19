@@ -25,12 +25,12 @@ class ReceptorGeneSymbolStandardizer(ABC):
         self.germline_database = germline_database
 
         self._valid_gene_dictionary = valid_gene_dictionary
+        self._valid_subgroups = {key.split("-")[0] for key in valid_gene_dictionary}
         self._synonym_dictionary = {
             key: value
             for key, value in synonym_dictionary.items()
-            if value in valid_gene_dictionary
+            if value in valid_gene_dictionary or value in self._valid_subgroups
         }
-        self._valid_subgroups = {key.split("-")[0] for key in valid_gene_dictionary}
 
         self._gene_name, self._allele_designation = self._parse_symbol(symbol)
         self._allow_subgroup = self._allele_designation is None and allow_subgroup
