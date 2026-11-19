@@ -8,8 +8,11 @@ def main() -> None:
         valid_allele_data, "homosapiens_tr_imgt_valid_genes.json"
     )
 
-    print("Fetching TR symbol synonyms from HGNC...")
-    synonyms_data = script_utility.get_tr_synonyms_data(valid_allele_data)
+    print("Fetching TR symbol synonyms from HGNC and legacy mAb names...")
+    synonyms_data = {
+        **script_utility.get_tr_hgnc_synonyms_data(valid_allele_data),
+        **script_utility.get_tr_legacy_synonyms_data("Homo sapiens", valid_allele_data),
+    }
     script_utility.save_as_json(synonyms_data, "homosapiens_tr_synonyms.json")
 
     print("Fetching TR gene sequence data from IMGT...")

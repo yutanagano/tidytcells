@@ -189,6 +189,39 @@ class TestStandardize:
 
         config.reset_receptor_database()
 
+    @pytest.mark.parametrize(
+        ("symbol", "species", "allow_subgroup", "expected"),
+        (
+            ("Vβ8.1", "homosapiens", True, "TRBV12-3"),
+            ("Vbeta8.1", "homosapiens", True, "TRBV12-3"),
+            ("vbeta8.1", "homosapiens", True, "TRBV12-3"),
+            ("Vβ17", "homosapiens", True, "TRBV19"),
+            ("Vβ17", "musmusculus", True, "TRBV24"),
+            ("Vα7.2", "homosapiens", True, "TRAV1-2"),
+            ("Valpha24", "homosapiens", True, "TRAV10"),
+            ("Vγ9", "homosapiens", True, "TRGV9"),
+            ("Vdelta1", "homosapiens", True, "TRDV1"),
+            ("Jα18", "homosapiens", True, "TRAJ18"),
+            ("Jγ1.2", "homosapiens", True, "TRGJP"),
+            ("Vα3.2", "musmusculus", True, "TRAV9N-3"),
+            ("Vβ2", "homosapiens", True, "TRBV20"),
+            ("Vβ2", "musmusculus", True, "TRBV1"),
+            ("Vα7.2", "musmusculus", True, None),
+            ("Vβ2", "homosapiens", False, None),
+            ("Vβ8.1*01", "homosapiens", True, "TRBV12-3*01"),
+            ("Vβ2*01", "homosapiens", True, None),
+            (" Vβ 8.1 ", "homosapiens", True, "TRBV12-3"),
+            ("VB8.1", "homosapiens", True, None),
+            ("Vβ8.9", "homosapiens", True, None),
+            ("Vβ13.1", "homosapiens", True, None),
+        ),
+    )
+    def test_resolve_legacy_mab_names(self, symbol, species, allow_subgroup, expected):
+        result = tr.standardize(
+            symbol=symbol, species=species, allow_subgroup=allow_subgroup
+        )
+
+        assert result.symbol == expected
 
 class TestStandardizeHomoSapiens:
     @pytest.mark.parametrize("symbol", VALID_HOMOSAPIENS_TR_IMGT)
