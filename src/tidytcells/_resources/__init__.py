@@ -18,65 +18,38 @@ MUSMUSCULUS_TR_IMGT_ALLELES = load_json("musmusculus_tr_imgt_alleles.json")
 MUSMUSCULUS_IG_IMGT_ALLELES = load_json("musmusculus_ig_imgt_alleles.json")
 
 
-def _flat_sequence_dict(allele_tree: dict) -> dict:
-    return {
-        f"{gene}*{allele}": dict(data)
-        for gene, alleles in allele_tree.items()
-        for allele, data in alleles.items()
-        if any(field != "functionality" for field in data)
-    }
-
-
-HOMOSAPIENS_TR_AA_SEQUENCES_IMGT = _flat_sequence_dict(HOMOSAPIENS_TR_IMGT_ALLELES)
-
-HOMOSAPIENS_IG_AA_SEQUENCES_IMGT = _flat_sequence_dict(HOMOSAPIENS_IG_IMGT_ALLELES)
-HOMOSAPIENS_IG_AA_SEQUENCES_OGRDB = _flat_sequence_dict(HOMOSAPIENS_IG_OGRDB_ALLELES)
-
-MUSMUSCULUS_TR_AA_SEQUENCES_IMGT = _flat_sequence_dict(MUSMUSCULUS_TR_IMGT_ALLELES)
-
-MUSMUSCULUS_IG_AA_SEQUENCES_IMGT = _flat_sequence_dict(MUSMUSCULUS_IG_IMGT_ALLELES)
-
-
-SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES = {
+SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES = {
     "homosapiens": {
-        "TR": {"IMGT": HOMOSAPIENS_TR_AA_SEQUENCES_IMGT},
+        "TR": {
+            "IMGT": {
+                "genes": HOMOSAPIENS_TR_IMGT_ALLELES,
+                "synonyms": HOMOSAPIENS_TR_SYNONYMS,
+            },
+        },
         "IG": {
-            "IMGT": HOMOSAPIENS_IG_AA_SEQUENCES_IMGT,
-            "OGRDB": HOMOSAPIENS_IG_AA_SEQUENCES_OGRDB,
+            "IMGT": {
+                "genes": HOMOSAPIENS_IG_IMGT_ALLELES,
+                "synonyms": HOMOSAPIENS_IG_SYNONYMS,
+            },
+            "OGRDB": {
+                "genes": HOMOSAPIENS_IG_OGRDB_ALLELES,
+                "synonyms": HOMOSAPIENS_IG_SYNONYMS,
+            },
         },
     },
     "musmusculus": {
-        "TR": {"IMGT": MUSMUSCULUS_TR_AA_SEQUENCES_IMGT},
-        "IG": {"IMGT": MUSMUSCULUS_IG_AA_SEQUENCES_IMGT},
-    },
-}
-
-
-SUPPORTED_IG_SPECIES_AND_THEIR_GENES = {
-    "homosapiens": {
-        "IMGT": {
-            "genes": HOMOSAPIENS_IG_IMGT_ALLELES,
-            "synonyms": HOMOSAPIENS_IG_SYNONYMS,
+        "TR": {
+            "IMGT": {
+                "genes": MUSMUSCULUS_TR_IMGT_ALLELES,
+                "synonyms": dict(),
+            },
         },
-        "OGRDB": {
-            "genes": HOMOSAPIENS_IG_OGRDB_ALLELES,
-            "synonyms": HOMOSAPIENS_IG_SYNONYMS,
+        "IG": {
+            "IMGT": {
+                "genes": MUSMUSCULUS_IG_IMGT_ALLELES,
+                "synonyms": dict(),
+            },
         },
-    },
-    "musmusculus": {
-        "IMGT": {"genes": MUSMUSCULUS_IG_IMGT_ALLELES, "synonyms": dict()},
-    },
-}
-
-SUPPORTED_TR_SPECIES_AND_THEIR_GENES = {
-    "homosapiens": {
-        "IMGT": {
-            "genes": HOMOSAPIENS_TR_IMGT_ALLELES,
-            "synonyms": HOMOSAPIENS_TR_SYNONYMS,
-        },
-    },
-    "musmusculus": {
-        "IMGT": {"genes": MUSMUSCULUS_TR_IMGT_ALLELES, "synonyms": dict()},
     },
 }
 

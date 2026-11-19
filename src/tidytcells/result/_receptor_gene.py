@@ -1,17 +1,11 @@
-from tidytcells._resources import (
-    SUPPORTED_IG_SPECIES_AND_THEIR_GENES,
-    SUPPORTED_TR_SPECIES_AND_THEIR_GENES,
-)
+from tidytcells._resources import SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES
 from tidytcells._utils.alignment import get_compatible_symbols
 
 
 def _get_allele_tree(species: str, receptor_type: str, germline_database: str) -> dict:
-    registry = (
-        SUPPORTED_TR_SPECIES_AND_THEIR_GENES
-        if receptor_type == "TR"
-        else SUPPORTED_IG_SPECIES_AND_THEIR_GENES
-    )
-    return registry[species][germline_database]["genes"]
+    return SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES[species][receptor_type][
+        germline_database
+    ]["genes"]
 
 
 def _get_allele_data(allele_tree: dict, allele_symbol: str) -> dict:

@@ -65,7 +65,7 @@ def is_valid_functionality(allele_data: dict, enforce_functional: bool) -> bool:
     return bool(not enforce_functional or allele_data.get("functionality") == "F")
 
 
-def _has_sequence_data(allele_data: dict) -> bool:
+def has_sequence_data(allele_data: dict) -> bool:
     return any(field != "functionality" for field in allele_data)
 
 
@@ -104,7 +104,7 @@ def get_compatible_symbols(
         allele_data = allele_tree.get(gene_name, dict()).get(allele_designation)
         if (
             allele_data is not None
-            and _has_sequence_data(allele_data)
+            and has_sequence_data(allele_data)
             and is_valid_functionality(allele_data, enforce_functional)
         ):
             return [symbol]
@@ -126,7 +126,7 @@ def get_compatible_symbols(
             continue
 
         for allele_designation, allele_data in alleles.items():
-            if _has_sequence_data(allele_data) and is_valid_functionality(
+            if has_sequence_data(allele_data) and is_valid_functionality(
                 allele_data, enforce_functional
             ):
                 compatible_symbols.append(f"{gene_name}*{allele_designation}")

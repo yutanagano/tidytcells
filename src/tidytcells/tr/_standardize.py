@@ -4,7 +4,7 @@ from tidytcells import _utils
 from tidytcells.result import ReceptorGene
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import TrSymbolStandardizer
-from tidytcells._resources import SUPPORTED_TR_SPECIES_AND_THEIR_GENES
+from tidytcells._resources import SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES
 
 logger = logging.getLogger(__name__)
 
@@ -151,10 +151,10 @@ def standardize(
         >>> result.get_aa_sequences(sequence_type="ALL")
         {
         'TRAJ15*01': {
-            'J-MOTIF': 'FGKG', 'J-REGION': 'NQAGTALIFGKGTTLSVSS', 'functionality': 'F'
+            'functionality': 'F', 'J-REGION': 'NQAGTALIFGKGTTLSVSS', 'J-MOTIF': 'FGKG'
             },
         'TRAJ15*02': {
-            'J-MOTIF': 'FGKG', 'J-REGION': 'NQAGTALIFGKGTHLSVSS', 'functionality': 'F'
+            'functionality': 'F', 'J-REGION': 'NQAGTALIFGKGTHLSVSS', 'J-MOTIF': 'FGKG'
             }
         }
 
@@ -243,31 +243,29 @@ def standardize(
 
     species = _utils.clean_and_lowercase(species)
 
-    if species not in SUPPORTED_TR_SPECIES_AND_THEIR_GENES:
+    if species not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES:
         msg = _utils.unsupported_species_message(
-            species, SUPPORTED_TR_SPECIES_AND_THEIR_GENES.keys()
+            species, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES.keys()
         )
         if log_failures:
             logger.warning(f"{msg} Skipping TR standardization.")
         return ReceptorGene(symbol, msg)
 
+    receptor_databases = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES[species]["TR"]
+
     receptor_database = config.get_receptor_database()
-    if receptor_database not in SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species]:
+    if receptor_database not in receptor_databases:
         msg = _utils.unsupported_receptor_database_message(
             receptor_database,
             species,
-            SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species].keys(),
+            receptor_databases.keys(),
         )
         if log_failures:
             logger.warning(f"{msg} Skipping TR standardization.")
         return ReceptorGene(symbol, msg)
 
-    valid_gene_dictionary = SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species][
-        receptor_database
-    ]["genes"]
-    synonym_dictionary = SUPPORTED_TR_SPECIES_AND_THEIR_GENES[species][
-        receptor_database
-    ]["synonyms"]
+    valid_gene_dictionary = receptor_databases[receptor_database]["genes"]
+    synonym_dictionary = receptor_databases[receptor_database]["synonyms"]
 
     tr_standardizer = TrSymbolStandardizer(
         symbol,
