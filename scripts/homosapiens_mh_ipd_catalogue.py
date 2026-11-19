@@ -10,7 +10,7 @@ import script_utility
 def main() -> None:
     print("Fetching HLA allele data from IPD...")
     valid_allele_tree = get_hla_alleles_tree()
-    script_utility.save_as_json(valid_allele_tree, "homosapiens_mh_ipd_alleles.json")
+    script_utility.save_as_json(valid_allele_tree, "homosapiens_mh_ipd_symbols.json")
 
     print("Fetching HLA symbol synonyms from HGNC...")
     synonyms_data = script_utility.get_mh_synonyms_data(valid_allele_tree)

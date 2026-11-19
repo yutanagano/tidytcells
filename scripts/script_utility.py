@@ -294,7 +294,7 @@ def add_j_motifs(j_aa_dict):
     return j_aa_dict
 
 
-def combine_alleles(valid_tree: dict, aa_dict: dict) -> dict:
+def combine_symbols(valid_tree: dict, aa_dict: dict) -> dict:
     combined = collections.defaultdict(dict)
 
     for gene, alleles in valid_tree.items():

@@ -421,7 +421,7 @@ def standardize(
 
         return Junction(original_input, msg)
 
-    allele_tree = receptor_databases[receptor_database]["genes"]
+    allele_tree = receptor_databases[receptor_database]["symbols"]
 
     result = JunctionStandardizer(
         seq=seq,

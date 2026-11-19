@@ -257,7 +257,7 @@ def standardize(
             logger.warning(f"{msg} Skipping IG standardization.")
         return ReceptorGene(symbol, msg)
 
-    valid_gene_dictionary = receptor_databases[receptor_database]["genes"]
+    valid_gene_dictionary = receptor_databases[receptor_database]["symbols"]
     synonym_dictionary = receptor_databases[receptor_database]["synonyms"]
 
     ig_standardizer = IgSymbolStandardizer(

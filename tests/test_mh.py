@@ -123,7 +123,7 @@ class TestStandardizeHomoSapiens:
     @pytest.mark.parametrize(
         "symbol",
         [
-            *MH_SYMBOLS_BY_SP_DB["homosapiens"]["IPD"]["valid_symbols"],
+            *MH_SYMBOLS_BY_SP_DB["homosapiens"]["IPD"]["symbols"],
             "B2M",
         ],
     )
@@ -232,7 +232,7 @@ class TestStandardizeHomoSapiens:
 class TestStandardizeHomoSapiensMro:
     @pytest.mark.parametrize(
         "symbol",
-        MH_SYMBOLS_BY_SP_DB["homosapiens"]["MRO"]["valid_symbols"],
+        MH_SYMBOLS_BY_SP_DB["homosapiens"]["MRO"]["symbols"],
     )
     def test_already_correctly_formatted(self, symbol):
         result = mh.standardize(symbol=symbol, species="homosapiens")
@@ -486,7 +486,7 @@ class TestStandardizeHomoSapiensMro:
 class TestStandardizeMusMusculusMro:
     @pytest.mark.parametrize(
         "symbol",
-        MH_SYMBOLS_BY_SP_DB["musmusculus"]["MRO"]["valid_symbols"],
+        MH_SYMBOLS_BY_SP_DB["musmusculus"]["MRO"]["symbols"],
     )
     def test_already_correctly_formatted(self, symbol):
         result = mh.standardize(symbol=symbol, species="musmusculus")
@@ -599,7 +599,7 @@ class TestStandardizeAnySpeciesMro:
         [
             (species, symbol)
             for species, databases in MH_SYMBOLS_BY_SP_DB.items()
-            for symbol in databases["MRO"]["valid_symbols"]
+            for symbol in databases["MRO"]["symbols"]
         ],
     )
     def test_already_correctly_formatted(self, species, symbol):
@@ -617,7 +617,7 @@ class TestStandardizeAnySpeciesMro:
         [
             (species, symbol)
             for species, databases in MH_SYMBOLS_BY_SP_DB.items()
-            for symbol in databases["MRO"]["valid_symbols"]
+            for symbol in databases["MRO"]["symbols"]
         ],
     )
     def test_case_insensitive(self, species, symbol):

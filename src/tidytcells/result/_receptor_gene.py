@@ -5,7 +5,7 @@ from tidytcells._utils.alignment import get_compatible_symbols
 def _get_allele_tree(species: str, receptor_type: str, germline_database: str) -> dict:
     return SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES[species][receptor_type][
         germline_database
-    ]["genes"]
+    ]["symbols"]
 
 
 def _get_allele_data(allele_tree: dict, allele_symbol: str) -> dict:

@@ -162,9 +162,9 @@ def _mh_data(
     """
     data = MH_SYMBOLS_BY_SP_DB[species][mh_database]
     return (
-        data["valid_symbols"],
-        data["allele_synonyms"],
-        data.get("hgnc_synonyms") or {},
+        data["symbols"],
+        data["synonyms_allele"],
+        data.get("synonyms_gene") or {},
     )
 
 
