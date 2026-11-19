@@ -57,43 +57,43 @@ SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES = {
 MH_SYMBOLS_BY_SP_DB = {
     "homosapiens": {
         "IPD": {
-            "valid_symbols": load_json("homosapiens_mh_ipd_valid_alleles.json"),
+            "valid_symbols": load_json("homosapiens_mh_ipd_alleles.json"),
             "allele_synonyms": dict(),
             "hgnc_synonyms": load_json("homosapiens_mh_ipd_synonyms_gene.json"),
         },
         "MRO": {
-            "valid_symbols": load_json("homosapiens_mh_mro_valid_proteins.json"),
+            "valid_symbols": load_json("homosapiens_mh_mro_alleles.json"),
             "allele_synonyms": load_json("homosapiens_mh_mro_synonyms_allele.json"),
             "hgnc_synonyms": load_json("homosapiens_mh_mro_synonyms_gene.json"),
         },
     },
     "musmusculus": {
         "MRO": {
-            "valid_symbols": load_json("musmusculus_mh_mro_valid_proteins.json"),
+            "valid_symbols": load_json("musmusculus_mh_mro_alleles.json"),
             "allele_synonyms": load_json("musmusculus_mh_mro_synonyms_allele.json"),
         },
     },
     "bostaurus": {
         "MRO": {
-            "valid_symbols": load_json("bostaurus_mh_mro_valid_proteins.json"),
+            "valid_symbols": load_json("bostaurus_mh_mro_alleles.json"),
             "allele_synonyms": load_json("bostaurus_mh_mro_synonyms_allele.json"),
         },
     },
     "macacamulatta": {
         "MRO": {
-            "valid_symbols": load_json("macacamulatta_mh_mro_valid_proteins.json"),
+            "valid_symbols": load_json("macacamulatta_mh_mro_alleles.json"),
             "allele_synonyms": load_json("macacamulatta_mh_mro_synonyms_allele.json"),
         },
     },
     "pantroglodytes": {
         "MRO": {
-            "valid_symbols": load_json("pantroglodytes_mh_mro_valid_proteins.json"),
+            "valid_symbols": load_json("pantroglodytes_mh_mro_alleles.json"),
             "allele_synonyms": load_json("pantroglodytes_mh_mro_synonyms_allele.json"),
         },
     },
     "rattusnorvegicus": {
         "MRO": {
-            "valid_symbols": load_json("rattusnorvegicus_mh_mro_valid_proteins.json"),
+            "valid_symbols": load_json("rattusnorvegicus_mh_mro_alleles.json"),
             "allele_synonyms": load_json(
                 "rattusnorvegicus_mh_mro_synonyms_allele.json"
             ),
@@ -101,7 +101,7 @@ MH_SYMBOLS_BY_SP_DB = {
     },
     "susscrofa": {
         "MRO": {
-            "valid_symbols": load_json("susscrofa_mh_mro_valid_proteins.json"),
+            "valid_symbols": load_json("susscrofa_mh_mro_alleles.json"),
             "allele_synonyms": load_json("susscrofa_mh_mro_synonyms_allele.json"),
         },
     },

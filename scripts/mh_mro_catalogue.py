@@ -56,7 +56,7 @@ def main() -> None:
 
         allele_synonyms = build_mro_synonyms(df)
 
-        script_utility.save_as_json(valid, f"{species}_mh_mro_valid_proteins.json")
+        script_utility.save_as_json(valid, f"{species}_mh_mro_alleles.json")
         script_utility.save_as_json(
             allele_synonyms, f"{species}_mh_mro_synonyms_allele.json"
         )
