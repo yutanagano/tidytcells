@@ -1,5 +1,22 @@
-from tidytcells._resources import SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES
+from tidytcells._resources import (
+    SUPPORTED_IG_SPECIES_AND_THEIR_GENES,
+    SUPPORTED_TR_SPECIES_AND_THEIR_GENES,
+)
 from tidytcells._utils.alignment import get_compatible_symbols
+
+
+def _get_allele_tree(species: str, receptor_type: str, germline_database: str) -> dict:
+    registry = (
+        SUPPORTED_TR_SPECIES_AND_THEIR_GENES
+        if receptor_type == "TR"
+        else SUPPORTED_IG_SPECIES_AND_THEIR_GENES
+    )
+    return registry[species][germline_database]["genes"]
+
+
+def _get_allele_data(allele_tree: dict, allele_symbol: str) -> dict:
+    gene_name, allele_designation = allele_symbol.split("*")
+    return allele_tree[gene_name][allele_designation]
 
 
 class ReceptorGene:
@@ -146,12 +163,12 @@ class ReceptorGene:
             A list of allele names.
         """
         if self.is_standardized:
-            aa_dict = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[self.species][
-                self.receptor_type
-            ][self.germline_database]
+            allele_tree = _get_allele_tree(
+                self.species, self.receptor_type, self.germline_database
+            )
 
             return get_compatible_symbols(
-                self.symbol, aa_dict, self.gene_type, self.locus, enforce_functional
+                self.symbol, allele_tree, self.gene_type, self.locus, enforce_functional
             )
 
     def get_aa_sequences(
@@ -186,20 +203,19 @@ class ReceptorGene:
         )
 
         if self.is_standardized:
-            aa_dict = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[self.species][
-                self.receptor_type
-            ][self.germline_database]
+            allele_tree = _get_allele_tree(
+                self.species, self.receptor_type, self.germline_database
+            )
 
             alleles_of_interest = self.get_all_alleles(enforce_functional)
 
             if sequence_type == "ALL":
-                return {allele: aa_dict[allele] for allele in alleles_of_interest}
+                return {
+                    allele: _get_allele_data(allele_tree, allele)
+                    for allele in alleles_of_interest
+                }
             else:
                 return {
-                    allele: (
-                        aa_dict[allele][sequence_type]
-                        if sequence_type in aa_dict[allele]
-                        else None
-                    )
+                    allele: _get_allele_data(allele_tree, allele).get(sequence_type)
                     for allele in alleles_of_interest
                 }

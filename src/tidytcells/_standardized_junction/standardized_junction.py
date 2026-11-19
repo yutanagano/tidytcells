@@ -21,6 +21,7 @@ class JunctionStandardizer:
         v_symbol: str,
         species: str,
         germline_database: str,
+        allele_tree: dict[str, dict[str, dict]],
         sequence_dictionary: dict[str, dict[str, str]],
         enforce_functional_v: bool = True,
         enforce_functional_j: bool = False,
@@ -42,6 +43,7 @@ class JunctionStandardizer:
         self.max_j_reconstruction = max_j_reconstruction
         self.species = species
         self.germline_database = germline_database
+        self.allele_tree = allele_tree
         self.sequence_dictionary = sequence_dictionary
 
         self.corrected_first_aa = False
@@ -114,7 +116,7 @@ class JunctionStandardizer:
             )
             allele_symbols = get_compatible_symbols(
                 sub_symbol,
-                self.sequence_dictionary,
+                self.allele_tree,
                 gene,
                 self.locus,
                 enforce_functional,

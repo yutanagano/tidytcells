@@ -61,15 +61,17 @@ def get_is_valid_locus_multi_gene_fn(locus: str, gene: str) -> Callable[[str], b
     )
 
 
-def is_valid_functionality(
-    aa_dict: dict[str, dict[str, str]], candidate: str, enforce_functional: bool
-) -> bool:
-    return bool(not enforce_functional or aa_dict[candidate]["functionality"] in {"F", "[F]", "(F)"})
+def is_valid_functionality(allele_data: dict, enforce_functional: bool) -> bool:
+    return bool(not enforce_functional or allele_data.get("functionality") == "F")
+
+
+def _has_sequence_data(allele_data: dict) -> bool:
+    return any(field != "functionality" for field in allele_data)
 
 
 def get_compatible_symbols(
     symbol: str,
-    aa_dict: dict[str, dict[str, str]],
+    allele_tree: dict[str, dict[str, dict]],
     gene: str,
     locus: str,
     enforce_functional: bool,
@@ -82,8 +84,9 @@ def get_compatible_symbols(
     ----------
     symbol
         Gene symbol to expand.
-    aa_dict
-        Dictionary of amino acid sequence details per symbol.
+    allele_tree
+        Nested dictionary of genes, alleles and their sequence details.
+        Only alleles with known sequence data are returned.
     gene
         Gene to check validity against.
     locus
@@ -96,24 +99,39 @@ def get_compatible_symbols(
     list[str]
         All alleles which are considered to be valid extensions of the gene symbol.
     """
-    if symbol in aa_dict:
-        if is_valid_functionality(aa_dict, symbol, enforce_functional):
+    if "*" in symbol:
+        gene_name, allele_designation = symbol.split("*")
+        allele_data = allele_tree.get(gene_name, dict()).get(allele_designation)
+        if (
+            allele_data is not None
+            and _has_sequence_data(allele_data)
+            and is_valid_functionality(allele_data, enforce_functional)
+        ):
             return [symbol]
         return []
 
     is_valid_locus_gene = get_is_valid_locus_gene_fn(locus, gene)
+    compatible_symbols = []
 
-    return [
-        candidate
-        for candidate in aa_dict
-        if is_valid_functionality(aa_dict, candidate, enforce_functional)
-        and is_valid_locus_gene(candidate)
-        and candidate.startswith(symbol)
-        and not (symbol[-1].isnumeric() and candidate[len(symbol)].isnumeric())
-        and not (
-            symbol[-1].isnumeric() and candidate[len(symbol)] == "P"
-        )  # do not add 'pseudogene'
-    ]
+    for gene_name, alleles in allele_tree.items():
+        if not gene_name.startswith(symbol):
+            continue
+
+        if symbol and symbol[-1].isnumeric() and len(gene_name) > len(symbol):
+            next_char = gene_name[len(symbol)]
+            if next_char.isnumeric() or next_char == "P":
+                continue  # do not match longer gene names or 'pseudogene'
+
+        if not is_valid_locus_gene(gene_name):
+            continue
+
+        for allele_designation, allele_data in alleles.items():
+            if _has_sequence_data(allele_data) and is_valid_functionality(
+                allele_data, enforce_functional
+            ):
+                compatible_symbols.append(f"{gene_name}*{allele_designation}")
+
+    return compatible_symbols
 
 
 def _get_genes_to_alleles(alleles: Iterable[str]) -> dict[str, list[str]]:

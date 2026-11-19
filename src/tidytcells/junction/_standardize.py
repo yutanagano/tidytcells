@@ -4,7 +4,9 @@ from tidytcells import _utils
 from tidytcells._resources import (
     AMINO_ACIDS,
     AMINO_ACIDS_WITH_SPECIAL,
+    SUPPORTED_IG_SPECIES_AND_THEIR_GENES,
     SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES,
+    SUPPORTED_TR_SPECIES_AND_THEIR_GENES,
 )
 
 from tidytcells.result._junction import Junction
@@ -428,6 +430,13 @@ def standardize(
         locus[0:2]
     ][receptor_database]
 
+    gene_registry = (
+        SUPPORTED_TR_SPECIES_AND_THEIR_GENES
+        if locus[0:2] == "TR"
+        else SUPPORTED_IG_SPECIES_AND_THEIR_GENES
+    )
+    allele_tree = gene_registry[species][receptor_database]["genes"]
+
     result = JunctionStandardizer(
         seq=seq,
         locus=locus,
@@ -441,6 +450,7 @@ def standardize(
         max_j_reconstruction=max_j_reconstruction,
         species=species,
         germline_database=receptor_database,
+        allele_tree=allele_tree,
         sequence_dictionary=sequence_dictionary,
     ).result
 
