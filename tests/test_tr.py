@@ -1,6 +1,9 @@
 import pytest
 from tidytcells import tr, config
-from tidytcells._resources import VALID_HOMOSAPIENS_TR_IMGT, VALID_MUSMUSCULUS_TR_IMGT
+from tidytcells._resources import TR_SYMBOLS_BY_SP_DB
+
+HOMOSAPIENS_TR_ALLELES = TR_SYMBOLS_BY_SP_DB["homosapiens"]["IMGT"]["symbols"]
+MUSMUSCULUS_TR_ALLELES = TR_SYMBOLS_BY_SP_DB["musmusculus"]["IMGT"]["symbols"]
 
 
 class TestStandardize:
@@ -191,7 +194,7 @@ class TestStandardize:
 
 
 class TestStandardizeHomoSapiens:
-    @pytest.mark.parametrize("symbol", VALID_HOMOSAPIENS_TR_IMGT)
+    @pytest.mark.parametrize("symbol", HOMOSAPIENS_TR_ALLELES)
     def test_already_correctly_formatted(self, symbol):
         result = tr.standardize(symbol=symbol, species="homosapiens")
 
@@ -328,7 +331,7 @@ class TestStandardizeHomoSapiens:
 
 
 class TestStandardizeMusMusculus:
-    @pytest.mark.parametrize("symbol", VALID_MUSMUSCULUS_TR_IMGT)
+    @pytest.mark.parametrize("symbol", MUSMUSCULUS_TR_ALLELES)
     def test_already_correctly_formatted(self, symbol):
         result = tr.standardize(symbol=symbol, species="musmusculus")
 

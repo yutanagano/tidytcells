@@ -21,7 +21,7 @@ class JunctionStandardizer:
         v_symbol: str,
         species: str,
         germline_database: str,
-        sequence_dictionary: dict[str, dict[str, str]],
+        allele_tree: dict[str, dict[str, dict]],
         enforce_functional_v: bool = True,
         enforce_functional_j: bool = False,
         allow_c_correction: bool = False,
@@ -42,7 +42,7 @@ class JunctionStandardizer:
         self.max_j_reconstruction = max_j_reconstruction
         self.species = species
         self.germline_database = germline_database
-        self.sequence_dictionary = sequence_dictionary
+        self.allele_tree = allele_tree
 
         self.corrected_first_aa = False
         self.corrected_last_aa = False
@@ -78,16 +78,20 @@ class JunctionStandardizer:
         if len(self.corrected_seq) < 6:
             self.reasons_invalid.append("Junction too short")
 
+    def _get_allele_data(self, allele_symbol: str) -> dict | None:
+        gene_name, allele_designation = allele_symbol.split("*")
+        return self.allele_tree.get(gene_name, {}).get(allele_designation)
+
     def get_aa_dict_from_symbol(self, gene: str) -> dict[str, dict[str, str]]:
         """
         Given the user-provided allele/gene/subgroup symbol (v_symbol, j_symbol), this function returns
-        the sequence_dictionary information for any of the alleles applicable to the given symbol.
+        the sequence data for any of the alleles applicable to the given symbol.
         """
 
         symbol = self.v_symbol if gene == "V" else self.j_symbol
         symbol = self.locus[0:2] if symbol is None else symbol
 
-        aa_dict = dict()
+        aa_dict = {}
 
         for sub_symbol in symbol.split(","):
             sub_symbol = sub_symbol.strip()
@@ -100,8 +104,9 @@ class JunctionStandardizer:
                     )
                     continue
 
-                if sub_symbol in self.sequence_dictionary:
-                    aa_dict.update({sub_symbol: self.sequence_dictionary[sub_symbol]})
+                allele_data = self._get_allele_data(sub_symbol)
+                if allele_data is not None and has_sequence_data(allele_data):
+                    aa_dict.update({sub_symbol: allele_data})
                     continue
                 else:
                     self.reasons_invalid.append(
@@ -114,7 +119,7 @@ class JunctionStandardizer:
             )
             allele_symbols = get_compatible_symbols(
                 sub_symbol,
-                self.sequence_dictionary,
+                self.allele_tree,
                 gene,
                 self.locus,
                 enforce_functional,
@@ -122,7 +127,7 @@ class JunctionStandardizer:
 
             # if all alleles for one gene have the same sequence info, collapse the gene to 1 dict item
             aas_per_allele = {
-                ext_symbol: self.sequence_dictionary[ext_symbol]
+                ext_symbol: self._get_allele_data(ext_symbol)
                 for ext_symbol in allele_symbols
             }
             aas_per_gene = collapse_aa_dict_per_gene(aas_per_allele)

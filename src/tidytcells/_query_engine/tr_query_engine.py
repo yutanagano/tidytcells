@@ -6,7 +6,7 @@ from tidytcells._query_engine import QueryEngine
 class TrIgQueryEngine(QueryEngine):
     @property
     @abstractmethod
-    def _valid_gene_dictionary(self) -> dict[str, dict[str, str]]:
+    def _valid_gene_dictionary(self) -> dict[str, dict[str, dict]]:
         pass
 
     @classmethod
@@ -21,9 +21,9 @@ class TrIgQueryEngine(QueryEngine):
                     query_results.append(gene_symbol)
                 continue
 
-            for allele_designation, allele_functionality in allele_dictionary.items():
+            for allele_designation, allele_data in allele_dictionary.items():
                 if cls._allele_matches_functionality_requirements(
-                    allele_functionality, functionality
+                    allele_data.get("functionality"), functionality
                 ):
                     query_results.append(gene_symbol + "*" + allele_designation)
 
@@ -33,20 +33,21 @@ class TrIgQueryEngine(QueryEngine):
     def _gene_matches_functionality_requirements(
         cls, allele_dictionary: dict[str, str], functionality_setting: str
     ) -> bool:
-        gene_alleles_matching_functionality_requirements = [
+        return any(
             cls._allele_matches_functionality_requirements(
-                allele_functionality, functionality_setting
+                allele_data.get("functionality"), functionality_setting
             )
-            for allele_functionality in allele_dictionary.values()
-        ]
-        return any(gene_alleles_matching_functionality_requirements)
+            for allele_data in allele_dictionary.values()
+        )
 
     @classmethod
     def _allele_matches_functionality_requirements(
-        cls, allele_functionality: str, functionality_setting: str
+        cls, allele_functionality: str | None, functionality_setting: str
     ) -> bool:
         if functionality_setting == "any":
             return True
+        if allele_functionality is None:
+            return False
         if functionality_setting == allele_functionality:
             return True
         if functionality_setting == "NF" and allele_functionality in ("P", "ORF", "NF"):

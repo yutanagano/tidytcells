@@ -71,7 +71,7 @@ def _mh_data(species: str, mh_database: str) -> tuple[dict[str, dict], dict[str,
     The valid-symbol and synonym data for a species and MH database.
     """
     data = MH_SYMBOLS_BY_SP_DB[species][mh_database]
-    return data["valid_symbols"], data["allele_synonyms"]
+    return data["symbols"], data.get("synonyms_allele", {})
 
 
 def _resolve(

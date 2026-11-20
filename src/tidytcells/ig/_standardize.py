@@ -4,7 +4,7 @@ from tidytcells import _utils
 from tidytcells._standardized_gene_symbol import IgSymbolStandardizer
 from tidytcells.result._receptor_gene import ReceptorGene
 from tidytcells._utils import Parameter
-from tidytcells._resources import SUPPORTED_IG_SPECIES_AND_THEIR_GENES
+from tidytcells._resources import IG_SYMBOLS_BY_SP_DB
 
 logger = logging.getLogger(__name__)
 
@@ -151,10 +151,10 @@ def standardize(
         >>> result.get_aa_sequences(sequence_type="ALL")
         {
         'IGLJ3*01': {
-            'J-MOTIF': 'FGGG', 'J-REGION': 'VVFGGGTKLTVL', 'functionality': 'F'
+            'functionality': 'F', 'J-REGION': 'VVFGGGTKLTVL', 'J-MOTIF': 'FGGG'
             },
         'IGLJ3*02': {
-            'J-MOTIF': 'FGGG', 'J-REGION': 'WVFGGGTKLTVL', 'functionality': 'F'
+            'functionality': 'F', 'J-REGION': 'WVFGGGTKLTVL', 'J-MOTIF': 'FGGG'
             }
         }
 
@@ -236,31 +236,27 @@ def standardize(
 
     species = _utils.clean_and_lowercase(species)
 
-    if species not in SUPPORTED_IG_SPECIES_AND_THEIR_GENES:
-        msg = _utils.unsupported_species_message(
-            species, SUPPORTED_IG_SPECIES_AND_THEIR_GENES.keys()
-        )
+    if species not in IG_SYMBOLS_BY_SP_DB:
+        msg = _utils.unsupported_species_message(species, IG_SYMBOLS_BY_SP_DB.keys())
         if log_failures:
             logger.warning(f"{msg} Skipping IG standardization.")
         return ReceptorGene(symbol, msg)
 
+    receptor_databases = IG_SYMBOLS_BY_SP_DB[species]
+
     receptor_database = config.get_receptor_database()
-    if receptor_database not in SUPPORTED_IG_SPECIES_AND_THEIR_GENES[species]:
+    if receptor_database not in receptor_databases:
         msg = _utils.unsupported_receptor_database_message(
             receptor_database,
             species,
-            SUPPORTED_IG_SPECIES_AND_THEIR_GENES[species].keys(),
+            receptor_databases.keys(),
         )
         if log_failures:
             logger.warning(f"{msg} Skipping IG standardization.")
         return ReceptorGene(symbol, msg)
 
-    valid_gene_dictionary = SUPPORTED_IG_SPECIES_AND_THEIR_GENES[species][
-        receptor_database
-    ]["genes"]
-    synonym_dictionary = SUPPORTED_IG_SPECIES_AND_THEIR_GENES[species][
-        receptor_database
-    ]["synonyms"]
+    valid_gene_dictionary = receptor_databases[receptor_database]["symbols"]
+    synonym_dictionary = receptor_databases[receptor_database].get("synonyms", {})
 
     ig_standardizer = IgSymbolStandardizer(
         symbol,

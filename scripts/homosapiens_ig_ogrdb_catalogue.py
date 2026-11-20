@@ -91,11 +91,12 @@ def main() -> None:
 
     print("Converting IG gene sequence data...")
     sequence_data = get_ig_aa_sequence_data(germline_sets)
-    script_utility.save_as_json(sequence_data, "homosapiens_ig_ogrdb_aa_sequences.json")
 
     print("Compiling valid IG genes...")
     valid_genes = get_valid_gene_data(sequence_data)
-    script_utility.save_as_json(valid_genes, "homosapiens_ig_ogrdb_valid_genes.json")
+
+    combined = script_utility.combine_symbols(valid_genes, sequence_data)
+    script_utility.save_as_json(combined, "homosapiens_ig_ogrdb_symbols.json")
 
 
 def download_germline_set(locus: str) -> dict:
@@ -144,7 +145,7 @@ def get_valid_gene_data(sequence_data: dict) -> dict:
 
 
 def get_alleles(germline_sets: Dict[str, dict]) -> dict:
-    alleles = dict()
+    alleles = {}
 
     for locus, germline_set_file in germline_sets.items():
         germline_set = germline_set_file["GermlineSet"]
@@ -157,7 +158,7 @@ def get_alleles(germline_sets: Dict[str, dict]) -> dict:
 
 
 def get_alleles_of_type(alleles: dict, sequence_type: str) -> dict:
-    alleles_of_type = dict()
+    alleles_of_type = {}
 
     for name, allele in alleles.items():
         if allele["sequence_type"] != sequence_type:
@@ -232,10 +233,10 @@ def get_v_regions(name: str, allele: dict, nt_seq: str) -> dict:
 
     if len(delineations) == 0:
         print(f"Warning: {name} has no IMGT delineation, only V-REGION available")
-        return dict()
+        return {}
 
     delineation = delineations[0]
-    regions = dict()
+    regions = {}
 
     for stem, label in V_REGIONS:
         start, end = delineation[f"{stem}_start"], delineation[f"{stem}_end"]

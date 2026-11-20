@@ -4,7 +4,8 @@ from tidytcells import _utils
 from tidytcells._resources import (
     AMINO_ACIDS,
     AMINO_ACIDS_WITH_SPECIAL,
-    SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES,
+    IG_SYMBOLS_BY_SP_DB,
+    TR_SYMBOLS_BY_SP_DB,
 )
 
 from tidytcells.result._junction import Junction
@@ -388,35 +389,32 @@ def standardize(
                 original_input, f"Not a valid amino acid sequence, found: {char}"
             )
 
-    if species not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES:
-        msg = _utils.unsupported_species_message(
-            species, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES.keys()
-        )
+    if locus[0:2] == "TR":
+        registry = TR_SYMBOLS_BY_SP_DB
+    elif locus[0:2] == "IG":
+        registry = IG_SYMBOLS_BY_SP_DB
+    else:
+        msg = _utils.unsupported_locus_message(locus, species, ("TR", "IG"))
         if log_failures:
             logger.warning(f"{msg} Skipping junction standardization.")
 
         return Junction(original_input, msg)
 
-    if locus[0:2] not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species]:
-        msg = _utils.unsupported_locus_message(
-            locus, species, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species]
-        )
+    if species not in registry:
+        msg = _utils.unsupported_species_message(species, registry.keys())
         if log_failures:
             logger.warning(f"{msg} Skipping junction standardization.")
 
         return Junction(original_input, msg)
+
+    receptor_databases = registry[species]
 
     receptor_database = config.get_receptor_database()
-    if (
-        receptor_database
-        not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][locus[0:2]]
-    ):
+    if receptor_database not in receptor_databases:
         msg = _utils.unsupported_receptor_database_message(
             receptor_database,
             species,
-            SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][
-                locus[0:2]
-            ].keys(),
+            receptor_databases.keys(),
             locus=locus,
         )
         if log_failures:
@@ -424,9 +422,7 @@ def standardize(
 
         return Junction(original_input, msg)
 
-    sequence_dictionary = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_AA_SEQUENCES[species][
-        locus[0:2]
-    ][receptor_database]
+    allele_tree = receptor_databases[receptor_database]["symbols"]
 
     result = JunctionStandardizer(
         seq=seq,
@@ -441,7 +437,7 @@ def standardize(
         max_j_reconstruction=max_j_reconstruction,
         species=species,
         germline_database=receptor_database,
-        sequence_dictionary=sequence_dictionary,
+        allele_tree=allele_tree,
     ).result
 
     if (not result.is_standardized) and log_failures:

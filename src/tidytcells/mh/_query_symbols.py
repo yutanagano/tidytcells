@@ -61,4 +61,4 @@ def _valid_symbols(species: str, mh_database: str) -> dict:
     """
     The valid-symbol tree for a species and MH database.
     """
-    return MH_SYMBOLS_BY_SP_DB[species][mh_database]["valid_symbols"]
+    return MH_SYMBOLS_BY_SP_DB[species][mh_database]["symbols"]

@@ -1,6 +1,9 @@
 import pytest
 from tidytcells import ig, config
-from tidytcells._resources import VALID_HOMOSAPIENS_IG_IMGT, VALID_MUSMUSCULUS_IG_IMGT
+from tidytcells._resources import IG_SYMBOLS_BY_SP_DB
+
+HOMOSAPIENS_IG_ALLELES = IG_SYMBOLS_BY_SP_DB["homosapiens"]["IMGT"]["symbols"]
+MUSMUSCULUS_IG_ALLELES = IG_SYMBOLS_BY_SP_DB["musmusculus"]["IMGT"]["symbols"]
 
 
 class TestStandardize:
@@ -168,7 +171,7 @@ class TestStandardize:
 
 
 class TestStandardizeHomoSapiens:
-    @pytest.mark.parametrize("symbol", VALID_HOMOSAPIENS_IG_IMGT)
+    @pytest.mark.parametrize("symbol", HOMOSAPIENS_IG_ALLELES)
     def test_already_correctly_formatted(self, symbol):
         result = ig.standardize(symbol=symbol, species="homosapiens")
 
@@ -358,7 +361,7 @@ class TestStandardizeHomoSapiens:
 
 
 class TestStandardizeMusMusculus:
-    @pytest.mark.parametrize("symbol", VALID_MUSMUSCULUS_IG_IMGT)
+    @pytest.mark.parametrize("symbol", MUSMUSCULUS_IG_ALLELES)
     def test_already_correctly_formatted(self, symbol):
         result = ig.standardize(symbol=symbol, species="musmusculus")
 
@@ -378,7 +381,7 @@ class TestQuery:
     @pytest.mark.parametrize(
         ("species", "precision", "expected_len", "expected_in", "expected_not_in"),
         (
-            ("homosapiens", "allele", 1390, "IGKV3-15*02", "IGKV3-15"),
+            ("homosapiens", "allele", 1391, "IGKV3-15*02", "IGKV3-15"),
             ("homosapiens", "gene", 510, "IGKV3-15", "IGKV3-15*02"),
         ),
     )
@@ -428,9 +431,9 @@ class TestQuery:
         ),
         (
             ("homosapiens", "gene", "F", 197, "IGHD6-19", "IGHV1/OR16-21*01"),
-            ("homosapiens", "allele", "NF", 673, "IGHV1/OR16-21*01", "IGL35*01"),
+            ("homosapiens", "allele", "NF", 674, "IGHV1/OR16-21*01", "IGL35*01"),
             ("homosapiens", "gene", "P", 292, "IGKV3D-31", "IGHV3-20*02"),
-            ("homosapiens", "allele", "ORF", 103, "IGHV3-20*02", "IGKV3D-31"),
+            ("homosapiens", "allele", "ORF", 104, "IGHV3-20*02", "IGKV3D-31"),
         ),
     )
     def test_query_functionality(

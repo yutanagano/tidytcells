@@ -162,9 +162,9 @@ def _mh_data(
     """
     data = MH_SYMBOLS_BY_SP_DB[species][mh_database]
     return (
-        data["valid_symbols"],
-        data["allele_synonyms"],
-        data.get("hgnc_synonyms") or {},
+        data["symbols"],
+        data.get("synonyms_allele", {}),
+        data.get("synonyms_gene", {}),
     )
 
 
@@ -350,12 +350,12 @@ def _canonical_allele_designation(
     valid_symbols: dict[str, dict],
 ) -> list[str]:
     canonical_gene_name = canonical_gene_names.get(gene_name, gene_name)
-    node = valid_symbols.get(canonical_gene_name, dict())
+    node = valid_symbols.get(canonical_gene_name, {})
     canonical = []
 
     for field in allele_designation:
         canonical_field = next((key for key in node if key.upper() == field), field)
         canonical.append(canonical_field)
-        node = node.get(canonical_field, dict())
+        node = node.get(canonical_field, {})
 
     return canonical

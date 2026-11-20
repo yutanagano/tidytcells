@@ -15,7 +15,7 @@ class ReceptorGeneSymbolStandardizer(ABC):
         allow_subgroup: bool,
         species: str,
         germline_database: str,
-        valid_gene_dictionary: dict[str, dict[str, str]],
+        valid_gene_dictionary: dict[str, dict[str, dict]],
         synonym_dictionary: dict[str, str],
     ) -> None:
         self.original_symbol = symbol
@@ -76,16 +76,16 @@ class ReceptorGeneSymbolStandardizer(ABC):
                 self.enforce_functional
                 and self._valid_gene_dictionary[self._gene_name][
                     self._allele_designation
-                ]
+                ].get("functionality")
                 != "F"
             ):
                 return "Nonfunctional allele"
 
             return None
 
-        if (
-            self.enforce_functional
-            and not "F" in self._valid_gene_dictionary[self._gene_name].values()
+        if self.enforce_functional and not any(
+            data.get("functionality") == "F"
+            for data in self._valid_gene_dictionary[self._gene_name].values()
         ):
             return "Gene has no functional alleles"
 
