@@ -20,7 +20,7 @@ SPECIES_NAMES = {
     "pig": "susscrofa",
     "rat": "rattusnorvegicus",
     "rhesusmacaque": "macacamulatta",
-    # "crabeatingmacaque": "macacafascicularis", # to be added, waiting on MRO fix
+    "crabeatingmacaque": "macacafascicularis",
 }
 
 
