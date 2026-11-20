@@ -2,9 +2,9 @@ from tidytcells._resources import IG_SYMBOLS_BY_SP_DB, TR_SYMBOLS_BY_SP_DB
 from tidytcells._utils.alignment import get_compatible_symbols
 
 
-def _get_allele_tree(species: str, receptor_type: str, germline_database: str) -> dict:
+def _get_allele_tree(species: str, receptor_type: str, germline_database_source: str) -> dict:
     registry = TR_SYMBOLS_BY_SP_DB if receptor_type == "TR" else IG_SYMBOLS_BY_SP_DB
-    return registry[species][germline_database]["symbols"]
+    return registry[species][germline_database_source]["symbols"]
 
 
 def _get_allele_data(allele_tree: dict, allele_symbol: str) -> dict:
@@ -28,7 +28,7 @@ class ReceptorGene:
         allele_designation: str | None = None,
         subgroup_name: str | None = None,
         species: str | None = None,
-        germline_database: str | None = None,
+        germline_database: dict | None = None,
     ) -> None:
         self._original_input = original_input
         self._error = error
@@ -137,8 +137,11 @@ class ReceptorGene:
         return self._species
 
     @property
-    def germline_database(self) -> str | None:
-        """The germline database that was used to standardize this receptor gene (IMGT or OGRDB)"""
+    def germline_database(self) -> dict | None:
+        """
+        The germline database that was used to standardize this receptor gene.
+        The return value will contain a dictionary specifying the source (``"IMGT"`` / ``"OGRDB"``), resource and version number.
+        """
         return self._germline_database
 
     def get_all_alleles(self, enforce_functional: bool = True) -> list[str] | None:
@@ -157,7 +160,7 @@ class ReceptorGene:
         """
         if self.is_standardized:
             allele_tree = _get_allele_tree(
-                self.species, self.receptor_type, self.germline_database
+                self.species, self.receptor_type, self.germline_database["source"]
             )
 
             return get_compatible_symbols(
@@ -197,7 +200,7 @@ class ReceptorGene:
 
         if self.is_standardized:
             allele_tree = _get_allele_tree(
-                self.species, self.receptor_type, self.germline_database
+                self.species, self.receptor_type, self.germline_database["source"]
             )
 
             alleles_of_interest = self.get_all_alleles(enforce_functional)

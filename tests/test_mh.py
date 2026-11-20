@@ -132,7 +132,7 @@ class TestStandardizeHomoSapiens:
 
         result = mh.standardize(symbol=symbol, species="homosapiens")
         assert result.symbol == symbol
-        assert result.mh_database == "IPD"
+        assert result.mh_database["source"] == "IPD"
 
         config.reset_mh_database()
 
@@ -147,7 +147,7 @@ class TestStandardizeHomoSapiens:
         assert result.symbol is None
         assert result.error is not None
         assert not result.is_standardized
-        assert result.mh_database == "IPD"
+        assert result.mh_database["source"] == "IPD"
 
         config.reset_mh_database()
 
@@ -448,7 +448,7 @@ class TestStandardizeHomoSapiensMro:
         config.set_mh_database(database)
 
         result = mh.standardize(symbol=symbol, species="homosapiens")
-        assert result.mh_database == database
+        assert result.mh_database["source"] == database
 
         assert result.is_standardized
         assert result.symbol == expected

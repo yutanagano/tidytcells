@@ -10,11 +10,32 @@ import script_utility
 def main() -> None:
     print("Fetching HLA allele data from IPD...")
     valid_allele_tree = get_hla_alleles_tree()
-    script_utility.save_as_json(valid_allele_tree, "homosapiens_mh_ipd_symbols.json")
+    script_utility.save_as_json(
+        {"provenance": get_ipd_provenance(), "symbols": valid_allele_tree},
+        "homosapiens_mh_ipd_symbols.json",
+    )
 
     print("Fetching HLA symbol synonyms from HGNC...")
     synonyms_data = script_utility.get_mh_synonyms_data(valid_allele_tree)
     script_utility.save_as_json(synonyms_data, "homosapiens_mh_ipd_synonyms_gene.json")
+
+
+def get_ipd_provenance() -> dict:
+    response = requests.get(
+        "https://raw.githubusercontent.com/ANHIG/IMGTHLA/Latest/wmda/hla_nom.txt",
+        stream=True,
+    )
+    response.raise_for_status()
+
+    for line in response.iter_lines(decode_unicode=True):
+        if not line.startswith("#"):
+            break
+
+        m = re.match(r"^#\s*version:\s*(?:IPD-IMGT/HLA\s+)?(\S+)", line)
+        if m:
+            return {"source": "IPD", "resource": "IPD-IMGT/HLA", "version": m.group(1)}
+
+    raise ValueError("No version line found in hla_nom.txt header")
 
 
 def get_hla_alleles_tree() -> dict:

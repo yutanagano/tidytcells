@@ -1,5 +1,6 @@
 import collections
 import io
+import json
 import re
 import urllib.request
 import zipfile
@@ -45,6 +46,8 @@ def main() -> None:
         for taxon, count in unmapped_taxa.items():
             print(f"  {taxon!r}: {count} rows")
 
+    provenance = get_mro_provenance()
+
     for species, df in mapped_molecules.groupby("species"):
         print(f"Converting MRO data for {species}...")
 
@@ -56,7 +59,10 @@ def main() -> None:
 
         allele_synonyms = build_mro_synonyms(df)
 
-        script_utility.save_as_json(valid, f"{species}_mh_mro_symbols.json")
+        script_utility.save_as_json(
+            {"provenance": provenance, "symbols": valid},
+            f"{species}_mh_mro_symbols.json",
+        )
         script_utility.save_as_json(
             allele_synonyms, f"{species}_mh_mro_synonyms_allele.json"
         )
@@ -67,6 +73,16 @@ def main() -> None:
                 script_utility.get_mh_synonyms_data(valid),
                 f"{species}_mh_mro_synonyms_gene.json",
             )
+
+
+def get_mro_provenance() -> dict:
+    release = json.loads(download("https://api.github.com/repos/IEDB/MRO/releases/latest"))
+
+    return {
+        "source": "MRO",
+        "resource": "MRO",
+        "version": release["tag_name"],
+    }
 
 
 def fetch_protein_complexes() -> pd.DataFrame:

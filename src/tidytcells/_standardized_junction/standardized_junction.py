@@ -20,7 +20,7 @@ class JunctionStandardizer:
         j_symbol: str,
         v_symbol: str,
         species: str,
-        germline_database: str,
+        germline_database: dict,
         allele_tree: dict[str, dict[str, dict]],
         enforce_functional_v: bool = True,
         enforce_functional_j: bool = False,

@@ -331,6 +331,10 @@ def get_genedb_release() -> str:
     return response.text.strip()
 
 
+def get_genedb_provenance() -> dict:
+    return {"source": "IMGT", "resource": "IMGT/GENE-DB", "version":  get_genedb_release()}
+
+
 def save_as_json(data: dict, file_name: str) -> None:
     path_to_resources_dir = Path("src") / "tidytcells" / "_resources"
     with open(path_to_resources_dir / file_name, "w") as f:
