@@ -96,7 +96,24 @@ def main() -> None:
     valid_genes = get_valid_gene_data(sequence_data)
 
     combined = script_utility.combine_symbols(valid_genes, sequence_data)
-    script_utility.save_as_json(combined, "homosapiens_ig_ogrdb_symbols.json")
+    script_utility.save_as_json(
+        {"provenance": get_ogrdb_provenance(germline_sets), "symbols": combined},
+        "homosapiens_ig_ogrdb_symbols.json",
+    )
+
+
+def get_ogrdb_provenance(germline_sets: Dict[str, dict]) -> dict:
+    versions = {}
+
+    for locus, germline_set_file in germline_sets.items():
+        germline_set = germline_set_file["GermlineSet"][0]
+        versions[germline_set["germline_set_name"]] = str(germline_set["release_version"])
+
+    return {
+        "source": "OGRDB",
+        "resource": "AIRR-C human IG reference sets",
+        "version": versions,
+    }
 
 
 def download_germline_set(locus: str) -> dict:

@@ -423,6 +423,7 @@ def standardize(
         return Junction(original_input, msg)
 
     allele_tree = receptor_databases[receptor_database]["symbols"]
+    germline_database_info = receptor_databases[receptor_database]["provenance"]
 
     result = JunctionStandardizer(
         seq=seq,
@@ -436,7 +437,7 @@ def standardize(
         max_v_reconstruction=max_v_reconstruction,
         max_j_reconstruction=max_j_reconstruction,
         species=species,
-        germline_database=receptor_database,
+        germline_database=germline_database_info,
         allele_tree=allele_tree,
     ).result
 

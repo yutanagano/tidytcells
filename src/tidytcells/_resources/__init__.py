@@ -9,13 +9,13 @@ def load_json(filename: str) -> dict:
 TR_SYMBOLS_BY_SP_DB = {
     "homosapiens": {
         "IMGT": {
-            "symbols": load_json("homosapiens_tr_imgt_symbols.json"),
+            **load_json("homosapiens_tr_imgt_symbols.json"),
             "synonyms": load_json("homosapiens_tr_synonyms.json"),
         },
     },
     "musmusculus": {
         "IMGT": {
-            "symbols": load_json("musmusculus_tr_imgt_symbols.json"),
+            **load_json("musmusculus_tr_imgt_symbols.json"),
         },
     },
 }
@@ -24,17 +24,17 @@ TR_SYMBOLS_BY_SP_DB = {
 IG_SYMBOLS_BY_SP_DB = {
     "homosapiens": {
         "IMGT": {
-            "symbols": load_json("homosapiens_ig_imgt_symbols.json"),
+            **load_json("homosapiens_ig_imgt_symbols.json"),
             "synonyms": load_json("homosapiens_ig_synonyms.json"),
         },
         "OGRDB": {
-            "symbols": load_json("homosapiens_ig_ogrdb_symbols.json"),
+            **load_json("homosapiens_ig_ogrdb_symbols.json"),
             "synonyms": load_json("homosapiens_ig_synonyms.json"),
         },
     },
     "musmusculus": {
         "IMGT": {
-            "symbols": load_json("musmusculus_ig_imgt_symbols.json"),
+            **load_json("musmusculus_ig_imgt_symbols.json"),
         },
     },
 }
@@ -43,42 +43,42 @@ IG_SYMBOLS_BY_SP_DB = {
 MH_SYMBOLS_BY_SP_DB = {
     "homosapiens": {
         "IPD": {
-            "symbols": load_json("homosapiens_mh_ipd_symbols.json"),
+            **load_json("homosapiens_mh_ipd_symbols.json"),
             "synonyms_gene": load_json("homosapiens_mh_ipd_synonyms_gene.json"),
         },
         "MRO": {
-            "symbols": load_json("homosapiens_mh_mro_symbols.json"),
+            **load_json("homosapiens_mh_mro_symbols.json"),
             "synonyms_allele": load_json("homosapiens_mh_mro_synonyms_allele.json"),
             "synonyms_gene": load_json("homosapiens_mh_mro_synonyms_gene.json"),
         },
     },
     "musmusculus": {
         "MRO": {
-            "symbols": load_json("musmusculus_mh_mro_symbols.json"),
+            **load_json("musmusculus_mh_mro_symbols.json"),
             "synonyms_allele": load_json("musmusculus_mh_mro_synonyms_allele.json"),
         },
     },
     "bostaurus": {
         "MRO": {
-            "symbols": load_json("bostaurus_mh_mro_symbols.json"),
+            **load_json("bostaurus_mh_mro_symbols.json"),
             "synonyms_allele": load_json("bostaurus_mh_mro_synonyms_allele.json"),
         },
     },
     "macacamulatta": {
         "MRO": {
-            "symbols": load_json("macacamulatta_mh_mro_symbols.json"),
+            **load_json("macacamulatta_mh_mro_symbols.json"),
             "synonyms_allele": load_json("macacamulatta_mh_mro_synonyms_allele.json"),
         },
     },
     "pantroglodytes": {
         "MRO": {
-            "symbols": load_json("pantroglodytes_mh_mro_symbols.json"),
+            **load_json("pantroglodytes_mh_mro_symbols.json"),
             "synonyms_allele": load_json("pantroglodytes_mh_mro_synonyms_allele.json"),
         },
     },
     "rattusnorvegicus": {
         "MRO": {
-            "symbols": load_json("rattusnorvegicus_mh_mro_symbols.json"),
+            **load_json("rattusnorvegicus_mh_mro_symbols.json"),
             "synonyms_allele": load_json(
                 "rattusnorvegicus_mh_mro_synonyms_allele.json"
             ),
@@ -86,7 +86,7 @@ MH_SYMBOLS_BY_SP_DB = {
     },
     "susscrofa": {
         "MRO": {
-            "symbols": load_json("susscrofa_mh_mro_symbols.json"),
+            **load_json("susscrofa_mh_mro_symbols.json"),
             "synonyms_allele": load_json("susscrofa_mh_mro_synonyms_allele.json"),
         },
     },

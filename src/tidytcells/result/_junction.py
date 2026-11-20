@@ -13,7 +13,7 @@ class Junction:
         corrected_junction: str | None = None,
         species: str | None = None,
         j_gene_match: str | None = None,
-        germline_database: str | None = None,
+        germline_database: dict | None = None,
     ) -> None:
         self._original_input = original_input
         self._error = error
@@ -83,6 +83,9 @@ class Junction:
         return self._j_gene_match
 
     @property
-    def germline_database(self) -> str | None:
-        """The germline database that was used to standardize this junction (IMGT or OGRDB)"""
+    def germline_database(self) -> dict | None:
+        """
+        The germline database that was used to standardize this receptor gene.
+        The return value will contain a dictionary specifying the source (``"IMGT"`` / ``"OGRDB"``), resource and version number.
+        """
         return self._germline_database

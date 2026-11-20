@@ -8,7 +8,7 @@ class IgSymbolParser:
     gene_name: str
     allele_designation: str | None
 
-    def __init__(self, ig_symbol: str, species: str, germline_database: str) -> None:
+    def __init__(self, ig_symbol: str, species: str, germline_database_source: str) -> None:
         if species == "homosapiens":
             gene_pattern = r"^([A-Z0-9\-\.\(\)\/ab]+)"
         elif species == "musmusculus":
@@ -16,7 +16,7 @@ class IgSymbolParser:
         else:
             gene_pattern = r"^([A-Z0-9\-\.\(\)\/]+)"
 
-        if germline_database == "OGRDB":
+        if germline_database_source == "OGRDB":
             allele_pattern = r"(\*(i?\d+))?"
         else:
             allele_pattern = r"(\*(\d+))?"
@@ -47,7 +47,7 @@ class IgSymbolStandardizer(ReceptorGeneSymbolStandardizer):
         parsed_ig_symbol = IgSymbolParser(
             cleaned_ig_symbol,
             species=self.species,
-            germline_database=self.germline_database,
+            germline_database_source=self.germline_database_info["source"],
         )
 
         return parsed_ig_symbol.gene_name, parsed_ig_symbol.allele_designation

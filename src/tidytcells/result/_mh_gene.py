@@ -16,7 +16,7 @@ class MhGene:
         allele_designation: list[str] | None = None,
         species: str | None = None,
         mutation: str | None = None,
-        mh_database: str | None = None,
+        mh_database: dict | None = None,
     ) -> None:
         self._original_input = original_input
         self._error = error
@@ -144,8 +144,9 @@ class MhGene:
         return self._species
 
     @property
-    def mh_database(self) -> str | None:
+    def mh_database(self) -> dict | None:
         """
-        The MH database (``"IPD"`` or ``"MRO"``) used to validate the symbol.
+        The MH database that was used to standardize this receptor gene.
+        The return value will contain a dictionary specifying the source (``"MRO"`` / ``"IPD"``), resource and version number.
         """
         return self._mh_database

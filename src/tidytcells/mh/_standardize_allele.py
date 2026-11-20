@@ -23,7 +23,7 @@ def standardize_allele(
     symbol: str,
     *,
     species: str,
-    mh_database: str,
+    mh_database_info: dict,
     allow_zero_padded_three_digit_fields: bool,
 ) -> MhGene:
     """
@@ -31,7 +31,7 @@ def standardize_allele(
     Mamu-A1*001:01). Input is matched case-insensitively; results are
     returned in the case used by the database.
     """
-    valid_symbols, allele_synonyms, gene_synonyms = _mh_data(species, mh_database)
+    valid_symbols, allele_synonyms, gene_synonyms = _mh_data(species, mh_database_info["source"])
     canonical_gene_names = {gene.upper(): gene for gene in valid_symbols}
     prefixes = sorted(
         {gene.split("-")[0].upper() for gene in valid_symbols if "-" in gene}
@@ -117,7 +117,7 @@ def standardize_allele(
         ),
         species=species,
         mutation=mutation,
-        mh_database=mh_database,
+        mh_database=mh_database_info,
     )
 
 
@@ -154,13 +154,13 @@ def parse_allele_symbol(
 
 
 def _mh_data(
-    species: str, mh_database: str
+    species: str, mh_database_source: str
 ) -> tuple[dict[str, dict], dict[str, str], dict[str, str]]:
     """
     The valid-symbol, synonym, and HGNC gene-synonym data for a species and
     MH database.
     """
-    data = MH_SYMBOLS_BY_SP_DB[species][mh_database]
+    data = MH_SYMBOLS_BY_SP_DB[species][mh_database_source]
     return (
         data["symbols"],
         data.get("synonyms_allele", {}),

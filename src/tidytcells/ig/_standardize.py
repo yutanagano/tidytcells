@@ -257,13 +257,14 @@ def standardize(
 
     valid_gene_dictionary = receptor_databases[receptor_database]["symbols"]
     synonym_dictionary = receptor_databases[receptor_database].get("synonyms", {})
+    germline_database_info = receptor_databases[receptor_database]["provenance"]
 
     ig_standardizer = IgSymbolStandardizer(
         symbol,
         enforce_functional=enforce_functional,
         allow_subgroup=allow_subgroup,
         species=species,
-        germline_database=receptor_database,
+        germline_database_info=germline_database_info,
         valid_gene_dictionary=valid_gene_dictionary,
         synonym_dictionary=synonym_dictionary,
     )

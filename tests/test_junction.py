@@ -169,12 +169,16 @@ class Teststandardize:
         config.set_receptor_database("IMGT")
         result = junction.standardize(**kwargs)
         assert not result.is_standardized
-        assert result.germline_database == "IMGT"
+        assert result.germline_database["source"] == "IMGT"
+        assert "resource" in result.germline_database
+        assert "version" in result.germline_database
 
         config.set_receptor_database("OGRDB")
         result = junction.standardize(**kwargs)
         assert result.junction == "CLASSPGVFGANVLTF"
-        assert result.germline_database == "OGRDB"
+        assert result.germline_database["source"] == "OGRDB"
+        assert "resource" in result.germline_database
+        assert "version" in result.germline_database
 
         config.reset_receptor_database()
 

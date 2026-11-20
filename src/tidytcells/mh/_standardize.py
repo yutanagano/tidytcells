@@ -295,7 +295,8 @@ def standardize(
             logger.warning(f"{msg} Skipping MH standardization.")
         return MhGene(symbol, msg)
 
-    result = SPECIES_TO_STANDARDIZER[species](symbol, mh_database=mh_database)
+    mh_database_info = MH_SYMBOLS_BY_SP_DB[species][mh_database]["provenance"]
+    result = SPECIES_TO_STANDARDIZER[species](symbol, mh_database_info=mh_database_info)
 
     if (not result.is_standardized) and log_failures:
         logger.warning(_utils.standardization_failure_message(result))

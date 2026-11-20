@@ -14,7 +14,7 @@ class ReceptorGeneSymbolStandardizer(ABC):
         enforce_functional: bool,
         allow_subgroup: bool,
         species: str,
-        germline_database: str,
+        germline_database_info: dict,
         valid_gene_dictionary: dict[str, dict[str, dict]],
         synonym_dictionary: dict[str, str],
     ) -> None:
@@ -22,7 +22,7 @@ class ReceptorGeneSymbolStandardizer(ABC):
         self.enforce_functional = enforce_functional
 
         self.species = species
-        self.germline_database = germline_database
+        self.germline_database_info = germline_database_info
 
         self._valid_gene_dictionary = valid_gene_dictionary
         self._synonym_dictionary = {
@@ -107,5 +107,5 @@ class ReceptorGeneSymbolStandardizer(ABC):
             gene_name=gene_name,
             subgroup_name=subgroup_name,
             species=self.species,
-            germline_database=self.germline_database,
+            germline_database=self.germline_database_info,
         )

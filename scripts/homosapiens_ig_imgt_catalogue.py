@@ -13,7 +13,9 @@ def main() -> None:
     sequence_data = script_utility.get_ig_aa_sequence_data("Homo+sapiens")
 
     combined = script_utility.combine_symbols(valid_allele_data, sequence_data)
-    script_utility.save_as_json(combined, "homosapiens_ig_imgt_symbols.json")
+    json_output = {"provenance": script_utility.get_genedb_provenance(), "symbols": combined}
+
+    script_utility.save_as_json(json_output, "homosapiens_ig_imgt_symbols.json")
 
 
 if __name__ == "__main__":

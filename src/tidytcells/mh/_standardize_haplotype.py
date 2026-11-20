@@ -10,13 +10,13 @@ def standardize_haplotype(
     symbol: str,
     *,
     species: str,
-    mh_database: str,
+    mh_database_info: dict,
     prefix_regex: re.Pattern,
 ) -> MhGene:
     """
     Standardize an MH symbol named by locus and haplotype (e.g. H2-Kb, H2-IAb).
     """
-    valid_symbols, allele_synonyms = _mh_data(species, mh_database)
+    valid_symbols, allele_synonyms = _mh_data(species, mh_database_info["source"])
     exact_index = {**allele_synonyms, **{s.upper(): s for s in valid_symbols}}
     prefixed_index = build_prefixed_index(valid_symbols, allele_synonyms, prefix_regex)
     bare_index = {strip_prefix_and_hyphens(s, prefix_regex): s for s in valid_symbols}
@@ -62,15 +62,15 @@ def standardize_haplotype(
         gene_name=gene_name,
         species=species,
         mutation=mutation,
-        mh_database=mh_database,
+        mh_database=mh_database_info,
     )
 
 
-def _mh_data(species: str, mh_database: str) -> tuple[dict[str, dict], dict[str, str]]:
+def _mh_data(species: str, mh_database_source: str) -> tuple[dict[str, dict], dict[str, str]]:
     """
     The valid-symbol and synonym data for a species and MH database.
     """
-    data = MH_SYMBOLS_BY_SP_DB[species][mh_database]
+    data = MH_SYMBOLS_BY_SP_DB[species][mh_database_source]
     return data["symbols"], data.get("synonyms_allele", {})
 
 
