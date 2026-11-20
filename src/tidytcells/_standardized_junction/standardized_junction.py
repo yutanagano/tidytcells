@@ -80,7 +80,7 @@ class JunctionStandardizer:
 
     def _get_allele_data(self, allele_symbol: str) -> dict | None:
         gene_name, allele_designation = allele_symbol.split("*")
-        return self.allele_tree.get(gene_name, dict()).get(allele_designation)
+        return self.allele_tree.get(gene_name, {}).get(allele_designation)
 
     def get_aa_dict_from_symbol(self, gene: str) -> dict[str, dict[str, str]]:
         """
@@ -91,7 +91,7 @@ class JunctionStandardizer:
         symbol = self.v_symbol if gene == "V" else self.j_symbol
         symbol = self.locus[0:2] if symbol is None else symbol
 
-        aa_dict = dict()
+        aa_dict = {}
 
         for sub_symbol in symbol.split(","):
             sub_symbol = sub_symbol.strip()

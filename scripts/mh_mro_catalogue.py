@@ -136,15 +136,15 @@ def split_symbol(name: str) -> Tuple[str, List[str]]:
 
 
 def build_valid_symbols(names) -> dict:
-    tree = dict()
+    tree = {}
 
     for name in names:
         for chain in chain_terms(name):
             gene, fields = split_symbol(chain)
 
-            node = tree.setdefault(gene, dict())
+            node = tree.setdefault(gene, {})
             for field in fields:
-                node = node.setdefault(field, dict())
+                node = node.setdefault(field, {})
 
     return sort_tree(tree)
 
@@ -169,7 +169,7 @@ def build_mro_synonyms(df: pd.DataFrame) -> dict:
             if key != term.upper():
                 candidates[key].add(term)
 
-    synonyms = dict()
+    synonyms = {}
 
     for key, targets in sorted(candidates.items()):
         if len(targets) > 1:

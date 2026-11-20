@@ -256,7 +256,7 @@ def standardize(
         return ReceptorGene(symbol, msg)
 
     valid_gene_dictionary = receptor_databases[receptor_database]["symbols"]
-    synonym_dictionary = receptor_databases[receptor_database]["synonyms"]
+    synonym_dictionary = receptor_databases[receptor_database].get("synonyms", {})
 
     ig_standardizer = IgSymbolStandardizer(
         symbol,

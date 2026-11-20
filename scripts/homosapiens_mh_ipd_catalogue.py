@@ -32,7 +32,7 @@ def get_hla_alleles_tree() -> dict:
         )
     )
 
-    hla_tree = dict()
+    hla_tree = {}
     make_hla_tree(hla_tree, combined_decomposed)
 
     return hla_tree

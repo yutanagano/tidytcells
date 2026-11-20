@@ -56,7 +56,7 @@ def get_alleles_list(species: str, gene_groups: Tuple[str]) -> dict:
         for gene_group in gene_groups
     ]
 
-    combined = dict()
+    combined = {}
     for alleles_dict in alleles_per_gene_group:
         combined.update(alleles_dict)
 

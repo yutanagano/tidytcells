@@ -145,7 +145,7 @@ def get_valid_gene_data(sequence_data: dict) -> dict:
 
 
 def get_alleles(germline_sets: Dict[str, dict]) -> dict:
-    alleles = dict()
+    alleles = {}
 
     for locus, germline_set_file in germline_sets.items():
         germline_set = germline_set_file["GermlineSet"]
@@ -158,7 +158,7 @@ def get_alleles(germline_sets: Dict[str, dict]) -> dict:
 
 
 def get_alleles_of_type(alleles: dict, sequence_type: str) -> dict:
-    alleles_of_type = dict()
+    alleles_of_type = {}
 
     for name, allele in alleles.items():
         if allele["sequence_type"] != sequence_type:
@@ -233,10 +233,10 @@ def get_v_regions(name: str, allele: dict, nt_seq: str) -> dict:
 
     if len(delineations) == 0:
         print(f"Warning: {name} has no IMGT delineation, only V-REGION available")
-        return dict()
+        return {}
 
     delineation = delineations[0]
-    regions = dict()
+    regions = {}
 
     for stem, label in V_REGIONS:
         start, end = delineation[f"{stem}_start"], delineation[f"{stem}_end"]

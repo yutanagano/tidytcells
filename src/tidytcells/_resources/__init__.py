@@ -16,7 +16,6 @@ TR_SYMBOLS_BY_SP_DB = {
     "musmusculus": {
         "IMGT": {
             "symbols": load_json("musmusculus_tr_imgt_symbols.json"),
-            "synonyms": dict(),
         },
     },
 }
@@ -36,7 +35,6 @@ IG_SYMBOLS_BY_SP_DB = {
     "musmusculus": {
         "IMGT": {
             "symbols": load_json("musmusculus_ig_imgt_symbols.json"),
-            "synonyms": dict(),
         },
     },
 }
@@ -46,7 +44,6 @@ MH_SYMBOLS_BY_SP_DB = {
     "homosapiens": {
         "IPD": {
             "symbols": load_json("homosapiens_mh_ipd_symbols.json"),
-            "synonyms_allele": dict(),
             "synonyms_gene": load_json("homosapiens_mh_ipd_synonyms_gene.json"),
         },
         "MRO": {

@@ -101,7 +101,7 @@ def get_compatible_symbols(
     """
     if "*" in symbol:
         gene_name, allele_designation = symbol.split("*")
-        allele_data = allele_tree.get(gene_name, dict()).get(allele_designation)
+        allele_data = allele_tree.get(gene_name, {}).get(allele_designation)
         if (
             allele_data is not None
             and has_sequence_data(allele_data)
