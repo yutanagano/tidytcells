@@ -6,37 +6,37 @@ def load_json(filename: str) -> dict:
     return json.loads(files(__name__).joinpath(filename).read_text())
 
 
-SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES = {
+TR_SYMBOLS_BY_SP_DB = {
     "homosapiens": {
-        "TR": {
-            "IMGT": {
-                "symbols": load_json("homosapiens_tr_imgt_symbols.json"),
-                "synonyms": load_json("homosapiens_tr_synonyms.json"),
-            },
-        },
-        "IG": {
-            "IMGT": {
-                "symbols": load_json("homosapiens_ig_imgt_symbols.json"),
-                "synonyms": load_json("homosapiens_ig_synonyms.json"),
-            },
-            "OGRDB": {
-                "symbols": load_json("homosapiens_ig_ogrdb_symbols.json"),
-                "synonyms": load_json("homosapiens_ig_synonyms.json"),
-            },
+        "IMGT": {
+            "symbols": load_json("homosapiens_tr_imgt_symbols.json"),
+            "synonyms": load_json("homosapiens_tr_synonyms.json"),
         },
     },
     "musmusculus": {
-        "TR": {
-            "IMGT": {
-                "symbols": load_json("musmusculus_tr_imgt_symbols.json"),
-                "synonyms": dict(),
-            },
+        "IMGT": {
+            "symbols": load_json("musmusculus_tr_imgt_symbols.json"),
+            "synonyms": dict(),
         },
-        "IG": {
-            "IMGT": {
-                "symbols": load_json("musmusculus_ig_imgt_symbols.json"),
-                "synonyms": dict(),
-            },
+    },
+}
+
+
+IG_SYMBOLS_BY_SP_DB = {
+    "homosapiens": {
+        "IMGT": {
+            "symbols": load_json("homosapiens_ig_imgt_symbols.json"),
+            "synonyms": load_json("homosapiens_ig_synonyms.json"),
+        },
+        "OGRDB": {
+            "symbols": load_json("homosapiens_ig_ogrdb_symbols.json"),
+            "synonyms": load_json("homosapiens_ig_synonyms.json"),
+        },
+    },
+    "musmusculus": {
+        "IMGT": {
+            "symbols": load_json("musmusculus_ig_imgt_symbols.json"),
+            "synonyms": dict(),
         },
     },
 }

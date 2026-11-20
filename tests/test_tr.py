@@ -1,13 +1,9 @@
 import pytest
 from tidytcells import tr, config
-from tidytcells._resources import SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES
+from tidytcells._resources import TR_SYMBOLS_BY_SP_DB
 
-HOMOSAPIENS_TR_ALLELES = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES["homosapiens"][
-    "TR"
-]["IMGT"]["symbols"]
-MUSMUSCULUS_TR_ALLELES = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES["musmusculus"][
-    "TR"
-]["IMGT"]["symbols"]
+HOMOSAPIENS_TR_ALLELES = TR_SYMBOLS_BY_SP_DB["homosapiens"]["IMGT"]["symbols"]
+MUSMUSCULUS_TR_ALLELES = TR_SYMBOLS_BY_SP_DB["musmusculus"]["IMGT"]["symbols"]
 
 
 class TestStandardize:

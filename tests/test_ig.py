@@ -1,13 +1,9 @@
 import pytest
 from tidytcells import ig, config
-from tidytcells._resources import SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES
+from tidytcells._resources import IG_SYMBOLS_BY_SP_DB
 
-HOMOSAPIENS_IG_ALLELES = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES["homosapiens"][
-    "IG"
-]["IMGT"]["symbols"]
-MUSMUSCULUS_IG_ALLELES = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES["musmusculus"][
-    "IG"
-]["IMGT"]["symbols"]
+HOMOSAPIENS_IG_ALLELES = IG_SYMBOLS_BY_SP_DB["homosapiens"]["IMGT"]["symbols"]
+MUSMUSCULUS_IG_ALLELES = IG_SYMBOLS_BY_SP_DB["musmusculus"]["IMGT"]["symbols"]
 
 
 class TestStandardize:

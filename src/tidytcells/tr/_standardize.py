@@ -4,7 +4,7 @@ from tidytcells import _utils
 from tidytcells.result import ReceptorGene
 from tidytcells._utils import Parameter
 from tidytcells._standardized_gene_symbol import TrSymbolStandardizer
-from tidytcells._resources import SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES
+from tidytcells._resources import TR_SYMBOLS_BY_SP_DB
 
 logger = logging.getLogger(__name__)
 
@@ -243,15 +243,13 @@ def standardize(
 
     species = _utils.clean_and_lowercase(species)
 
-    if species not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES:
-        msg = _utils.unsupported_species_message(
-            species, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES.keys()
-        )
+    if species not in TR_SYMBOLS_BY_SP_DB:
+        msg = _utils.unsupported_species_message(species, TR_SYMBOLS_BY_SP_DB.keys())
         if log_failures:
             logger.warning(f"{msg} Skipping TR standardization.")
         return ReceptorGene(symbol, msg)
 
-    receptor_databases = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES[species]["TR"]
+    receptor_databases = TR_SYMBOLS_BY_SP_DB[species]
 
     receptor_database = config.get_receptor_database()
     if receptor_database not in receptor_databases:

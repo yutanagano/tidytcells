@@ -4,7 +4,8 @@ from tidytcells import _utils
 from tidytcells._resources import (
     AMINO_ACIDS,
     AMINO_ACIDS_WITH_SPECIAL,
-    SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES,
+    IG_SYMBOLS_BY_SP_DB,
+    TR_SYMBOLS_BY_SP_DB,
 )
 
 from tidytcells.result._junction import Junction
@@ -388,25 +389,25 @@ def standardize(
                 original_input, f"Not a valid amino acid sequence, found: {char}"
             )
 
-    if species not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES:
-        msg = _utils.unsupported_species_message(
-            species, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES.keys()
-        )
+    if locus[0:2] == "TR":
+        registry = TR_SYMBOLS_BY_SP_DB
+    elif locus[0:2] == "IG":
+        registry = IG_SYMBOLS_BY_SP_DB
+    else:
+        msg = _utils.unsupported_locus_message(locus, species, ("TR", "IG"))
         if log_failures:
             logger.warning(f"{msg} Skipping junction standardization.")
 
         return Junction(original_input, msg)
 
-    if locus[0:2] not in SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES[species]:
-        msg = _utils.unsupported_locus_message(
-            locus, species, SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES[species]
-        )
+    if species not in registry:
+        msg = _utils.unsupported_species_message(species, registry.keys())
         if log_failures:
             logger.warning(f"{msg} Skipping junction standardization.")
 
         return Junction(original_input, msg)
 
-    receptor_databases = SUPPORTED_RECEPTOR_SPECIES_AND_THEIR_GENES[species][locus[0:2]]
+    receptor_databases = registry[species]
 
     receptor_database = config.get_receptor_database()
     if receptor_database not in receptor_databases:
