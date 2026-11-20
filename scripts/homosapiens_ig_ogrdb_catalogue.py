@@ -91,11 +91,12 @@ def main() -> None:
 
     print("Converting IG gene sequence data...")
     sequence_data = get_ig_aa_sequence_data(germline_sets)
-    script_utility.save_as_json(sequence_data, "homosapiens_ig_ogrdb_aa_sequences.json")
 
     print("Compiling valid IG genes...")
     valid_genes = get_valid_gene_data(sequence_data)
-    script_utility.save_as_json(valid_genes, "homosapiens_ig_ogrdb_valid_genes.json")
+
+    combined = script_utility.combine_symbols(valid_genes, sequence_data)
+    script_utility.save_as_json(combined, "homosapiens_ig_ogrdb_symbols.json")
 
 
 def download_germline_set(locus: str) -> dict:
