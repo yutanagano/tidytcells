@@ -134,71 +134,36 @@ def get_compatible_symbols(
     return compatible_symbols
 
 
-def _get_genes_to_alleles(alleles: Iterable[str]) -> dict[str, list[str]]:
-    """
-    Create mapping from gene to all its alleles.
-
-    Parameters
-    ----------
-    alleles
-        Iterable of allele symbols.
-
-    Returns
-    -------
-    dict[str, list[str]]
-        Mapping from gene to all its alleles.
-    """
-    genes_to_alleles = {}
-
-    for allele in alleles:
-        gene = allele.rsplit("*")[0]
-
-        if gene not in genes_to_alleles:
-            genes_to_alleles[gene] = [allele]
-        else:
-            genes_to_alleles[gene].append(allele)
-
-    return genes_to_alleles
-
-
-def collapse_aa_dict_per_gene(
+def collapse_alleles_with_same_aa(
     symbol_to_aa_dict: dict[str, dict[str, str]],
 ) -> dict[str, dict[str, str]]:
     """
-    Reduce the number of items in the sequence_aa dict by collapsing all alleles at the gene level
-    for any gene where all alleles have the same sequence (keep separate alleles if sequences differ).
+    Reduce the number of items in the sequence_aa dict by collapsing all alleles with identical
+    sequence information, regardless of gene. Each group is keyed by its sorted allele names
+    joined with ", " (a single allele keeps its own name).
 
     Parameters
     ----------
     symbol_to_aa_dict
-        Dictionary of amino acid sequence details per symbol.
+        Dictionary of amino acid sequence details per allele.
 
     Returns
     -------
     dict[str, dict[str, str]]
-        The reduced dictionary with alleles collapsed at the gene level where possible.
+        The reduced dictionary with one item per group of identical alleles.
     """
-    genes_to_alleles = _get_genes_to_alleles(symbol_to_aa_dict.keys())
-    genes_to_aa = {}
+    alleles_per_aa = {}
 
-    for gene in genes_to_alleles:
-        all_genes_same_aa = True
-        gene_aa_dict = None
+    for allele, aa_dict in symbol_to_aa_dict.items():
+        aa_key = tuple(sorted(aa_dict.items()))
 
-        for allele in genes_to_alleles[gene]:
-            if gene_aa_dict is None:
-                gene_aa_dict = symbol_to_aa_dict[allele]
-            else:
-                if gene_aa_dict != symbol_to_aa_dict[allele]:
-                    all_genes_same_aa = False
-
-        if all_genes_same_aa:
-            genes_to_aa[gene] = gene_aa_dict
+        if aa_key not in alleles_per_aa:
+            alleles_per_aa[aa_key] = [allele]
         else:
-            for allele in genes_to_alleles[gene]:
-                genes_to_aa[allele] = symbol_to_aa_dict[allele]
+            alleles_per_aa[aa_key].append(allele)
 
-    return genes_to_aa
+    return {", ".join(sorted(alleles)): symbol_to_aa_dict[alleles[0]]
+            for alleles in alleles_per_aa.values()}
 
 
 def _get_max_score_from_matches(
@@ -685,7 +650,7 @@ def get_conserved_c_idx(gene: str, v_gene_seqs_dict: dict[str, str]) -> int | No
     int | None
         The conserved 'C' index, or ``None`` if it cannot be determined.
     """
-    v_region = v_gene_seqs_dict["V-REGION"]
+    v_region = v_gene_seqs_dict["V-REGION-SHORT"]
     v_conserved_idx_neg = None
 
     if "FR3-IMGT" in v_gene_seqs_dict:
@@ -717,7 +682,7 @@ def align_v_regions(
     seq
         CDR3 sequence to be aligned.
     v_aa_dict
-        Dictionary of V gene sequence details (V-REGION) per allele/gene.
+        Dictionary of V gene sequence details (V-REGION-SHORT) per allele/gene.
     min_v_score
         Minimum overlap score required.
     mismatch_penalty
@@ -741,7 +706,7 @@ def align_v_regions(
         if v_conserved_idx_neg is not None:
             v_offsets, score = get_best_v_alignment_for_region(
                 seq,
-                gene_seqs_dict["V-REGION"],
+                gene_seqs_dict["V-REGION-SHORT"],
                 v_conserved_idx_neg,
                 allow_mismatches=allow_mismatches,
                 mismatch_penalty=mismatch_penalty,
@@ -749,7 +714,7 @@ def align_v_regions(
             cur_alignments = [
                 {
                     "gene": gene,
-                    "v_region": gene_seqs_dict["V-REGION"],
+                    "v_region_short": gene_seqs_dict["V-REGION-SHORT"],
                     "v_conserved_idx": v_conserved_idx_neg,
                     "v_offset": v_offset,
                     "score": score,

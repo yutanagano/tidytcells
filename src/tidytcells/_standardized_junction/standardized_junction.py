@@ -47,6 +47,9 @@ class JunctionStandardizer:
         self.corrected_first_aa = False
         self.corrected_last_aa = False
         self.correction_j_genes = None
+        self.correction_v_genes = None
+        self.correction_j_score = None
+        self.correction_v_score = None
 
         self.reasons_invalid = []
         self._resolve_juncton()
@@ -57,6 +60,9 @@ class JunctionStandardizer:
             self.corrected_seq,
             self.species,
             self.correction_j_genes,
+            self.correction_v_genes,
+            self.correction_j_score,
+            self.correction_v_score,
             self.germline_database,
         )
 
@@ -68,19 +74,38 @@ class JunctionStandardizer:
         self.v_alignments = self.align_v()
 
         if len(self.j_alignments) > 0:
+            self.correction_j_score = self.j_alignments[0]["score"]
             self.corrected_seq, self.correction_j_genes = self.correct_seq_j_side(
                 self.corrected_seq
             )
 
         if len(self.v_alignments) > 0:
-            self.corrected_seq = self.correct_seq_v_side(self.corrected_seq)
+            self.correction_v_score = self.v_alignments[0]["score"]
+            self.corrected_seq, self.correction_v_genes = self.correct_seq_v_side(
+                self.corrected_seq
+            )
 
         if len(self.corrected_seq) < 6:
             self.reasons_invalid.append("Junction too short")
 
-    def _get_allele_data(self, allele_symbol: str) -> dict | None:
+    def _get_allele_data(self, allele_symbol: str, gene: str) -> dict | None:
+        allele_field_subset = ["FR3-IMGT", "V-REGION"] if gene == "V" else ["J-MOTIF", "J-REGION"]
+
         gene_name, allele_designation = allele_symbol.split("*")
-        return self.allele_tree.get(gene_name, {}).get(allele_designation)
+        allele_data = self.allele_tree.get(gene_name, {}).get(allele_designation)
+        allele_data =  {field: allele_data[field] for field in allele_field_subset if field in allele_data}
+
+        if gene == "V":
+            v_region_full = allele_data.pop("V-REGION")
+            allele_data["V-REGION-SHORT"] = v_region_full
+
+            if "FR3-IMGT" in allele_data:
+                try:
+                    allele_data["V-REGION-SHORT"] = v_region_full[v_region_full.index(allele_data["FR3-IMGT"]):]
+                except ValueError:
+                    allele_data.pop("FR3-IMGT")
+
+        return allele_data
 
     def get_aa_dict_from_symbol(self, gene: str) -> dict[str, dict[str, str]]:
         """
@@ -104,7 +129,7 @@ class JunctionStandardizer:
                     )
                     continue
 
-                allele_data = self._get_allele_data(sub_symbol)
+                allele_data = self._get_allele_data(sub_symbol, gene)
                 if allele_data is not None and has_sequence_data(allele_data):
                     aa_dict.update({sub_symbol: allele_data})
                     continue
@@ -127,11 +152,10 @@ class JunctionStandardizer:
 
             # if all alleles for one gene have the same sequence info, collapse the gene to 1 dict item
             aas_per_allele = {
-                ext_symbol: self._get_allele_data(ext_symbol)
+                ext_symbol: self._get_allele_data(ext_symbol, gene)
                 for ext_symbol in allele_symbols
             }
-            aas_per_gene = collapse_aa_dict_per_gene(aas_per_allele)
-
+            aas_per_gene = collapse_alleles_with_same_aa(aas_per_allele)
             aa_dict.update(aas_per_gene)
 
         return aa_dict
@@ -291,22 +315,22 @@ class JunctionStandardizer:
 
         return best_alignments
 
-    def get_j_string_repr(
-        self, seq: str, corrected_seq_with_j_gene: list[tuple[str, str]]
+    def get_match_gene_repr(
+        self, seq: str, corrected_seq_with_gene: list[tuple[str, str]]
     ) -> str:
         """
-        The J gene string representation concatenates all best-scoring J genes that match the sequence
+        The gene string representation concatenates all best-scoring V or J genes that match the sequence
         """
 
-        j_genes = sorted(
+        gene_symbols = sorted(
             {
-                j_gene
-                for corrected_seq, j_gene in corrected_seq_with_j_gene
+                gene_symbol
+                for corrected_seq, gene_symbol in corrected_seq_with_gene
                 if corrected_seq == seq
             }
         )
 
-        return ", ".join(j_genes)
+        return ", ".join(gene_symbols)
 
     def correct_seq_j_side(self, seq: str) -> tuple[str, str | None]:
         """
@@ -360,7 +384,7 @@ class JunctionStandardizer:
 
         # if the perfect match exists, keep only this
         if seq in corrected_seqs:
-            return seq, self.get_j_string_repr(seq, corrected_seq_with_j_gene)
+            return seq, self.get_match_gene_repr(seq, corrected_seq_with_j_gene)
 
         if len(corrected_seqs) > 1:
             # When Junction-reconstruction results are ambiguous (different J's)
@@ -387,11 +411,11 @@ class JunctionStandardizer:
             return seq, None
 
         corrected_seq = corrected_seqs.pop()
-        return corrected_seq, self.get_j_string_repr(
+        return corrected_seq, self.get_match_gene_repr(
             corrected_seq, corrected_seq_with_j_gene
         )
 
-    def correct_seq_v_side(self, seq: str) -> str:
+    def correct_seq_v_side(self, seq: str) -> tuple[str, str | None]:
         """
         Compute corrected sequence for V side
 
@@ -400,7 +424,7 @@ class JunctionStandardizer:
           1. There exists an alignment matching the sequence perfectly (no correction) or
           2. An unambiguous correction can be determined (no disagreement between alignments)
         """
-        corrected_seqs = set()
+        corrected_seq_with_v_gene = []
         alignment_too_long = []
 
         for alignment_details in self.v_alignments:
@@ -408,15 +432,15 @@ class JunctionStandardizer:
             v_offset = alignment_details["v_offset"]
 
             if v_conserved_idx == v_offset:
-                return seq
+                corrected_seq_with_v_gene.append((seq, alignment_details["gene"]))
 
             if v_conserved_idx > v_offset:
                 n_aas_to_trim = v_conserved_idx - v_offset
                 new_seq = seq[n_aas_to_trim:]
-                corrected_seqs.add(new_seq)
+                corrected_seq_with_v_gene.append((new_seq, alignment_details["gene"]))
 
             if v_conserved_idx < v_offset:
-                reconstructed_aas = alignment_details["v_region"][v_conserved_idx:][
+                reconstructed_aas = alignment_details["v_region_short"][v_conserved_idx:][
                     :v_offset
                 ]
 
@@ -425,29 +449,48 @@ class JunctionStandardizer:
 
                     if reconstruction_length <= self.max_v_reconstruction:
                         new_seq = reconstructed_aas + seq
-                        corrected_seqs.add(new_seq)
+                        corrected_seq_with_v_gene.append(
+                            (new_seq, alignment_details["gene"])
+                        )
                     else:
                         alignment_too_long.append(
                             f"{alignment_details['gene']} ({self.species}): Alignment successful but reconstruction too long ({reconstruction_length})"
                         )
 
-        corrected_seqs = {seq for seq in corrected_seqs if seq.startswith("C")}
+        corrected_seq_with_v_gene = [
+            (corrected_seq, v_gene)
+            for corrected_seq, v_gene in corrected_seq_with_v_gene
+            if corrected_seq.startswith("C")
+        ]
+        corrected_seqs = {
+            corrected_seq for corrected_seq, v_gene in corrected_seq_with_v_gene
+        }
 
+        # if the perfect match exists, keep only this
+        if seq in corrected_seqs:
+            return seq, self.get_match_gene_repr(seq, corrected_seq_with_v_gene)
+
+        # prefer the junction which only adds the conserved C, if there is one
         if "C" + seq in corrected_seqs:
-            return "C" + seq
+            return "C" + seq, self.get_match_gene_repr(
+                "C" + seq, corrected_seq_with_v_gene
+            )
 
         if len(corrected_seqs) == 0:
             self.reasons_invalid.append(f"V side reconstruction unsuccessful")
             self.reasons_invalid.extend(alignment_too_long)
-            return seq
+            return seq, None
 
         if len(corrected_seqs) > 1:
             self.reasons_invalid.append(
                 f"V side reconstruction ambiguous: {corrected_seqs}"
             )
-            return seq
+            return seq, None
 
-        return corrected_seqs.pop()
+        corrected_seq = corrected_seqs.pop()
+        return corrected_seq, self.get_match_gene_repr(
+            corrected_seq, corrected_seq_with_v_gene
+        )
 
     def get_reason_why_invalid(
         self,

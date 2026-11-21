@@ -13,6 +13,9 @@ class Junction:
         corrected_junction: str | None = None,
         species: str | None = None,
         j_gene_match: str | None = None,
+        v_gene_match: str | None = None,
+        j_gene_score: int | None = None,
+        v_gene_score: int | None = None,
         germline_database: dict | None = None,
     ) -> None:
         self._original_input = original_input
@@ -20,6 +23,9 @@ class Junction:
         self._corrected_junction = corrected_junction
         self._species = species
         self._j_gene_match = j_gene_match
+        self._v_gene_match = v_gene_match
+        self._j_gene_score = j_gene_score
+        self._v_gene_score = v_gene_score
         self._germline_database = germline_database
 
     def __str__(self) -> str:
@@ -81,6 +87,23 @@ class Junction:
         If multiple J genes have an identical matching score, the returned gene names will be separated by ', '.
         """
         return self._j_gene_match
+
+    @property
+    def j_score(self) -> str | None:
+        """The J gene match score"""
+        return self._j_gene_score
+
+    @property
+    def v_gene_match(self) -> str | None:
+        """The closest matching Vgene(s) that were used to validate or reconstruct the CDR3 junction.
+        If multiple V genes have an identical matching score, the returned gene names will be separated by ', '.
+        """
+        return self._v_gene_match
+
+    @property
+    def v_score(self) -> str | None:
+        """The J gene match score"""
+        return self._v_gene_score
 
     @property
     def germline_database(self) -> dict | None:

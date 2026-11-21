@@ -52,26 +52,31 @@ class Teststandardize:
 
         assert result.junction == "CASSPGGADRRIDGYTF"
         assert result.is_standardized
-        assert result.j_gene_match == "TRBJ1-2"
+        assert result.j_gene_match == "TRBJ1-2*01"
+        assert result.v_gene_match == "TRBV18*01, TRBV18*02"
         assert result.error is None
 
     def test_multi_j_symbol(self):
         # When using either TRBJ1 and TRBJ2 subgroups, the best match is TRBJ1-2, no matter the order of the subgroups or spaces
+        # TRBJ1-2 (NYGYTF) matches the last 4 residues (GYTF): score 4
         result = junction.standardize(
             seq="CASSPGGADRRIDGYTF", locus="TR", j_symbol="TRBJ1,TRBJ2"
         )
-        assert result.j_gene_match == "TRBJ1-2"
+        assert result.j_gene_match == "TRBJ1-2*01"
+        assert result.j_score == 4
 
         result = junction.standardize(
             seq="CASSPGGADRRIDGYTF", locus="TR", j_symbol="TRBJ2, TRBJ1"
         )
-        assert result.j_gene_match == "TRBJ1-2"
+        assert result.j_gene_match == "TRBJ1-2*01"
+        assert result.j_score == 4
 
-        # When using only the TRBJ2 subgroup, TRBJ2-6 is the best match (only one ending with TF)
+        # When using only the TRBJ2 subgroup, TRBJ2-6 is the best match (only one ending with TF): score 2
         result = junction.standardize(
             seq="CASSPGGADRRIDGYTF", locus="TR", j_symbol="TRBJ2"
         )
-        assert result.j_gene_match == "TRBJ2-6"
+        assert result.j_gene_match == "TRBJ2-6*01"
+        assert result.j_score == 2
 
     def test_multi_v_symbol(self):
         # Reconstruction with TRBV10-1 adds 'CAS'
@@ -82,6 +87,7 @@ class Teststandardize:
             max_v_reconstruction=3,
         )
         assert result.junction == "CASSEPGGADRRIDGYTF"
+        assert "TRBV10-1" in result.v_gene_match
 
         # Reconstruction with TRBV10-3 adds 'CAI'
         result = junction.standardize(
@@ -91,6 +97,7 @@ class Teststandardize:
             max_v_reconstruction=3,
         )
         assert result.junction == "CAISEPGGADRRIDGYTF"
+        assert "TRBV10-3" in result.v_gene_match
 
         # Allowing both TRBV10-1 and TRBV10-3 causes ambiguity, no matter the order or spaces
         result = junction.standardize(
@@ -99,6 +106,7 @@ class Teststandardize:
             v_symbol="TRBV10-1,TRBV10-3",
             max_v_reconstruction=3,
         )
+        assert result.v_gene_match is None
         assert result.error.startswith("V side reconstruction ambiguous: ")
         assert "CAISEPGGADRRIDGYTF" in result.error
         assert "CASSEPGGADRRIDGYTF" in result.error
@@ -109,6 +117,7 @@ class Teststandardize:
             v_symbol="TRBV10-3, TRBV10-1",
             max_v_reconstruction=3,
         )
+        assert result.v_gene_match is None
         assert result.error.startswith("V side reconstruction ambiguous: ")
         assert "CAISEPGGADRRIDGYTF" in result.error
         assert "CASSEPGGADRRIDGYTF" in result.error
@@ -154,6 +163,7 @@ class Teststandardize:
         assert "Unsupported" in result.error
         assert result.junction is None
         assert result.j_gene_match is None
+        assert result.v_gene_match is None
         assert not result.is_standardized
 
     def test_germline_reference_config(self):
@@ -341,6 +351,9 @@ class Teststandardize:
 
             if j_symbol is not None:
                 assert j_symbol in result.j_gene_match
+
+            if v_symbol is not None:
+                assert v_symbol in result.v_gene_match
         else:
             assert not result.is_standardized
             assert result.error is not None
